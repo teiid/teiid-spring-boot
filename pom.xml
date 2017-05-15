@@ -38,7 +38,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <spring-boot.version>1.5.2.RELEASE</spring-boot.version>
+        <spring-boot.version>1.5.3.RELEASE</spring-boot.version>
         <teiid.version>9.2.0.Final</teiid.version>
     </properties>
 
