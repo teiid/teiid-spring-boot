@@ -10,7 +10,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
+import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -58,6 +60,8 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
         }
         
         vdbs = vdbList.toArray(new String[vdbList.size()]);
+        
+        application.setBannerMode(Banner.Mode.OFF);
     }
 
     @Override
@@ -90,6 +94,14 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
             } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
                 new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
             }
+        }
+        
+        final CountDownLatch closeLatch = context.getBean(CountDownLatch.class);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> closeLatch.countDown()));
+        try {
+            closeLatch.await();
+        } catch (InterruptedException e) {
+            throw new TeiidRuntimeException(e);
         }
         
     }
