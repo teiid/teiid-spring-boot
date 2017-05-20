@@ -80,6 +80,7 @@
 
     <modules>
         <module>teiid-spring-boot-starter</module>
+	<module>teiid-spring-boot-starter-test</module>
 	<module>teiid-spring-boot-samples</module>
     </modules>
 </project>

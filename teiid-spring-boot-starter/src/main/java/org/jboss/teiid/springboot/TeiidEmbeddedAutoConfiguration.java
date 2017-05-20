@@ -77,8 +77,11 @@ public class TeiidEmbeddedAutoConfiguration {
             embeddedConfiguration.setTransactionManager(transactionManager);
         }
         
-        if(securityDomain != null && securityHelper != null) {
+        if(securityDomain != null) {
             embeddedConfiguration.setSecurityDomain(securityDomain);
+        }
+        
+        if(securityHelper != null) {
             embeddedConfiguration.setSecurityHelper(securityHelper);
         }
                 
