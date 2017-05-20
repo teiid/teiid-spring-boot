@@ -15,6 +15,7 @@
 
     <modules>
         <module>teiid-spring-boot-sample-empty</module>
+	<module>teiid-spring-boot-sample-loopback</module>
     </modules>
 
     <build>
