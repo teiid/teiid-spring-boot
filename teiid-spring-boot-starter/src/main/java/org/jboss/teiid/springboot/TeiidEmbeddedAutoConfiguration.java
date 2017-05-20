@@ -2,7 +2,6 @@ package org.jboss.teiid.springboot;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import javax.transaction.TransactionManager;
 
@@ -86,11 +85,6 @@ public class TeiidEmbeddedAutoConfiguration {
         server.start(embeddedConfiguration);
         
         return server;
-    }
-    
-    @Bean
-    public CountDownLatch closeLatch() {
-        return new CountDownLatch(1);
     }
 
 }
