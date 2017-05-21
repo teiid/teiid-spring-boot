@@ -12,7 +12,8 @@ Primary purpose of `teiid-spring-boot` is enables Teiid in Spring Boot applicati
 
 * Enables Teiid for Spring Boot applications
 * Supports translators/connectors auto-detection 
-* Supports vdb deployment via `.sql`
+* Enable Externalized .yml/.properties based configuration
+* Supports vdb deployment either .sql, or .xml 
 
 ## Useful Links
 - Website - http://teiid.org

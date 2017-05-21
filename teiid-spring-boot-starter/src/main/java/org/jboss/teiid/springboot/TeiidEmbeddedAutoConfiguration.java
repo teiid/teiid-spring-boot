@@ -18,6 +18,8 @@ package org.jboss.teiid.springboot;
 
 import static org.jboss.teiid.springboot.TeiidEmbeddedConstants.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -34,13 +36,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.teiid.core.TeiidRuntimeException;
+import org.teiid.deployers.VirtualDatabaseException;
+import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.logging.LogManager;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.security.SecurityHelper;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
+import org.teiid.translator.TranslatorException;
 import org.teiid.transport.SocketConfiguration;
 
 /**
@@ -78,9 +85,15 @@ public class TeiidEmbeddedAutoConfiguration {
     @Autowired(required = false)
     private Map<String, Object> connectionFactories = new HashMap<>();
     
+    @Autowired
+    private TeiidConnectorConfiguration config;
+    
+    @Autowired
+    private ResourceLoader resourceLoader;
+    
     @Bean
     public EmbeddedServer embeddedServer() {
-        
+
         deduceTranslators();
         
         final EmbeddedServer server = new EmbeddedServer(); 
@@ -122,6 +135,24 @@ public class TeiidEmbeddedAutoConfiguration {
                 
         server.start(embeddedConfiguration);
         
+        LogManager.logInfo(CTX_EMBEDDED, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42008, socketConfiguration.getHostName(), String.valueOf(socketConfiguration.getPortNumber())));
+        
+        config.getVdbs().forEach(vdb -> {
+            if(resourceLoader.getResource(vdb).exists() && resourceLoader.getResource(vdb).isReadable()) {
+                try (InputStream is = resourceLoader.getResource(vdb).getInputStream()) {
+                    server.deployVDB(is);
+                } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
+                    new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
+                }
+            } else if(resourceLoader.getResource("file:" + vdb).exists() && resourceLoader.getResource("file:pom.xml").isReadable()){
+                try (InputStream is = resourceLoader.getResource("file:" + vdb).getInputStream()) {
+                    server.deployVDB(is);
+                } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
+                    new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
+                }
+            }
+        });
+        
         return server;
     }
 
@@ -137,15 +168,35 @@ public class TeiidEmbeddedAutoConfiguration {
         components.forEach(c -> {
             try {
                 Class<?> clazz = Class.forName(c.getBeanClassName());
-                ExecutionFactory<?, ?> ef = (ExecutionFactory<?, ?>) BeanUtils.instantiate(clazz);
-                Method start = clazz.getMethod("start", new Class[]{});
                 String name = clazz.getAnnotation(Translator.class).name();
-                start.invoke(ef, new Object[]{});
-                this.translators.put(name, ef);
+                if(config.getTranslators().size() > 0) {
+                    if(config.getTranslators().contains(name)) {
+                        getTranslatorInstances(clazz, name);
+                    }
+                } else {
+                    getTranslatorInstances(clazz, name);
+                }
             } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 LogManager.logWarning(CTX_EMBEDDED, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42007));
             }
         });
+    }
+
+    /**
+     * Use to initialize Translator {@link ExecutionFactory}, and invoke it's start() method.
+     * @param clazz - translator class name auto-detected from class path.
+     * @param name - translator name
+     * @throws NoSuchMethodException
+     * @throws SecurityException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws InvocationTargetException
+     */
+    private void getTranslatorInstances(Class<?> clazz, String name) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        ExecutionFactory<?, ?> ef = (ExecutionFactory<?, ?>) BeanUtils.instantiate(clazz);
+        Method method = clazz.getMethod("start", new Class[]{});
+        method.invoke(ef, new Object[]{});
+        this.translators.put(name, ef);
     }
 
 }
