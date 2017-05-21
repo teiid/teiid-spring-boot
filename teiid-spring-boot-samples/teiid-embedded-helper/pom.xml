@@ -89,6 +89,10 @@
                         <groupId>org.jboss</groupId>
                         <artifactId>jboss-transaction-spi</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
                 
@@ -166,20 +170,4 @@
         </dependency> 
     
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${version.compiler.plugin}</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <showDeprecation>false</showDeprecation>
-                    <showWarnings>false</showWarnings>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

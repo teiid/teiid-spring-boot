@@ -23,7 +23,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ExampleMain {
 
     public static void main(String[] args) {
-//        args = new String[]{"src/main/resources/empty-vdb.xml"};
         SpringApplication.run(ExampleMain.class, args);
     }
 

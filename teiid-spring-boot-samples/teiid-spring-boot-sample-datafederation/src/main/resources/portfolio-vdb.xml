@@ -25,7 +25,7 @@
             Each source represents a translator and data source. There are 
             pre-defined translators, or you can create one.
         -->
-        <source name="text-connector" translator-name="file" connection-jndi-name="java:/marketdata-file"/>
+        <source name="text-connector" translator-name="file" connection-jndi-name="marketdata-file"/>
     </model>
 
     <model name="Accounts">
@@ -41,7 +41,7 @@
          <!--
             This connector is defined to reference the H2 localDS" 
           -->
-        <source name="h2-connector" translator-name="translator-h2" connection-jndi-name="java:jboss/datasources/accounts-ds"/>
+        <source name="h2-connector" translator-name="h2" connection-jndi-name="accounts-ds"/>
     </model>
     
     <model name="Stocks" type="VIRTUAL">
@@ -71,9 +71,4 @@
                  
         ]]> </metadata>
     </model>
-	
-    <translator name="translator-h2" type="h2">
-        <property name="SupportsNativeQueries" value="true"/>
-    </translator>
-
 </vdb>

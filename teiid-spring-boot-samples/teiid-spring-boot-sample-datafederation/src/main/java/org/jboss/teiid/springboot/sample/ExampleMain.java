@@ -43,15 +43,10 @@ import org.teiid.resource.adapter.file.FileManagedConnectionFactory;
 public class ExampleMain {
     
     @Bean
-    public Map<String, Object> connectionFactories () throws ResourceException {
-        Map<String, Object> factories = new HashMap<>();
-        factories.put("accounts-ds", account());
-        factories.put("marketdata-ds", marketData());
-        return factories;
-    }
-    
-    private DataSource account() throws ResourceException {
-        return EmbeddedHelper.Factory.newDataSource(c -> c.localManagedConnectionFactory(mcf -> {
+    public Map<String, DataSource> account() throws ResourceException {
+        
+        Map<String, DataSource> datasources = new HashMap<>(1); 
+        DataSource ds = EmbeddedHelper.Factory.newDataSource(c -> c.localManagedConnectionFactory(mcf -> {
             mcf.setDriverClass("org.h2.Driver");
             mcf.setConnectionURL(URL);
             mcf.setUserName("sa");
@@ -62,13 +57,18 @@ public class ExampleMain {
             p.setBlockingTimeout(30000);
             p.setIdleTimeoutMinutes(10);
         }));
+        
+        datasources.put("accounts-ds", ds);
+        return datasources;
     }
     
-    private ConnectionFactory marketData() throws ResourceException {
-        
+    @Bean
+    public Map<String, ConnectionFactory> marketData() throws ResourceException {
+        Map<String, ConnectionFactory> factories = new HashMap<>();
         FileManagedConnectionFactory mcf = new FileManagedConnectionFactory();
         mcf.setParentDirectory(marketdataDir);
-        return mcf.createConnectionFactory();
+        factories.put("marketdata-file", mcf.createConnectionFactory());
+        return factories;
     }
     
     private static String URL = "jdbc:h2:file:" + System.getProperty("java.io.tmpdir") + "/test";

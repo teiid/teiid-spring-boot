@@ -22,10 +22,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+import javax.resource.cci.ConnectionFactory;
+import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.infinispan.util.concurrent.ConcurrentHashSet;
@@ -84,7 +88,10 @@ public class TeiidEmbeddedAutoConfiguration {
     private Set<String> connectionFactoryNames = new ConcurrentHashSet<>();
     
     @Autowired(required = false)
-    private Map<String, Object> connectionFactories = new ConcurrentHashMap<>();
+    private Map<String, ConnectionFactory> connectionFactories = new ConcurrentHashMap<>();
+    
+    @Autowired(required = false)
+    private Map<String, DataSource> datasources = new ConcurrentHashMap<>();
     
     @Autowired
     private TeiidConnectorConfiguration config;
@@ -107,16 +114,23 @@ public class TeiidEmbeddedAutoConfiguration {
             server.addTranslator(name, ef);
         });
         
+        Map<String, Object> connectors = new HashMap<>();
+        
         // This for re-use spring based bean injection
         connectionFactoryNames.forEach(name -> {
             Object factory = applicationContext.getBean(name);
-            connectionFactories.put(name, factory);
+            connectors.put(name, factory);
         });
+        connectionFactories.forEach((name, factory) -> connectors.put(name, factory));
+        datasources.forEach((name, ds) -> connectors.put(name, ds));
         
-        connectionFactories.forEach((name, factory) -> {
-            LogManager.logInfo(CTX_EMBEDDED, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42006, name));
-            server.addConnectionFactory(name, factory);
-        });
+        connectors.entrySet().stream()
+              .filter(entry -> entry.getValue() instanceof DataSource || entry.getValue() instanceof ConnectionFactory)
+              .collect(Collectors.toMap(k -> k.getKey(), u -> u.getValue()))
+              .forEach((name, factory) -> {
+                  LogManager.logInfo(CTX_EMBEDDED, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42006, name));
+                  server.addConnectionFactory(name, factory);
+              });
         
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
