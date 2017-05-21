@@ -28,5 +28,5 @@ public class TeiidConnectorConfiguration {
 
     public void setVdbs(Set<String> vdbs) {
         this.vdbs = vdbs;
-    }
+    }    
 }

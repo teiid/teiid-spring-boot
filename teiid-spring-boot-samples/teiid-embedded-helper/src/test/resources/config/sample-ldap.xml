@@ -1,0 +1,24 @@
+<?xml version='1.0'?> 
+ 
+<policy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="urn:jboss:security-config:5.0"
+         xmlns="urn:jboss:security-config:5.0"
+         xmlns:jbxb="urn:jboss:security-config:5.0">
+    
+    <application-policy name = "sample-ldap"> 
+       <authentication>
+          <login-module code = "org.jboss.security.auth.spi.LdapExtLoginModule" flag = "required">  
+              <module-option name="java.naming.factory.initial">com.sun.jndi.ldap.LdapCtxFactory</module-option>
+              <module-option name="java.naming.provider.url">ldap://10.66.218.46:389</module-option>
+              <module-option name="java.naming.security.authentication">simple</module-option>
+              <module-option name="bindDN">cn=Manager,dc=example,dc=com</module-option>
+              <module-option name="bindCredential">redhat</module-option>
+              <module-option name="baseCtxDN">ou=Customers,dc=example,dc=com</module-option>
+              <module-option name="baseFilter">(uid={0})</module-option>
+              <module-option name="rolesCtxDN">ou=Roles,dc=example,dc=com</module-option>
+              <module-option name="roleFilter">(uniqueMember={1})</module-option>
+              <module-option name="roleAttributeID">cn</module-option>
+          </login-module> 
+       </authentication> 
+    </application-policy>  
+</policy> 

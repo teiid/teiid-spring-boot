@@ -13,25 +13,23 @@
     <name>Teiid Spring Boot Samples</name>
     <description>Teiid Spring Boot Samples</description>
 
+    <dependencyManagement>
+        <dependencies>
+            <!--Project dependencies-->
+            <dependency>
+                <groupId>org.teiid</groupId>
+                <artifactId>teiid-embedded-helper</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
     <modules>
+	<module>teiid-embedded-helper</module>
         <module>teiid-spring-boot-sample-empty</module>
 	<module>teiid-spring-boot-sample-loopback</module>
+	<module>teiid-spring-boot-sample-datafederation</module>
     </modules>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-		<version>${spring-boot.version}</version>
-		<executions>
-		    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-		    </execution>
-		</executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

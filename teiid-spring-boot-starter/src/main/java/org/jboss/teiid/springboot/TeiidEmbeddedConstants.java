@@ -22,4 +22,9 @@ package org.jboss.teiid.springboot;
 public interface TeiidEmbeddedConstants {
 
     String CTX_EMBEDDED = "org.teiid.EMBEDDED";
+    
+    String DEFAULT_ADDRESS = "0.0.0.0";
+    Integer DEFAULT_PORT = 31000;
+    
+    String FILTER_PACKAGE_TRANSLATOR = "org.teiid.translator";
 }

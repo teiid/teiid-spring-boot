@@ -1,0 +1,27 @@
+
+DROP TABLE HOLDINGS
+;
+
+DROP TABLE PRODUCT
+;
+
+DROP TABLE ACCOUNT
+;
+
+DROP TABLE CUSTOMER
+;
+
+DROP TABLE h2_stock_mat
+; 
+
+DROP TABLE STATUS
+;
+
+
+
+
+
+
+
+
+

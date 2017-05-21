@@ -22,23 +22,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.TransactionManager;
 
+import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.teiid.core.TeiidRuntimeException;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.logging.LogManager;
@@ -57,9 +58,6 @@ import org.teiid.transport.SocketConfiguration;
 @ComponentScan
 @EnableConfigurationProperties
 public class TeiidEmbeddedAutoConfiguration {
-    
-    private final String DEFAULT_ADDRESS = "0.0.0.0";
-    private final Integer DEFAULT_PORT = 31000;
     
     @Autowired(required = false)
     private Integer jdbcPort;
@@ -80,10 +78,13 @@ public class TeiidEmbeddedAutoConfiguration {
     private String securityDomain;
     
     @Autowired(required = false)
-    private Map<String, ExecutionFactory<?, ?>> translators = new HashMap<>();
+    private Map<String, ExecutionFactory<?, ?>> translators = new ConcurrentHashMap<>();
     
     @Autowired(required = false)
-    private Map<String, Object> connectionFactories = new HashMap<>();
+    private Set<String> connectionFactoryNames = new ConcurrentHashSet<>();
+    
+    @Autowired(required = false)
+    private Map<String, Object> connectionFactories = new ConcurrentHashMap<>();
     
     @Autowired
     private TeiidConnectorConfiguration config;
@@ -91,18 +92,31 @@ public class TeiidEmbeddedAutoConfiguration {
     @Autowired
     private ResourceLoader resourceLoader;
     
+    @Autowired
+    private ApplicationContext applicationContext;
+    
     @Bean
     public EmbeddedServer embeddedServer() {
 
         deduceTranslators();
-        
+                
         final EmbeddedServer server = new EmbeddedServer(); 
         
         translators.forEach((name, ef) -> {
-            LogManager.logInfo(CTX_EMBEDDED, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42006, name));
+            LogManager.logInfo(CTX_EMBEDDED, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42005, name));
             server.addTranslator(name, ef);
         });
-        connectionFactories.forEach((name, factory) -> server.addConnectionFactory(name, factory));
+        
+        // This for re-use spring based bean injection
+        connectionFactoryNames.forEach(name -> {
+            Object factory = applicationContext.getBean(name);
+            connectionFactories.put(name, factory);
+        });
+        
+        connectionFactories.forEach((name, factory) -> {
+            LogManager.logInfo(CTX_EMBEDDED, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42006, name));
+            server.addConnectionFactory(name, factory);
+        });
         
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
@@ -142,13 +156,13 @@ public class TeiidEmbeddedAutoConfiguration {
                 try (InputStream is = resourceLoader.getResource(vdb).getInputStream()) {
                     server.deployVDB(is);
                 } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
-                    new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
+                    LogManager.logError(CTX_EMBEDDED, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
                 }
-            } else if(resourceLoader.getResource("file:" + vdb).exists() && resourceLoader.getResource("file:pom.xml").isReadable()){
+            } else if(resourceLoader.getResource("file:" + vdb).exists() && resourceLoader.getResource("file:" + vdb).isReadable()){
                 try (InputStream is = resourceLoader.getResource("file:" + vdb).getInputStream()) {
                     server.deployVDB(is);
                 } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
-                    new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
+                    LogManager.logError(CTX_EMBEDDED, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
                 }
             }
         });
@@ -164,7 +178,7 @@ public class TeiidEmbeddedAutoConfiguration {
 
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new AnnotationTypeFilter(Translator.class));
-        Set<BeanDefinition> components = provider.findCandidateComponents("org.teiid.translator");
+        Set<BeanDefinition> components = provider.findCandidateComponents(FILTER_PACKAGE_TRANSLATOR);
         components.forEach(c -> {
             try {
                 Class<?> clazz = Class.forName(c.getBeanClassName());
