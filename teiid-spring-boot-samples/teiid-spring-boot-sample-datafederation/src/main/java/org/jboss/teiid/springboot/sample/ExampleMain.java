@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.resource.ResourceException;
 import javax.resource.cci.ConnectionFactory;
 import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
 
 import org.h2.tools.RunScript;
 import org.springframework.boot.SpringApplication;
@@ -37,7 +38,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.teiid.embedded.helper.EmbeddedHelper;
 import org.teiid.embedded.helper.utils.JDBCUtils;
-import org.teiid.resource.adapter.file.FileManagedConnectionFactory;
+import org.teiid.security.SecurityHelper;
 
 @SpringBootApplication
 public class ExampleMain {
@@ -65,10 +66,29 @@ public class ExampleMain {
     @Bean
     public Map<String, ConnectionFactory> marketData() throws ResourceException {
         Map<String, ConnectionFactory> factories = new HashMap<>();
-        FileManagedConnectionFactory mcf = new FileManagedConnectionFactory();
-        mcf.setParentDirectory(marketdataDir);
-        factories.put("marketdata-file", mcf.createConnectionFactory());
+        ConnectionFactory cf = EmbeddedHelper.Factory.fileConnectionFactory(mcf -> mcf.setParentDirectory(marketdataDir));
+        factories.put("marketdata-file", cf);
         return factories;
+    }
+    
+    @Bean
+    public TransactionManager transactionManager() {
+        return  EmbeddedHelper.Factory.transactionManager(c -> c.coreEnvironmentBean(core -> {
+            core.setSocketProcessIdPort(0);
+            core.setSocketProcessIdMaxPorts(10);
+        }).coordinatorEnvironmentBean(coordinator -> {
+            coordinator.setEnableStatistics(false);
+            coordinator.setDefaultTimeout(300);
+            coordinator.setTransactionStatusManagerEnable(false);
+            coordinator.setTxReaperCancelFailWaitPeriod(120000);
+        }).objectStoreEnvironmentBean(objectStore -> {
+            objectStore.setObjectStoreDir(System.getProperty("java.io.tmpdir") + "/narayana");
+        }));
+    }
+    
+    @Bean
+    public SecurityHelper securityHelper() {
+        return new EmbeddedSecurityHelper();
     }
     
     private static String URL = "jdbc:h2:file:" + System.getProperty("java.io.tmpdir") + "/test";
