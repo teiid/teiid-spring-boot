@@ -18,11 +18,22 @@ package org.jboss.teiid.springboot;
 
 import static org.junit.Assert.*;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collection;
+
+import static org.jboss.teiid.springboot.TeiidEmbeddedAutoConfigurationTest.JDBCUtils.*;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.teiid.adminapi.AdminException;
 import org.teiid.runtime.EmbeddedServer;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -36,5 +47,53 @@ public class TeiidEmbeddedAutoConfigurationTest {
     public void testAutowired() {
         assertNotNull(embeddedServer);
     }
+    
+    @Test
+    public void testConnection() throws Exception {
+        Connection conn = getDriverConnection("org.teiid.jdbc.TeiidDriver", "jdbc:teiid:Portfolio@mm://localhost:33333;version=1", "teiidUser", "redhat");
+        assertNotNull(conn);
+        Statement stmt = conn.createStatement();
+        assertNotNull(stmt);
+        ResultSet rs = stmt.executeQuery("SELECT * FROM SYSADMIN.MatViews");
+        assertNotNull(rs);
+        assertTrue(rs.next());
+        close(rs, stmt, conn);
+    }
+    
+    @Test
+    public void testTranslators() throws AdminException {
+        Collection<?> translators = embeddedServer.getAdmin().getTranslators();
+        assertEquals(1, translators.size());
+    }
+    
+    @Ignore
+    @Test
+    public void testConnectors() throws AdminException {
+        assertTrue(embeddedServer.getAdmin().getDataSourceNames().contains("datasource"));
+        assertTrue(embeddedServer.getAdmin().getDataSourceNames().contains("connFactory"));
+    }
+    
+    @Test
+    public void testTransaction() throws Exception {
+        Connection conn = getDriverConnection("org.teiid.jdbc.TeiidDriver", "jdbc:teiid:Portfolio@mm://localhost:33333;version=1", "teiidUser", "redhat");
+        conn.setAutoCommit(false);
+        conn.commit();
+        conn.close();
+    }
+    
+    static class JDBCUtils {
+        
+        public static Connection getDriverConnection(String driver, String url, String user, String pass) throws Exception {
+            Class.forName(driver);
+            return DriverManager.getConnection(url, user, pass); 
+        }
+        
+        public static void close(ResultSet rs, Statement stmt, Connection conn) throws SQLException {
+            rs.close();
+            stmt.close();
+            conn.close();
+        }
+    }
+  
 
 }
