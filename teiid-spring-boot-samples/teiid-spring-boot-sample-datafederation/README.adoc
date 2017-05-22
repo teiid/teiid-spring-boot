@@ -1,0 +1,53 @@
+
+= What is it?
+
+> Please raise any issues found with this example in our JIRA:
+> https://issues.jboss.org/projects/TEIID
+
+This example demonstrates:
+
+* Run teiid embedded with `teiid-spring-boot-starter`
+* Use an externalized link:src/main/resources/application.yml[application.yml] to configure datasource, control translator and vdb deployment
+* Data Federation across two data sources (relational and text file)
+* VDB deployment via link:src/main/resources/portfolio-vdb.xml[portfolio-vdb.xml]
+* Use IronJacamar API to create Transaction enable DataSource
+* Use Narayana API to set up a TransactionManager
+* Use Picketbox API to implement teiid SecurityHelper
+
+== Run
+
+To build the project
+
+[source,java]
+----
+mvn clean install
+----
+
+once build success, a `teiid-spring-boot-sample-datafederation-VERSION.jar` will generated under 'target' folder, run the example via
+
+[source,java]
+----
+java -jar teiid-spring-boot-sample-datafederation-VERSION.jar
+----
+
+By default, jdbc transport bind on `0.0.0.0` and port `31000`, `teiidUser`/`redhat` and `kylin`/`redhat` are default user/password.
+
+To create JDBC client or configure JDBC Client tool use the follwing:
+
+[source,sql]
+.*JDBC driver, url, user, password*
+----
+org.teiid.jdbc.TeiidDriver
+jdbc:teiid:Portfolio@mm://localhost:31000;version=1
+teiidUser
+redhat
+----
+
+[source,sql]
+.*Sample Query SQL*
+----
+SELECT * FROM product
+SELECT * FROM StockPrices
+SELECT * FROM Stock
+----
+
