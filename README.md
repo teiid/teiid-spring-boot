@@ -12,7 +12,19 @@ Primary purpose of `teiid-spring-boot` is enables Teiid in Spring Boot applicati
 
 * Enables Teiid for Spring Boot applications
 * Supports translators/connectors auto-detection 
-* Supports vdb deployment via `.sql`
+* Enable Externalized .yml/.properties based configuration
+* Supports vdb deployment either .sql, or .xml 
+
+## Build
+- install JDK 1.8 or higher
+- install maven 3.2+ - http://maven.apache.org/download.html
+- Create a github account fork
+
+Enter the following:
+
+        $ git clone https://github.com/<yourname>/teiid-spring-boot.git
+        $ cd teiid-spring-boot
+        $ mvn clean install
 
 ## Useful Links
 - Website - http://teiid.org
