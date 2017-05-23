@@ -1,6 +1,6 @@
 
 = Teiid Spring Boot User Guide
-:toc: macro
+toc::[]
 
 This is document is for how to use `teiid-spring-boot-starter` run teiid with SpringApplication.
 
