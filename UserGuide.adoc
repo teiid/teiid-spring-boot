@@ -1,0 +1,290 @@
+
+= Teiid Spring Boot User Guide
+:toc: macro
+
+This is document is for how to use `teiid-spring-boot-starter` run teiid with SpringApplication.
+
+== Application Development
+
+This section contains the steps to develop a maven based Teiid Spring Boot Application.
+
+=== Prepare pom.xml
+
+Maven dependencies and Maven Plugins are 2 prerequisites need to set down correctly. 
+
+==== Maven dependencies 
+
+[source,xml]
+.*teiid-spring-boot-starter - (Mandatory)*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+----
+
+[source,xml]
+.*teiid connectors - (Optional, depend on what you use)*
+----
+<dependency>
+   <groupId>org.jboss.teiid.connectors</groupId>
+   <artifactId>translator-X</artifactId>
+</dependency>
+<dependency>
+   <groupId>org.jboss.teiid.connectors</groupId>
+   <artifactId>connector-X</artifactId>
+</dependency>
+----
+
+[source,xml]
+.*thirdparty - (Optional, depend on what you use)*
+----
+<dependency>
+   <groupId>X.Y.Z</groupId>
+   <artifactId>X</artifactId>
+</dependency>
+----
+
+==== Maven Plugins
+
+[source,xml]
+.*spring-boot-maven-plugin - (Mandatory)*
+----
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <version>${spring-boot.version}</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>repackage</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+----
+
+NOTE: `spring-boot-maven-plugin` are used to package runnable jar.
+
+=== The main() mehod class Development
+
+The skeleton Spring boot main() mehod class like
+
+[source,java]
+----
+@SpringBootApplication
+public class Main {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
+    }
+}
+----
+
+==== Register DataSource
+
+Add Spring Bean in @SpringBootApplication class can register DataSource,
+
+[source,java]
+.*Example - Register DataSource with Map<String, DataSource> Bean*
+----
+@Bean
+public Map<String, DataSource> account() throws ResourceException {
+        
+    Map<String, DataSource> datasources = new HashMap<>(1); 
+    DataSource ds = EmbeddedHelper.Factory.newDataSource(c -> c.localManagedConnectionFactory(mcf -> {
+        mcf.setDriverClass("org.h2.Driver");
+        mcf.setConnectionURL(URL);
+        mcf.setUserName("sa");
+        mcf.setPassword("sa");
+    }).poolConfiguration(p -> {
+        p.setMaxSize(30);
+        p.setMinSize(5);
+        p.setBlockingTimeout(30000);
+        p.setIdleTimeoutMinutes(10);
+    }));
+        
+    datasources.put("accounts-ds", ds);
+    return datasources;
+}
+----
+
+[source,java]
+.*Example - Register DataSource with DataSource Bean*
+----
+@Bean
+public Set<String> connectionFactoryNames() {
+    Set<String> names = new HashSet<>();
+    names.add("account-ds");
+    return names;
+}
+
+@ConfigurationProperties(prefix = "spring.datasource.postgres")
+@Bean(name = "account-ds")
+@Primary
+public DataSource dataSource() {
+    return DataSourceBuilder.create().build();
+}
+----
+
+NOTE: Spring DataSource Bean depend on .yml/.properties configuration properties which depicted in <<External YML Configuration, External YML Configuration>>.
+
+==== Register ConnectionFactory
+
+[source,java]
+.*Example - Register ConnectionFactory with Map<String, ConnectionFactory> Bean*
+----
+@Bean
+public Map<String, ConnectionFactory> marketData() throws ResourceException {
+    Map<String, ConnectionFactory> factories = new HashMap<>();
+    ConnectionFactory cf = EmbeddedHelper.Factory.fileConnectionFactory(mcf -> {
+        mcf.setParentDirectory(marketdataDir);
+        mcf.setAllowParentPaths(true);
+    });
+    factories.put("marketdata-file", cf);
+    return factories;
+}
+----
+
+[source,java]
+.*Example - Register ConnectionFactory with ConnectionFactory Bean*
+----
+@Bean
+public Set<String> connectionFactoryNames() {
+    Set<String> names = new HashSet<>();
+    names.add("marketdata-file");
+    return names;
+}
+
+@Bean(name = "marketdata-file")
+public ConnectionFactory marketData() throws ResourceException {
+    return EmbeddedHelper.Factory.fileConnectionFactory(mcf -> {
+        mcf.setParentDirectory(marketdataDir);
+        mcf.setAllowParentPaths(true);
+    });
+}
+----
+
+==== Register Translators
+
+Basicly, there are 2 ways to register Teiid Translators, implicit registration and explicit registration. The explicit registration are no difference with register DataSource or ConnectionFactory,
+
+[source,java]
+.*Example of explicit register translators*
+----
+@Bean
+public Map<String, ExecutionFactory<?, ?>> translators() throws TranslatorException {
+    Map<String, ExecutionFactory<?, ?>> factories = new HashMap<>();
+    H2ExecutionFactory h2 = new H2ExecutionFactory() ;
+    h2.start();
+    FileExecutionFactory file = new FileExecutionFactory();
+    file.start();
+    factories.put("h2", h2);
+    factories.put("file", file);
+    return factories;
+}
+---- 
+
+once the explicit way be used, the implicit registration will not take place. The implicit registration is way of auto-detect and register, only if the translators' classes are in classpath, a external configuration can be used to filter, set which translator can be registered implicitly. Refer to <<External YML Configuration, External YML Configuration>> for details abouot how to filter translator auto-detection.
+
+[source,yml]
+.*Example of external .yml to filter translator*
+----
+teiid:
+  translators: 
+    h2,file
+----
+
+NOTE: The implicit registration with a external .yml configuration is recommend way.
+
+=== VDB Deployment
+
+VDB can be deployed either via a `.xml` file, or `.sql` file. Refer to https://teiid.gitbooks.io/documents/content/reference/vdb_guide.html[Virtual Databases] for more detaila about VDB.
+
+The `.xml`/`.sql` file can either be packaged in the classpath of Spring Boot Runnable jar, or placed in the file system, the external .yml configuration can be used to configure the path of file.
+
+[source,yml]
+.*Example of .yml controlled deployment*
+----
+teiid:
+  vdbs: 
+    path/to/portfolio-vdb.xml
+  ddls:
+    account.sql
+----
+
+Note that, with above .yml configuration, Spring Boot will first find the `path/to/portfolio-vdb.xml`/`account.sql` from classpath, if not exist, then find from file system.
+
+Alternatively, the `.xml`/`.sql` can be passed from command line:
+
+[source,java]
+.*Example of commands deployment*
+----
+java -jar SAMPLE.jar path/to/portfolio-vdb.xml, account.sql
+----
+
+The same as yml controlled deployment, Spring Boot will first find the `path/to/portfolio-vdb.xml`/`account.sql` from classpath, if not exist, then find from file system.
+
+=== External YML Configuration
+
+Teiid Spring Boot Starter compatible with all other starter's YML Configuration, like datasource, resource adapters, etc. The following are teiid added:
+
+|===
+|*Name* |*Pattern* |*Description* 
+
+|teiid.translators
+|comma separate list
+|Use to filter the translators auto-detection 
+
+|teiid.vdbs
+|comma separate list
+|Use to set the path of -vdb.xml
+
+|teiid.ddls
+|comma separate list
+|Use to set the path of ddl sql
+
+|===
+
+[source,yml]
+.*An example .yml*
+----
+spring:
+  datasource:
+    url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
+
+teiid:
+  translators: 
+    h2,file
+  vdbs:
+    path/to/portfolio-vdb.xml
+  ddls:
+    account.sql
+----
+
+== Available Examples
+
+|===
+|*Name* |*Features Demonstrated* |*Description* |*Prerequisites*
+
+|link:teiid-spring-boot-samples/teiid-spring-boot-sample-datafederation/README.adoc[vdb-datafederation]
+|Data Federation, TEXTTABLE, Native Query, JDBC translator, File Translator, 
+|Shows how to expose multiple data sources for data federation
+|None
+
+|link:teiid-spring-boot-samples/teiid-spring-boot-sample-loopback/README.adoc[loopback-source]
+|Loopback Translator, Query
+|Shows how to use teiid loopback translator and use Teiid Spring Boot Starter to setup a teiid runtime environment
+|None
+
+|link:teiid-spring-boot-samples/teiid-spring-boot-sample-empty/README.adoc[empty-source]
+|Teiid Spring Boot Starter
+|Shows how to use Teiid Spring Boot Starter to setup a teiid runtime environment
+|None
+|===
+
+
+

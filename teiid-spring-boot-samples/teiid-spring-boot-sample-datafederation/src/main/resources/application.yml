@@ -7,8 +7,7 @@ spring:
     driver-class-name: org.h2.Driver
     
 teiid:
-  translators:
-    h2,
-    file
-  vdbs:
+  translators: 
+    h2,file
+  vdbs: 
     portfolio-vdb.xml
