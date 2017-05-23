@@ -60,7 +60,7 @@ import org.teiid.transport.SocketConfiguration;
  */
 @Configuration
 @ComponentScan
-@EnableConfigurationProperties
+@EnableConfigurationProperties(TeiidConnectorProperties.class)
 public class TeiidEmbeddedAutoConfiguration {
     
     @Autowired(required = false)
@@ -94,7 +94,7 @@ public class TeiidEmbeddedAutoConfiguration {
     private Map<String, DataSource> datasources = new ConcurrentHashMap<>();
     
     @Autowired
-    private TeiidConnectorConfiguration config;
+    private TeiidConnectorProperties config;
     
     @Autowired
     private ResourceLoader resourceLoader;
@@ -180,6 +180,23 @@ public class TeiidEmbeddedAutoConfiguration {
                 }
             }
         });
+        
+        String ddl = config.getDdl();
+        if(ddl != null) {
+            if(resourceLoader.getResource(ddl).exists() && resourceLoader.getResource(ddl).isReadable()){
+                try (InputStream is = resourceLoader.getResource(ddl).getInputStream()){
+                    server.deployVDB(is, true);
+                } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
+                    LogManager.logError(CTX_EMBEDDED, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, ddl));
+                } 
+            } else if(resourceLoader.getResource("file:" + ddl).exists() && resourceLoader.getResource("file:" + ddl).isReadable()) {
+                try (InputStream is = resourceLoader.getResource("file:" + ddl).getInputStream()){
+                    server.deployVDB(is, true);
+                } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
+                    LogManager.logError(CTX_EMBEDDED, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, ddl));
+                } 
+            }  
+        }
         
         return server;
     }

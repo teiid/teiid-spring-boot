@@ -5,10 +5,10 @@ spring:
     username: sa
     password: sa
     driver-class-name: org.h2.Driver
-
-translators:
-  h2,
-  file
-
-vdbs:
-  portfolio-vdb.xml
+    
+teiid:
+  translators:
+    h2,
+    file
+  vdbs:
+    portfolio-vdb.xml
