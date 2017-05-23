@@ -24,7 +24,7 @@ Enter the following:
 
         $ git clone https://github.com/<yourname>/teiid-spring-boot.git
         $ cd teiid-spring-boot
-        $ mvn clean install
+        $ mvn clean install -s settings.xml
 
 ## Useful Links
 - Website - http://teiid.org
