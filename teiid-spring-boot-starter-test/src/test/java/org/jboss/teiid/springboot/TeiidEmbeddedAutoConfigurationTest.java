@@ -35,9 +35,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.teiid.adminapi.AdminException;
 import org.teiid.runtime.EmbeddedServer;
+import org.jboss.teiid.springboot.TeiidEmbeddedAutoConfiguration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = {TeiidEmbeddedAutoConfiguration.class})
+@SpringBootTest(classes = {TeiidEmbeddedAutoConfiguration.class, TestConfiguration.class})
 public class TeiidEmbeddedAutoConfigurationTest {
     
     @Autowired

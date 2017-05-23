@@ -36,11 +36,11 @@ import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -59,7 +59,7 @@ import org.teiid.transport.SocketConfiguration;
  * @author Kylin Soong
  */
 @Configuration
-@ComponentScan
+@ConditionalOnClass({EmbeddedServer.class, ExecutionFactory.class})
 @EnableConfigurationProperties(TeiidConnectorProperties.class)
 public class TeiidEmbeddedAutoConfiguration {
     
