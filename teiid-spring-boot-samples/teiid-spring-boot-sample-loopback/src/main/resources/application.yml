@@ -1,6 +1,7 @@
+teiid:
 
-translators:
-  loopback
-
-vdbs:
-  loopback-vdb.xml
+  translators:
+    loopback
+    
+  vdbs:
+    loopback-vdb.xml
