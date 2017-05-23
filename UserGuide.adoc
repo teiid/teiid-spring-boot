@@ -1,6 +1,7 @@
 
 = Teiid Spring Boot User Guide
-toc::[]
+:toc: manual
+:toc-placement: preamble
 
 This is document is for how to use `teiid-spring-boot-starter` run teiid with SpringApplication.
 
