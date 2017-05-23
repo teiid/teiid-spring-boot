@@ -181,8 +181,7 @@ public class TeiidEmbeddedAutoConfiguration {
             }
         });
         
-        String ddl = config.getDdl();
-        if(ddl != null) {
+        config.getDdls().forEach(ddl -> {
             if(resourceLoader.getResource(ddl).exists() && resourceLoader.getResource(ddl).isReadable()){
                 try (InputStream is = resourceLoader.getResource(ddl).getInputStream()){
                     server.deployVDB(is, true);
@@ -195,8 +194,8 @@ public class TeiidEmbeddedAutoConfiguration {
                 } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
                     LogManager.logError(CTX_EMBEDDED, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, ddl));
                 } 
-            }  
-        }
+            } 
+        });
         
         return server;
     }

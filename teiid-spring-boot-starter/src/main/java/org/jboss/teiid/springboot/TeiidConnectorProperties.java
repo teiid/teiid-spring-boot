@@ -28,7 +28,7 @@ public class TeiidConnectorProperties {
     
     private Set<String> vdbs = new HashSet<>();
     
-    private String ddl;
+    private Set<String> ddls = new HashSet<>();
 
     public Set<String> getTranslators() {
         return translators;
@@ -46,11 +46,13 @@ public class TeiidConnectorProperties {
         this.vdbs = vdbs;
     }
 
-    public String getDdl() {
-        return ddl;
+    public Set<String> getDdls() {
+        return ddls;
     }
 
-    public void setDdl(String ddl) {
-        this.ddl = ddl;
-    }    
+    public void setDdls(Set<String> ddls) {
+        this.ddls = ddls;
+    }
+
+   
 }
