@@ -59,6 +59,7 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
     private final String[] args;
     
     private String[] vdbs;
+    private String[] ddls;
     
     private EmbeddedServer embeddedServer;
     
@@ -74,6 +75,7 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
         LogManager.logInfo(CTX_EMBEDDED, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42001, ApplicationInfo.getInstance().getReleaseNumber()));
 
         List<String> vdbList = new ArrayList<>();
+        List<String> ddlList = new ArrayList<>();
         for(String arg : args) {
             Path path = Paths.get(arg);
             if(Files.exists(path)) {
@@ -81,11 +83,13 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
                     VDBMetadataParser.validate(content);
                     vdbList.add(arg);
                 } catch (IOException | SAXException e) {
+                    ddlList.add(arg);
                 }    
             }
         }
         
         vdbs = vdbList.toArray(new String[vdbList.size()]);
+        ddls = ddlList.toArray(new String[ddlList.size()]);
         
         application.setBanner(new Banner() {
 
@@ -129,6 +133,14 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
                 embeddedServer.deployVDB(is);
             } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
                 new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
+            }
+        }
+        
+        for(String ddl : ddls) {
+            try (InputStream is = Files.newInputStream(Paths.get(ddl), StandardOpenOption.READ)) {
+                embeddedServer.deployVDB(is, true);
+            } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
+                new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, ddl));
             }
         }
         
