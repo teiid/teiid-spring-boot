@@ -26,6 +26,7 @@
 
 
     <modules>
+	<module>teiid-spring-boot-sample-rdbms</module>
 	<module>teiid-embedded-helper</module>
         <module>teiid-spring-boot-sample-empty</module>
 	<module>teiid-spring-boot-sample-loopback</module>
