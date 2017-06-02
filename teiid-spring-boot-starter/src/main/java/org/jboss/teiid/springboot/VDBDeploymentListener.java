@@ -132,7 +132,7 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
             try (InputStream is = Files.newInputStream(Paths.get(vdb), StandardOpenOption.READ)) {
                 embeddedServer.deployVDB(is);
             } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
-                new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
+                throw new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, vdb));
             }
         }
         
@@ -140,7 +140,7 @@ public class VDBDeploymentListener implements SpringApplicationRunListener, Orde
             try (InputStream is = Files.newInputStream(Paths.get(ddl), StandardOpenOption.READ)) {
                 embeddedServer.deployVDB(is, true);
             } catch (IOException | VirtualDatabaseException | ConnectorManagerException | TranslatorException e) {
-                new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, ddl));
+                throw new TeiidRuntimeException(TeiidEmbeddedPlugin.Event.TEIID42002, e, TeiidEmbeddedPlugin.Util.gs(TeiidEmbeddedPlugin.Event.TEIID42002, ddl));
             }
         }
         

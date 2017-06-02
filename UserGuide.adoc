@@ -11,7 +11,10 @@ This section contains the steps to develop a maven based Teiid Spring Boot Appli
 
 === Prepare pom.xml
 
-Maven dependencies and Maven Plugins are 2 prerequisites need to set down correctly. 
+Maven dependencies and Maven Plugins are 2 prerequisites need to set down correctly in a pom.xml:
+
+1. <<Maven dependencies, Maven dependencies>>
+2. <<Maven Plugins, Maven Plugins>> 
 
 ==== Maven dependencies 
 
@@ -67,11 +70,10 @@ Maven dependencies and Maven Plugins are 2 prerequisites need to set down correc
 
 NOTE: `spring-boot-maven-plugin` are used to package runnable jar.
 
-=== The main() mehod class Development
-
-The skeleton Spring boot main() mehod class like
+=== The main() method class Development
 
 [source,java]
+.The skeleton Spring boot main() method class
 ----
 @SpringBootApplication
 public class Main {
@@ -82,121 +84,79 @@ public class Main {
 }
 ----
 
-==== Register DataSource
+With the skeleton of the Spring boot main() method class, a series of bean entities listed as following, which need to be injected via @Bean annotation.
 
-Add Spring Bean in @SpringBootApplication class can register DataSource,
+.*Configuration Beans*
+|===
+|*Type* |*Name* |*Optional* |*Notes*
 
-[source,java]
-.*Example - Register DataSource with Map<String, DataSource> Bean*
-----
-@Bean
-public Map<String, DataSource> account() throws ResourceException {
-        
-    Map<String, DataSource> datasources = new HashMap<>(1); 
-    DataSource ds = EmbeddedHelper.Factory.newDataSource(c -> c.localManagedConnectionFactory(mcf -> {
-        mcf.setDriverClass("org.h2.Driver");
-        mcf.setConnectionURL(URL);
-        mcf.setUserName("sa");
-        mcf.setPassword("sa");
-    }).poolConfiguration(p -> {
-        p.setMaxSize(30);
-        p.setMinSize(5);
-        p.setBlockingTimeout(30000);
-        p.setIdleTimeoutMinutes(10);
-    }));
-        
-    datasources.put("accounts-ds", ds);
-    return datasources;
-}
-----
+|org.teiid.runtime.EmbeddedConfiguration
+|embeddedConfiguration
+|true
+|If embeddedConfiguration not injected, an EmbeddedConfiguration will be initialized with default settings.
 
-[source,java]
-.*Example - Register DataSource with DataSource Bean*
-----
-@Bean
-public Set<String> connectionFactoryNames() {
-    Set<String> names = new HashSet<>();
-    names.add("account-ds");
-    return names;
-}
+|org.teiid.transport.SocketConfiguration
+|socketConfiguration
+|true
+|If socketConfiguration not injected, a SocketConfiguration will be initialized with 0.0.0.0 as bind address, 31000 as port number.
 
-@ConfigurationProperties(prefix = "spring.datasource.postgres")
-@Bean(name = "account-ds")
-@Primary
-public DataSource dataSource() {
-    return DataSourceBuilder.create().build();
-}
-----
+|Integer
+|port
+|true
+|Used to control transport bind port number, the default is 3100
 
-NOTE: Spring DataSource Bean depend on .yml/.properties configuration properties which depicted in <<External YML Configuration, External YML Configuration>>.
+|javax.transaction.TransactionManager
+|transactionManager
+|true
+|Refer to <<Appendix I: Example of TransactionManager Bean, Appendix I: Example of TransactionManager Bean>> for a example of TransactionManager injection
 
-==== Register ConnectionFactory
+|String
+|securityDomain
+|true
+|The default security domain is `teiid-security`, should match the jaas security policy setting which used in teiid securityHelper implementation.  
 
-[source,java]
-.*Example - Register ConnectionFactory with Map<String, ConnectionFactory> Bean*
-----
-@Bean
-public Map<String, ConnectionFactory> marketData() throws ResourceException {
-    Map<String, ConnectionFactory> factories = new HashMap<>();
-    ConnectionFactory cf = EmbeddedHelper.Factory.fileConnectionFactory(mcf -> {
-        mcf.setParentDirectory(marketdataDir);
-        mcf.setAllowParentPaths(true);
-    });
-    factories.put("marketdata-file", cf);
-    return factories;
-}
-----
+|org.teiid.security.SecurityHelper
+|securityHelper
+|true
+|Refer to https://teiid.gitbooks.io/documents/content/embedded/Secure_Embedded_with_PicketBox.html[Secure Embedded with PicketBox] to implement a SecurityHelper
 
-[source,java]
-.*Example - Register ConnectionFactory with ConnectionFactory Bean*
-----
-@Bean
-public Set<String> connectionFactoryNames() {
-    Set<String> names = new HashSet<>();
-    names.add("marketdata-file");
-    return names;
-}
+|===
 
-@Bean(name = "marketdata-file")
-public ConnectionFactory marketData() throws ResourceException {
-    return EmbeddedHelper.Factory.fileConnectionFactory(mcf -> {
-        mcf.setParentDirectory(marketdataDir);
-        mcf.setAllowParentPaths(true);
-    });
-}
-----
+.*Connector Beans*
+|===
+|*Type* |*Name* |*Optional* |*Notes*
 
-==== Register Translators
+|Map<String, DataSource>
+|datasources
+|true
+|To inject the datasources which used by teiid, the key is `connection-jndi-name` in VDB, <<Appendix II - Register DataSource Bean, Appendix II - Register DataSource Bean>> is a example for registering DataSource with Map<String, DataSource> Bean
 
-Basicly, there are 2 ways to register Teiid Translators, implicit registration and explicit registration. The explicit registration are no difference with register DataSource or ConnectionFactory,
+|Map<String, ConnectionFactory>
+|connectionFactories
+|true
+|To inject the connectionFactories which used by teiid, the key is `connection-jndi-name` in VDB, <<Appendix III - Register ConnectionFactory Bean, Appendix III - Register ConnectionFactory Bean>> is a example for registering ConnectionFactory with Map<String, ConnectionFactory> Bean
 
-[source,java]
-.*Example of explicit register translators*
-----
-@Bean
-public Map<String, ExecutionFactory<?, ?>> translators() throws TranslatorException {
-    Map<String, ExecutionFactory<?, ?>> factories = new HashMap<>();
-    H2ExecutionFactory h2 = new H2ExecutionFactory() ;
-    h2.start();
-    FileExecutionFactory file = new FileExecutionFactory();
-    file.start();
-    factories.put("h2", h2);
-    factories.put("file", file);
-    return factories;
-}
----- 
+|Set<String>
+|connectionFactoryNames
+|true
+|To inject a set of connectionFactory names, each names referenced with `connection-jndi-name` in VDB and should have a relevant DataSource/ConnectionFactory Bean in Configuration.
 
-once the explicit way be used, the implicit registration will not take place. The implicit registration is way of auto-detect and register, only if the translators' classes are in classpath, a external configuration can be used to filter, set which translator can be registered implicitly. Refer to <<External YML Configuration, External YML Configuration>> for details abouot how to filter translator auto-detection.
+|DataSource
+|datasource
+|true
+|The datasource reference with the name in connectionFactoryNames, <<Appendix IV - Register DataSource Bean, Appendix IV - Register DataSource Bean>> is a example for registering dataSource and connectionFactoryNames Bean
 
-[source,yml]
-.*Example of external .yml to filter translator*
-----
-teiid:
-  translators: 
-    h2,file
-----
+|ConnectionFactory
+|connectionFactory
+|true
+|The connectionFactory reference with the name in connectionFactoryNames, <<Appendix V - Register ConnectionFactory Bean, Appendix V - Register ConnectionFactory Bean>> is a example for registering connectionFactory and connectionFactoryNames Bean
 
-NOTE: The implicit registration with a external .yml configuration is recommend way.
+|Map<String, ExecutionFactory<?, ?>> 
+|translators
+|true
+|To register translators which used by teiid, the key is `translator-name` in VDB, refer to <<Translators Registration>> for details.
+
+|===
 
 === VDB Deployment
 
@@ -226,7 +186,7 @@ java -jar SAMPLE.jar path/to/portfolio-vdb.xml, account.sql
 
 The same as yml controlled deployment, Spring Boot will first find the `path/to/portfolio-vdb.xml`/`account.sql` from classpath, if not exist, then find from file system.
 
-=== External YML Configuration
+=== Configuration
 
 Teiid Spring Boot Starter compatible with all other starter's YML Configuration, like datasource, resource adapters, etc. The following are teiid added:
 
@@ -266,6 +226,30 @@ teiid:
     account.sql
 ----
 
+== Translators Registration
+
+Basicly, there are 2 ways to register Teiid Translators, implicit registration and explicit registration.
+
+=== Implicit
+
+The implicit registration is way of auto-detect and registering, if the translator class and referenced Resource Adpater/Driver library are in classpath, then this translator will be initialized, started and registered to Teiid EmbeddedServer.
+
+If the explicit way be used, the implicit registration will not take place. A external configuration can be used to filter and manually set which translator can be registered implicitly. Refer to <<Configuration, Configuration>> for details abouot how to filter translator auto-detection.
+
+[source,yml]
+.*Example of external .yml to filter translator*
+----
+teiid:
+  translators:
+    h2,file
+----
+
+NOTE: The implicit registration with a external .yml configuration is recommend way.
+
+=== Explicit
+
+The explicit registration are no difference with register DataSource or ConnectionFactory, <<Appendix VI - Register translators Bean, Appendix VI - Register translators Bean>> for an example of explicit registering translators.
+
 == Available Examples
 
 |===
@@ -275,6 +259,12 @@ teiid:
 |Data Federation, TEXTTABLE, Native Query, JDBC translator, File Translator, 
 |Shows how to expose multiple data sources for data federation
 |None
+
+|link:teiid-spring-boot-samples/teiid-spring-boot-sample-rdbms/README.adoc[rdbms-as-datasource]
+|JDBC translator, Query
+|Shows how to transfer data from a relational database
+|None
+
 
 |link:teiid-spring-boot-samples/teiid-spring-boot-sample-loopback/README.adoc[loopback-source]
 |Loopback Translator, Query
@@ -288,4 +278,120 @@ teiid:
 |===
 
 
+== Appendix I: Example of TransactionManager Bean
 
+[source,java]
+----
+@Bean
+public TransactionManager transactionManager() {
+    return  EmbeddedHelper.Factory.transactionManager(c -> c.coreEnvironmentBean(core -> {
+        core.setSocketProcessIdPort(0);
+        core.setSocketProcessIdMaxPorts(10);
+    }).coordinatorEnvironmentBean(coordinator -> {
+        coordinator.setEnableStatistics(false);
+        coordinator.setDefaultTimeout(300);
+        coordinator.setTransactionStatusManagerEnable(false);
+        coordinator.setTxReaperCancelFailWaitPeriod(120000);
+    }).objectStoreEnvironmentBean(objectStore -> {
+        objectStore.setObjectStoreDir(System.getProperty("java.io.tmpdir") + "/narayana");
+    }));
+}
+----
+
+== Appendix II - Register DataSource Bean
+
+[source,java]
+----
+@Bean
+public Map<String, DataSource> datasources() throws ResourceException {
+        
+    Map<String, DataSource> datasources = new HashMap<>(1); 
+    DataSource ds = EmbeddedHelper.Factory.newDataSource(c -> c.localManagedConnectionFactory(mcf -> {
+        mcf.setDriverClass("org.h2.Driver");
+        mcf.setConnectionURL(URL);
+        mcf.setUserName("sa");
+        mcf.setPassword("sa");
+    }).poolConfiguration(p -> {
+        p.setMaxSize(30);
+        p.setMinSize(5);
+        p.setBlockingTimeout(30000);
+        p.setIdleTimeoutMinutes(10);
+    }));
+        
+    datasources.put("accounts-ds", ds);
+    return datasources;
+}
+----
+
+== Appendix III - Register Map<String, ConnectionFactory> Bean
+
+[source,java]
+----
+@Bean
+public Map<String, ConnectionFactory> marketData() throws ResourceException {
+    Map<String, ConnectionFactory> factories = new HashMap<>();
+    ConnectionFactory cf = EmbeddedHelper.Factory.fileConnectionFactory(mcf -> {
+        mcf.setParentDirectory(marketdataDir);
+        mcf.setAllowParentPaths(true);
+    });
+    factories.put("marketdata-file", cf);
+    return factories;
+}
+----
+
+== Appendix IV - Register DataSource Bean
+
+[source,java]
+----
+@Bean
+public Set<String> connectionFactoryNames() {
+    Set<String> names = new HashSet<>();
+    names.add("account-ds");
+    return names;
+}
+
+@ConfigurationProperties(prefix = "spring.datasource.postgres")
+@Bean(name = "account-ds")
+@Primary
+public DataSource dataSource() {
+    return DataSourceBuilder.create().build();
+}
+----
+
+== Appendix V - Register ConnectionFactory Bean
+
+[source,java]
+
+----
+@Bean
+public Set<String> connectionFactoryNames() {
+    Set<String> names = new HashSet<>();
+    names.add("marketdata-file");
+    return names;
+}
+
+@Bean(name = "marketdata-file")
+public ConnectionFactory marketData() throws ResourceException {
+    return EmbeddedHelper.Factory.fileConnectionFactory(mcf -> {
+        mcf.setParentDirectory(marketdataDir);
+        mcf.setAllowParentPaths(true);
+    });
+}
+----
+
+== Appendix VI - Register translators Bean
+
+[source,java]
+----
+@Bean
+public Map<String, ExecutionFactory<?, ?>> translators() throws TranslatorException {
+    Map<String, ExecutionFactory<?, ?>> factories = new HashMap<>();
+    H2ExecutionFactory h2 = new H2ExecutionFactory() ;
+    h2.start();
+    FileExecutionFactory file = new FileExecutionFactory();
+    file.start();
+    factories.put("h2", h2);
+    factories.put("file", file);
+    return factories;
+}
+---- 

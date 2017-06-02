@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +34,6 @@ import javax.resource.cci.ConnectionFactory;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -65,7 +66,7 @@ import org.teiid.transport.SocketConfiguration;
 public class TeiidEmbeddedAutoConfiguration {
     
     @Autowired(required = false)
-    private Integer jdbcPort;
+    private Integer port;
     
     @Autowired(required = false)
     private SocketConfiguration socketConfiguration;
@@ -86,7 +87,7 @@ public class TeiidEmbeddedAutoConfiguration {
     private Map<String, ExecutionFactory<?, ?>> translators = new ConcurrentHashMap<>();
     
     @Autowired(required = false)
-    private Set<String> connectionFactoryNames = new ConcurrentHashSet<>();
+    private Set<String> connectionFactoryNames = Collections.synchronizedSet(new HashSet<>());
     
     @Autowired(required = false)
     private Map<String, ConnectionFactory> connectionFactories = new ConcurrentHashMap<>();
@@ -140,13 +141,13 @@ public class TeiidEmbeddedAutoConfiguration {
         if(socketConfiguration == null) {
             socketConfiguration = new SocketConfiguration();
             socketConfiguration.setBindAddress(DEFAULT_ADDRESS);
-            socketConfiguration.setPortNumber(this.jdbcPort == null ? DEFAULT_PORT : jdbcPort);
+            socketConfiguration.setPortNumber(this.port == null ? DEFAULT_PORT : port);
             embeddedConfiguration.addTransport(socketConfiguration);
         }
         
         if(embeddedConfiguration.getTransports() == null || embeddedConfiguration.getTransports().size() == 0) {
             socketConfiguration.setBindAddress(DEFAULT_ADDRESS);
-            socketConfiguration.setPortNumber(this.jdbcPort == null ? DEFAULT_PORT : jdbcPort);
+            socketConfiguration.setPortNumber(this.port == null ? DEFAULT_PORT : port);
             embeddedConfiguration.addTransport(socketConfiguration);
         }
         

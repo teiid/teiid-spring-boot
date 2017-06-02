@@ -13,6 +13,11 @@
     <name>Teiid Spring Boot Samples</name>
     <description>Teiid Spring Boot Samples</description>
 
+    <properties>
+	<version.commons-dbcp2>2.1.1</version.commons-dbcp2>
+	<version.spring-tx>4.3.8.RELEASE</version.spring-tx>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <!--Project dependencies-->
@@ -21,11 +26,24 @@
                 <artifactId>teiid-embedded-helper</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+	    <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-dbcp2</artifactId>
+                <version>${version.commons-dbcp2}</version>
+            </dependency>
+
+	    <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+		<version>${version.spring-tx}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
 
     <modules>
+	<module>teiid-spring-boot-sample-rdbms</module>
 	<module>teiid-embedded-helper</module>
         <module>teiid-spring-boot-sample-empty</module>
 	<module>teiid-spring-boot-sample-loopback</module>
