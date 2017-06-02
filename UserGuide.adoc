@@ -379,6 +379,8 @@ public ConnectionFactory marketData() throws ResourceException {
 }
 ----
 
+test
+
 == Appendix VI - Register translators Bean
 
 [source,java]
