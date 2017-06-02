@@ -18,6 +18,7 @@ package org.jboss.teiid.springboot.sample;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.sql.DataSource;
 
@@ -27,6 +28,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+
+import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
+import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
 
 @SpringBootApplication
 public class ExampleMain {
@@ -44,9 +49,14 @@ public class ExampleMain {
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
+    
+    @Bean(name = "narayanaConfiguration")
+    public CoreEnvironmentBean narayanaConfiguration() throws CoreEnvironmentBeanException {
+        arjPropertyManager.getCoreEnvironmentBean().setNodeIdentifier(UUID.randomUUID().toString());
+        return arjPropertyManager.getCoreEnvironmentBean();
+    }
 
     public static void main(String[] args) throws Exception {
-        args = new String[]{"src/main/resources/portfolio-vdb.xml"};
         SpringApplication.run(ExampleMain.class, args);
     }
 }
