@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>teiid-spring-boot-sample-rdbms</artifactId>
-
+    
     <dependencies>
         <dependency>
             <groupId>org.teiid</groupId>
@@ -24,6 +24,11 @@
 		<dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
         </dependency>
 	    
     </dependencies>

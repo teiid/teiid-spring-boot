@@ -19,7 +19,7 @@
          <!--
             This connector is defined to reference the H2 localDS" 
           -->
-        <source name="h2-connector" translator-name="h2" connection-jndi-name="accounts-ds"/>
+        <source name="h2-connector" translator-name="h2" connection-jndi-name="account-ds"/>
     </model>
 
 </vdb>

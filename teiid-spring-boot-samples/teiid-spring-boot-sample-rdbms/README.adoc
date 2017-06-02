@@ -7,7 +7,8 @@
 This example demonstrates:
 
 * Run teiid embedded with `teiid-spring-boot-starter`
-
+* Use Spring boot DataSourceBuilder to inject DataSource
+* VDB Deployment via parameter
 
 == Run
 
@@ -22,7 +23,7 @@ once build success, a `teiid-spring-boot-sample-rdbms-VERSION.jar` will generate
 
 [source,java]
 ----
-java -jar teiid-spring-boot-sample-rdbms-VERSION.jar
+java -jar target/teiid-spring-boot-sample-rdbms-VERSION.jar src/main/resources/portfolio-vdb.xml
 ----
 
 By default, jdbc transport bind on `0.0.0.0` and port `31000`.
@@ -37,8 +38,9 @@ jdbc:teiid:Portfolio@mm://localhost:31000;version=1
 ----
 
 [source,sql]
-.*Sample Query SQL*
+.*Sample SQL*
 ----
-SELECT * FROM product
+INSERT INTO FOO VALUES (100);
+SELECT * FROM FOO;
 ----
 

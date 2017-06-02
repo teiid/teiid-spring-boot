@@ -13,6 +13,10 @@
     <name>Teiid Spring Boot Samples</name>
     <description>Teiid Spring Boot Samples</description>
 
+    <properties>
+        <version.commons-dbcp2>2.1.1</version.commons-dbcp2>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <!--Project dependencies-->
@@ -20,6 +24,12 @@
                 <groupId>org.teiid</groupId>
                 <artifactId>teiid-embedded-helper</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+	    <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-dbcp2</artifactId>
+                <version>${version.commons-dbcp2}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
