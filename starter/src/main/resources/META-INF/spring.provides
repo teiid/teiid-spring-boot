@@ -1,0 +1,1 @@
+provides: teiid-common-core,teiid-client,teiid-hibernate-dialect,teiid-api,teiid-admin,teiid-spring-boot-starter,translator-jdbc

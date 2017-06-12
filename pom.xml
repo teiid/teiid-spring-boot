@@ -1,86 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-parent</artifactId>
-        <version>21</version>
-    </parent>
+	<groupId>org.teiid</groupId>
+	<artifactId>teiid-spring-boot-starter-parent</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-    <groupId>org.teiid</groupId>
-    <artifactId>teiid-spring-boot-starter-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-    <licenses>
-      <license>
-        <name>Apache License, Version 2.0</name>
-        <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
+	<issueManagement>
+		<system>jira</system>
+		<url>https://issues.jboss.org/browse/TEIID</url>
+	</issueManagement>
 
-    <issueManagement>
-        <system>jira</system>
-        <url>https://issues.jboss.org/browse/TEIID</url>
-    </issueManagement>
+	<scm>
+		<connection>scm:git:git@github.com:teiid/teiid-spring-boot.git</connection>
+		<developerConnection>scm:git:git@github.com:teiid/teiid-spring-boot.git</developerConnection>
+		<url>https://github.com/teiid/teiid-spring-boot</url>
+		<tag>HEAD</tag>
+	</scm>
 
-    <scm>
-        <connection>scm:git:git@github.com:teiid/teiid-spring-boot.git</connection>
-        <developerConnection>scm:git:git@github.com:teiid/teiid-spring-boot.git</developerConnection>
-        <url>https://github.com/teiid/teiid-spring-boot</url>
-        <tag>HEAD</tag>
-    </scm>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+		<teiid.version>10.0.0.Alpha1-SNAPSHOT</teiid.version>
+	</properties>
 
-        <spring-boot.version>1.5.3.RELEASE</spring-boot.version>
-        <teiid.version>9.3.0.Beta3-SNAPSHOT</teiid.version>
-    </properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework.boot</groupId>
+			    <artifactId>spring-boot-starter-jdbc</artifactId>
+			    <version>${spring-boot.version}</version>
+			</dependency>            		
+			<dependency>
+				<groupId>org.jboss.teiid</groupId>
+				<artifactId>teiid-parent</artifactId>
+				<version>${teiid.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-	    <dependency>
-                <groupId>org.jboss.teiid</groupId>
-                <artifactId>teiid-parent</artifactId>
-                <version>${teiid.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+			<!--Project dependencies -->
+			<dependency>
+				<groupId>org.teiid</groupId>
+				<artifactId>teiid-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
-	    <!--Project dependencies-->
-	    <dependency>
-                <groupId>org.teiid</groupId>
-                <artifactId>teiid-spring-boot-starter</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+			</plugin>
+		</plugins>
+	</build>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
-            </plugin>
-        </plugins>
-    </build>
-
-    <modules>
-        <module>teiid-spring-boot-starter</module>
-	<module>teiid-spring-boot-starter-test</module>
-	<module>teiid-spring-boot-samples</module>
-    </modules>
+	<modules>
+		<module>starter</module>
+		<module>samples</module>
+	</modules>
 </project>
