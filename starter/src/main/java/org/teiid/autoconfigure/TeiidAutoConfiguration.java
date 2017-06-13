@@ -96,14 +96,17 @@ public class TeiidAutoConfiguration implements Ordered {
         
         VDBMetaData vdb = null;
         if (!resources.isEmpty()) {
-            try {                
+            try {
                 DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
-                vdb = store.getVDBMetadata(ObjectConverterUtil.convertToString(resources.get(0).getInputStream()));
-                logger.info("Predefined VDB found :"+resources.get(0).getFilename());
+                String db = "CREATE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
+                db = db + "USE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
+                db = db + ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
+                vdb = store.getVDBMetadata(db);
+                logger.info("Predefined VDB found :" + resources.get(0).getFilename());
             } catch (FileNotFoundException e) {
                 // no-op
-            } catch (IOException  e) {
-                throw new IllegalStateException("Failed to parse the VDB defined"); 
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to parse the VDB defined");
             }
         }
 
@@ -130,7 +133,13 @@ public class TeiidAutoConfiguration implements Ordered {
         }
         
         server.start(embeddedConfiguration);
-        server.deployVDB(teiidVDB());        
+        
+        // this is dummy vdb to satisfy the boot process to create the connections
+        VDBMetaData vdb =  new VDBMetaData();
+        vdb.setName(VDBNAME);
+        vdb.setVersion(VDBVERSION);                    
+        server.deployVDB(vdb);        
+        
         serverContext.set(server);
         return server;
     }

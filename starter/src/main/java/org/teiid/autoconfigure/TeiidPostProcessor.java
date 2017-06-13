@@ -16,6 +16,10 @@
 
 package org.teiid.autoconfigure;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
@@ -28,10 +32,17 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.core.util.ObjectConverterUtil;
+import org.teiid.deployers.VDBRepository;
+import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
+import static org.teiid.autoconfigure.TeiidConstants.*;
 
 /**
  * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should only
@@ -39,7 +50,7 @@ import org.teiid.adminapi.impl.VDBMetaData;
  *
  * Code as template taken from {@link DataSourceInitializerPostProcessor}
  */
-class TeiidPostProcessor implements BeanPostProcessor, Ordered {
+class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListener<ContextRefreshedEvent>{
     private static final Log logger = LogFactory.getLog(TeiidPostProcessor.class);
     
 	@Override
@@ -52,6 +63,9 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered {
 	
 	@Autowired
 	private ApplicationContext context;
+	
+    @Autowired
+    private TeiidProperties properties;	
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName)
@@ -76,7 +90,20 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered {
 		}
 		return bean;
 	}
-	    
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
+        if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
+            return;
+        }
+
+        // Deploy at the end when all the datasources are configured
+        TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
+        server.undeployVDB(VDBNAME, VDBVERSION);
+        server.deployVDB(vdb);       
+    }	
+	
     /**
 	 * {@link ImportBeanDefinitionRegistrar} to register the
 	 * {@link TeiidPostProcessor} without causing early bean instantiation
@@ -100,4 +127,5 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered {
 			}
 		}
 	}
+
 }

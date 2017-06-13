@@ -47,18 +47,21 @@ import org.teiid.translator.TranslatorException;
 public class TeiidServer extends EmbeddedServer {
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
     
-    public void addDataSource(VDBMetaData vdb, String name, DataSource source, ApplicationContext context) {
-        addConnectionFactory(name, source);
+    public void addDataSource(VDBMetaData vdb, String sourceName, DataSource source, ApplicationContext context) {
+        addConnectionFactory(sourceName, source);
         
         // only when user did not define a explicit VDB then build one.
-        if (vdb.getPropertyValue("implicit") != null) {
+        if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
+            
+            addConnectionFactory(sourceName, source);
+            
             if (source instanceof org.apache.tomcat.jdbc.pool.DataSource) {
                 try {
-                    ModelMetaData model = buildModelFromDataSource(name,
+                    ModelMetaData model = buildModelFromDataSource(sourceName,
                             (org.apache.tomcat.jdbc.pool.DataSource) source, context);
                     if (model != null) {
                         vdb.addModel(model);
-                        logger.info("Added "+name+" to the Teiid Database");
+                        logger.info("Added "+sourceName+" to the Teiid Database");
                     }
                 } catch (AdminException e) {
                     throw new IllegalStateException("Error adding the source, cause: "+e.getMessage());
@@ -83,6 +86,14 @@ public class TeiidServer extends EmbeddedServer {
             
             undeployVDB(VDBNAME, VDBVERSION);
             deployVDB(vdb);            
+        } else {
+            for (ModelMetaData model:vdb.getModelMetaDatas().values()) {
+                for (SourceMappingMetadata smm : model.getSourceMappings()) {
+                    if (smm.getConnectionJndiName().equalsIgnoreCase(sourceName)) {
+                        addConnectionFactory(smm.getName(), source);
+                    }
+                }
+            }
         }
     }
     
@@ -111,7 +122,9 @@ public class TeiidServer extends EmbeddedServer {
         model.setName(dsName);
         model.setModelType(Model.Type.PHYSICAL);
         
-        model.addProperty("importer.useQualifiedName", "false"); // TODO: these need to be properties
+        // note these can be overridden by specific ones in the configuration
+        // TODO: need come up most sensible properties for this.
+        model.addProperty("importer.useQualifiedName", "false"); 
         model.addProperty("importer.tableTypes", "TABLE,VIEW");
         
         SourceMappingMetadata source = new SourceMappingMetadata();
@@ -176,7 +189,7 @@ public class TeiidServer extends EmbeddedServer {
         }
         
         if (driver == DatabaseDriver.UNKNOWN) {
-            // TODO: other sources
+            // TODO: other sources like nosql sources
         }
         
         // add the importer properties from the configuration
