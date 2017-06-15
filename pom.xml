@@ -80,6 +80,7 @@
 
 	<modules>
 		<module>starter</module>
+		<module>starter-test</module>
 		<module>samples</module>
 	</modules>
 </project>
