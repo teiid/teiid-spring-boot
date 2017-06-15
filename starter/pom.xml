@@ -20,9 +20,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jta-narayana</artifactId>
+        </dependency>		
 		<dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>		
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.teiid</groupId>
@@ -49,8 +53,12 @@
 			<artifactId>teiid-admin</artifactId>
 		</dependency>
 		<dependency>
-		  <groupId>org.jboss.teiid.connectors</groupId>
-          <artifactId>translator-jdbc</artifactId>
-        </dependency>
+			<groupId>org.jboss.teiid.connectors</groupId>
+			<artifactId>translator-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss</groupId>
+			<artifactId>jboss-transaction-spi</artifactId>
+		</dependency>
 	</dependencies>
 </project>

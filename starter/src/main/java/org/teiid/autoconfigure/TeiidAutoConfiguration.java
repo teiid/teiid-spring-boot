@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
+import javax.transaction.TransactionManager;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
@@ -73,10 +75,6 @@ public class TeiidAutoConfiguration implements Ordered {
     @Autowired
     ApplicationContext context;
     
-    // TODO: need to configure with spring-tx
-    //@Autowired(required = false)
-    //private TransactionManager transactionManager;
-    
     @Override
     public int getOrder() {
         return Ordered.LOWEST_PRECEDENCE;
@@ -122,7 +120,7 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name = "teiid")
     @ConditionalOnMissingBean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public TeiidServer teiidServer() {
+    public TeiidServer teiidServer(TransactionManager transactionManager) {
         logger.info("Starting Teiid Server.");
         final TeiidServer server = new TeiidServer();
         
@@ -130,6 +128,7 @@ public class TeiidAutoConfiguration implements Ordered {
         
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
+            embeddedConfiguration.setTransactionManager(transactionManager);
         }
         
         server.start(embeddedConfiguration);

@@ -41,35 +41,4 @@ public class TeiidSpringDatasource implements Ordered {
     public int getOrder() {
         return Ordered.LOWEST_PRECEDENCE-10;
     }      
-    
-    /*
-    @Primary
-    @Bean
-    @ConditionalOnBean(name = "teiid")
-    public DataSource teiidDataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.teiid.autoconfigure.TeiidSpringDriver");
-        dataSource.setUrl("jdbc:teiid:spring");
-        return dataSource;
-        return DataSourceBuilder.create().driverClassName("org.teiid.autoconfigure.TeiidSpringDriver")
-                .url("jdbc:teiid:spring").build();
-    }    
-
-    
-    @Bean
-    @Primary
-    public LocalContainerEntityManagerFactoryBean userEntityManager() {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(teiidDataSource());
- 
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        HashMap<String, Object> properties = new HashMap<>();
-        //properties.put("hibernate.hbm2ddl.auto","none");
-        properties.put("hibernate.dialect", "org.teiid.dialect.TeiidDialect");
-        em.setJpaPropertyMap(properties);
- 
-        return em;
-    }   
-    */ 
 }
