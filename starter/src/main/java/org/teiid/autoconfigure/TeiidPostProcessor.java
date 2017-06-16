@@ -123,8 +123,11 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
         provider.addIncludeFilter(new AnnotationTypeFilter(Transformation.class));
         
-        Set<BeanDefinition> components = provider
-                .findCandidateComponents(context.getEnvironment().getProperty("spring.teiid.model.package"));
+        String basePackage = context.getEnvironment().getProperty("spring.teiid.model.package");
+        if(basePackage == null) {
+            return false;
+        }
+        Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);
         if (components.isEmpty()) {
             return false;
         }
