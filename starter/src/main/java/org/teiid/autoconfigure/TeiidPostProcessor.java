@@ -49,10 +49,12 @@ import org.teiid.core.types.DataTypeManager;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
-import org.teiid.metadata.Table.Type;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
-import org.teiid.view.Transformation;
+import org.teiid.view.DeleteQuery;
+import org.teiid.view.InsertQuery;
+import org.teiid.view.SelectQuery;
+import org.teiid.view.UpdateQuery;
 
 /**
  * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should only
@@ -121,7 +123,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(
                 false);
         provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
-        provider.addIncludeFilter(new AnnotationTypeFilter(Transformation.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
         
         String basePackage = context.getEnvironment().getProperty("spring.teiid.model.package");
         if(basePackage == null) {
@@ -141,44 +143,28 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
             try {
                 Class<?> clazz = Class.forName(c.getBeanClassName());                
                 
-                String tableName = clazz.getSimpleName();
-                javax.persistence.Entity entityAnnotation = clazz.getAnnotation(javax.persistence.Entity.class);
-                if (entityAnnotation != null && !entityAnnotation.name().isEmpty()) {
-                    tableName = entityAnnotation.name();
+                Table view = buildTable(mf, clazz);
+                
+                // read the select, update, delete queries
+                SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
+                if (selectAnnotation != null) {
+                    view.setSelectTransformation(selectAnnotation.value());
                 }
                 
-                javax.persistence.Table tableAnnotation = clazz.getAnnotation(javax.persistence.Table.class);                
-                if (tableAnnotation != null && !tableAnnotation.name().isEmpty()) {
-                    tableName = tableAnnotation.name();
-                }
-                Table view = mf.addTable(tableName);
-                view.setVirtual(true);
-                
-                for (Field field : clazz.getDeclaredFields()) {
-                    if (field.getAnnotation(javax.persistence.Transient.class) != null) {
-                        continue;
-                    }
-                    String columnName = field.getName();
-                    javax.persistence.Column columnAnnotation = field.getAnnotation(javax.persistence.Column.class);
-                    if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
-                        columnName = columnAnnotation.name();
-                    }
-                    
-                    boolean pk = false;
-                    javax.persistence.Id idAnnotation = field.getAnnotation(javax.persistence.Id.class);
-                    if (idAnnotation != null) {
-                        pk = true;
-                    }
-                    
-                    String type = DataTypeManager.getDataTypeName(normalizeType(field.getType()));
-                    Column column = mf.addColumn(columnName, type, view);
-                    if (pk) {
-                        mf.addPrimaryKey("PK", Arrays.asList(column.getName()), view);
-                    }
+                InsertQuery insertAnnotation = clazz.getAnnotation(InsertQuery.class);
+                if (insertAnnotation != null) {
+                    view.setInsertPlan(insertAnnotation.value());
                 }
                 
-                Transformation transformationAnnotation = clazz.getAnnotation(Transformation.class);
-                view.setSelectTransformation(transformationAnnotation.value());
+                UpdateQuery updateAnnotation = clazz.getAnnotation(UpdateQuery.class);
+                if (updateAnnotation != null) {
+                    view.setUpdatePlan(updateAnnotation.value());
+                }
+
+                DeleteQuery deleteAnnotation = clazz.getAnnotation(DeleteQuery.class);
+                if (deleteAnnotation != null) {
+                    view.setDeletePlan(deleteAnnotation.value());
+                }
                 
             } catch (ClassNotFoundException e) {
                 logger.warn("Error loading entity classes");
@@ -186,10 +172,49 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         });
 
         String ddl = DDLStringVisitor.getDDLString(mf.getSchema(), null, null);
-        model.addSourceMetadata("DDL", ddl);
-        System.out.println(ddl);
+        model.addSourceMetadata("DDL", ddl);        
         vdb.addModel(model);
+        logger.debug("Generated Teiid DDL:"+ddl);
         return true;
+    }
+
+    private Table buildTable(MetadataFactory mf, Class<?> clazz) {
+        String tableName = clazz.getSimpleName();
+        javax.persistence.Entity entityAnnotation = clazz.getAnnotation(javax.persistence.Entity.class);
+        if (entityAnnotation != null && !entityAnnotation.name().isEmpty()) {
+            tableName = entityAnnotation.name();
+        }
+        
+        javax.persistence.Table tableAnnotation = clazz.getAnnotation(javax.persistence.Table.class);                
+        if (tableAnnotation != null && !tableAnnotation.name().isEmpty()) {
+            tableName = tableAnnotation.name();
+        }
+        Table view = mf.addTable(tableName);
+        view.setVirtual(true);
+        
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getAnnotation(javax.persistence.Transient.class) != null) {
+                continue;
+            }
+            String columnName = field.getName();
+            javax.persistence.Column columnAnnotation = field.getAnnotation(javax.persistence.Column.class);
+            if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
+                columnName = columnAnnotation.name();
+            }
+            
+            boolean pk = false;
+            javax.persistence.Id idAnnotation = field.getAnnotation(javax.persistence.Id.class);
+            if (idAnnotation != null) {
+                pk = true;
+            }
+            
+            String type = DataTypeManager.getDataTypeName(normalizeType(field.getType()));
+            Column column = mf.addColumn(columnName, type, view);
+            if (pk) {
+                mf.addPrimaryKey("PK", Arrays.asList(column.getName()), view);
+            }
+        }
+        return view;
     }
 
     Class<?> normalizeType(Class<?> clazz){

@@ -21,21 +21,25 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.teiid.view.Transformation;
+import org.teiid.view.SelectQuery;
 
 @Entity
 @Table(name="all_customers")
-@Transformation("SELECT id, name, ssn FROM accountsDS.Customers UNION ALL SELECT id, name, ssn FROM customerDS.Customer")
+@SelectQuery("SELECT id, name, ssn FROM accountsDS.Customers UNION ALL SELECT id, name, ssn FROM customerDS.Customer")
 public class Customer {
+    
     @Id
     int id;
+    
     @Column
     String name;
+    
     @Column
     String ssn;
 
     public Customer() {
     }
+    
     public Customer(int id, String name, String ssn) {
         this.id = id;
         this.name = name;
@@ -65,5 +69,4 @@ public class Customer {
     public void setSsn(String ssn) {
         this.ssn = ssn;
     }
-
 }

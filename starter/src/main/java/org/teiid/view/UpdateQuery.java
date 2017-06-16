@@ -23,6 +23,6 @@ import java.lang.annotation.Target;
 
 @Target(TYPE)
 @Retention(RUNTIME)
-public @interface Transformation {
+public @interface UpdateQuery {
     String value() default "";
 }
