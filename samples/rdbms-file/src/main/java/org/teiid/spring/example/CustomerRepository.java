@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.view;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+package org.teiid.spring.example;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-@Target(TYPE)
-@Retention(RUNTIME)
-public @interface SelectQuery {
-    String value() default "";
-}
+@Repository
+public interface CustomerRepository extends CrudRepository<Customer, String>{
+
+}   

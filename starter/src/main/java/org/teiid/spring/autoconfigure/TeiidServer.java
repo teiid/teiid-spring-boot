@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.autoconfigure;
+package org.teiid.spring.autoconfigure;
 
-import static org.teiid.autoconfigure.TeiidConstants.*;
+import static org.teiid.spring.autoconfigure.TeiidConstants.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,12 +23,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.ApplicationContext;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.Admin.TranlatorPropertyType;
@@ -42,35 +40,38 @@ import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.runtime.EmbeddedServer;
+import org.teiid.spring.connections.BaseConnectionFactory;
 import org.teiid.translator.TranslatorException;
 
 public class TeiidServer extends EmbeddedServer {
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
     
-    public void addDataSource(VDBMetaData vdb, String sourceName, DataSource source, ApplicationContext context) {
-        addConnectionFactory(sourceName, source);
-        
+    public void addDataSource(VDBMetaData vdb, String sourceName, Object source, ApplicationContext context) {
         // only when user did not define a explicit VDB then build one.
         if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
             
             addConnectionFactory(sourceName, source);
             
+            ModelMetaData model = null;            
             if (source instanceof org.apache.tomcat.jdbc.pool.DataSource) {
                 try {
-                    ModelMetaData model = buildModelFromDataSource(sourceName,
+                    model = buildModelFromDataSource(sourceName,
                             (org.apache.tomcat.jdbc.pool.DataSource) source, context);
-                    if (model != null) {
-                        vdb.addModel(model);
-                        logger.info("Added "+sourceName+" to the Teiid Database");
-                    }
                 } catch (AdminException e) {
                     throw new IllegalStateException("Error adding the source, cause: "+e.getMessage());
                 }
+            } else if (source instanceof BaseConnectionFactory) {
+                model = buildModelFromConnectionFactory(sourceName, (BaseConnectionFactory)source);
             } else {
                 throw new IllegalStateException(
                         "Auto detecting of sources currently only supports Tomcat Datasource");
             }
 
+            if (model != null) {
+                vdb.addModel(model);
+                logger.info("Added "+sourceName+" to the Teiid Database");
+            }
+            
             // since each time a data source is added the vdb is reloaded
             // this is a cheap way not to do the reload of the metadata from source. a.k.a metadata caching
             try {
@@ -78,7 +79,9 @@ public class TeiidServer extends EmbeddedServer {
                 VDBMetaData previous = (VDBMetaData)admin.getVDB(VDBNAME, VDBVERSION);
                 for (Map.Entry<String, ModelMetaData> entry:previous.getModelMetaDatas().entrySet()) {
                     String metadata = admin.getSchema(VDBNAME, VDBVERSION, entry.getKey(), null, null);
-                    vdb.getModel(entry.getKey()).addSourceMetadata("DDL", metadata);
+                    if (vdb.getModel(entry.getKey()).getSourceMetadataType().isEmpty()) {
+                        vdb.getModel(entry.getKey()).addSourceMetadata("DDL", metadata);
+                    }
                 }
             } catch (AdminException e) {
                 // no-op. if failed redo
@@ -110,9 +113,7 @@ public class TeiidServer extends EmbeddedServer {
     
     private ModelMetaData buildModelFromDataSource(String dsName, org.apache.tomcat.jdbc.pool.DataSource ds,
             ApplicationContext context) throws AdminException {
-        
-        DatabaseDriver driver = DatabaseDriver.fromJdbcUrl(ds.getUrl());
-        
+
         // This teiid database, ignore 
         if (ds.getUrl().startsWith("jdbc:teiid:"+VDBNAME)) {
             return null;
@@ -130,67 +131,17 @@ public class TeiidServer extends EmbeddedServer {
         SourceMappingMetadata source = new SourceMappingMetadata();
         source.setName(dsName);
         source.setConnectionJndiName(dsName);
-                
-        switch (driver) {
-        case DB2:
-            source.setTranslatorName(db2);    
-            break;
-        case DB2_AS400:
-            source.setTranslatorName(db2);
-            break;
-        case DERBY:
-            source.setTranslatorName(derby);
-            break;
-        case FIREBIRD:
-            source.setTranslatorName(jdbc_ansi);
-            break;
-        case GAE:
-            source.setTranslatorName(jdbc_ansi);
-            break;
-        case H2:
-            source.setTranslatorName(h2);
-            break;
-        case HSQLDB:
-            source.setTranslatorName(hsql);
-            break;
-        case INFORMIX:
-            source.setTranslatorName(informix);
-            break;
-        case JTDS:
-            source.setTranslatorName(sqlserver);
-            break;
-        case MARIADB:
-            source.setTranslatorName(mysql5);
-            break;
-        case MYSQL:
-            source.setTranslatorName(mysql5);
-            break;
-        case ORACLE:
-            source.setTranslatorName(oracle);
-            break;
-        case POSTGRESQL:
-            model.addProperty("importer.schemaPattern", "public");
-            source.setTranslatorName(postgresql);
-            break;
-        case SQLITE:
-            source.setTranslatorName(jdbc_ansi);
-            break;
-        case SQLSERVER:
-            source.setTranslatorName(sqlserver);
-            break;
-        case TERADATA:
-            source.setTranslatorName(teradata);
-            break;
-        case UNKNOWN:
-            source.setTranslatorName(jdbc_simple);
-            break;
-        default:
-            break;
-        }
-        
-        if (driver == DatabaseDriver.UNKNOWN) {
-            // TODO: other sources like nosql sources
-        }
+
+        String driverName = ds.getDriverClassName();
+        String translatorName = ExternalSource.findTransaltorNameFromDriverName(driverName);
+        source.setTranslatorName(translatorName);
+        try {
+            if (this.getExecutionFactory(translatorName) == null) {
+                addTranslator(ExternalSource.translatorClass(translatorName));
+            }
+        } catch (ConnectorManagerException | TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator "+ translatorName, e);
+        } 
         
         // add the importer properties from the configuration
         // note that above defaults can be overridden with this too.
@@ -205,6 +156,30 @@ public class TeiidServer extends EmbeddedServer {
         });
         
         model.addSourceMapping(source);
+        return model;
+    }
+
+
+    public ModelMetaData buildModelFromConnectionFactory(String factoryName, BaseConnectionFactory factory) {
+        ModelMetaData model = new ModelMetaData();
+        model.setName(factoryName);
+        model.setModelType(Model.Type.PHYSICAL);
+        
+        SourceMappingMetadata source = new SourceMappingMetadata();
+        source.setName(factoryName);
+        source.setConnectionJndiName(factoryName);
+        source.setTranslatorName(factory.getTranslatorName());
+        
+        try {
+            if (this.getExecutionFactory(factory.getTranslatorName()) == null) {
+                addTranslator(ExternalSource.translatorClass(factory.getTranslatorName()));
+            }
+        } catch (ConnectorManagerException | TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator "+ factory.getTranslatorName(), e);
+        } 
+        
+        model.addSourceMapping(source);
+        
         return model;
     }    
 }

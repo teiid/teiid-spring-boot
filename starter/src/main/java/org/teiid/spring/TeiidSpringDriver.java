@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.autoconfigure;
+package org.teiid.spring;
 
 import java.sql.SQLException;
 import java.util.Properties;
@@ -22,6 +22,8 @@ import org.teiid.jdbc.ConnectionImpl;
 import org.teiid.jdbc.ConnectionProfile;
 import org.teiid.jdbc.TeiidDriver;
 import org.teiid.jdbc.TeiidSQLException;
+import org.teiid.spring.autoconfigure.TeiidAutoConfiguration;
+import org.teiid.spring.autoconfigure.TeiidServer;
 
 public class TeiidSpringDriver extends TeiidDriver {
     @Override

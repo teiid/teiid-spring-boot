@@ -35,6 +35,7 @@
 
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 		<teiid.version>10.0.0.Alpha1-SNAPSHOT</teiid.version>
+		<javax.resource.version>1.0.0.Final</javax.resource.version>
 	</properties>
 
 	<dependencyManagement>
@@ -58,7 +59,11 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
+		    <dependency>
+		        <groupId>org.jboss.spec.javax.resource</groupId>
+		        <artifactId>jboss-connector-api_1.7_spec</artifactId>
+		        <version>${javax.resource.version}</version>
+		    </dependency>
 			<!--Project dependencies -->
 			<dependency>
 				<groupId>org.teiid</groupId>

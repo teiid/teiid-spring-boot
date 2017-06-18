@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.teiid.autoconfigure;
+package org.teiid.spring.autoconfigure;
 
 public interface TeiidConstants {
 

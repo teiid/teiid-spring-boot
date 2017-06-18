@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.teiid.autoconfigure;
+package org.teiid.spring.autoconfigure;
 
-import static org.teiid.autoconfigure.TeiidConstants.VDBNAME;
-import static org.teiid.autoconfigure.TeiidConstants.VDBVERSION;
+import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
+import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -45,16 +43,12 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.core.types.DataTypeManager;
-import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
-import org.teiid.metadata.Table;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
-import org.teiid.view.DeleteQuery;
-import org.teiid.view.InsertQuery;
-import org.teiid.view.SelectQuery;
-import org.teiid.view.UpdateQuery;
+import org.teiid.spring.annotations.SelectQuery;
+import org.teiid.spring.annotations.TextTable;
+import org.teiid.spring.connections.BaseConnectionFactory;
 
 /**
  * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should only
@@ -95,10 +89,18 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 			// force initialization of this bean as soon as we see a TeiidServer
 			this.beanFactory.getBean(TeiidInitializer.class);
 		} else if (bean instanceof DataSource && !beanName.equals("teiidDataSource")) {
+		    // initialize databases if any
+		    new MultiDataSourceInitializer((DataSource)bean, beanName, context).init();
+		    
 		    TeiidServer server = this.beanFactory.getBean(TeiidServer.class);		    
 		    VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
 		    server.addDataSource(vdb, beanName, (DataSource)bean, context);		        		
 		    logger.info("Datasource added to Teiid = " + beanName);
+		} else if (bean instanceof BaseConnectionFactory) {
+            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);           
+            VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
+            server.addDataSource(vdb, beanName, (BaseConnectionFactory)bean, context);                     
+            logger.info("Non JDBC Datasource added to Teiid = " + beanName);
 		}
 		return bean;
 	}
@@ -118,7 +120,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
             server.deployVDB(vdb);
         }
     }	
-	
+
     private boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context) {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(
                 false);
@@ -139,100 +141,35 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         model.setModelType(Model.Type.VIRTUAL);
         MetadataFactory mf = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
                 model);
-        components.forEach(c -> {
+        for (BeanDefinition c : components) {
             try {
                 Class<?> clazz = Class.forName(c.getBeanClassName());                
-                
-                Table view = buildTable(mf, clazz);
-                
-                // read the select, update, delete queries
                 SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
-                if (selectAnnotation != null) {
-                    view.setSelectTransformation(selectAnnotation.value());
-                }
-                
-                InsertQuery insertAnnotation = clazz.getAnnotation(InsertQuery.class);
-                if (insertAnnotation != null) {
-                    view.setInsertPlan(insertAnnotation.value());
-                }
-                
-                UpdateQuery updateAnnotation = clazz.getAnnotation(UpdateQuery.class);
-                if (updateAnnotation != null) {
-                    view.setUpdatePlan(updateAnnotation.value());
-                }
+                TextTable textTableAnnotation = clazz.getAnnotation(TextTable.class);
 
-                DeleteQuery deleteAnnotation = clazz.getAnnotation(DeleteQuery.class);
-                if (deleteAnnotation != null) {
-                    view.setDeletePlan(deleteAnnotation.value());
+                if (textTableAnnotation != null) {
+                    new TextTableView().buildView(clazz, mf, textTableAnnotation);
+                } else if (selectAnnotation != null) {
+                    new SimpleView().buildView(clazz, mf, selectAnnotation);
                 }
                 
             } catch (ClassNotFoundException e) {
                 logger.warn("Error loading entity classes");
             }
-        });
+        }
 
+        if (mf.getSchema().getTables().isEmpty()) {
+            return false;
+        }
+        
         String ddl = DDLStringVisitor.getDDLString(mf.getSchema(), null, null);
         model.addSourceMetadata("DDL", ddl);        
         vdb.addModel(model);
         logger.debug("Generated Teiid DDL:"+ddl);
+        
         return true;
     }
 
-    private Table buildTable(MetadataFactory mf, Class<?> clazz) {
-        String tableName = clazz.getSimpleName();
-        javax.persistence.Entity entityAnnotation = clazz.getAnnotation(javax.persistence.Entity.class);
-        if (entityAnnotation != null && !entityAnnotation.name().isEmpty()) {
-            tableName = entityAnnotation.name();
-        }
-        
-        javax.persistence.Table tableAnnotation = clazz.getAnnotation(javax.persistence.Table.class);                
-        if (tableAnnotation != null && !tableAnnotation.name().isEmpty()) {
-            tableName = tableAnnotation.name();
-        }
-        Table view = mf.addTable(tableName);
-        view.setVirtual(true);
-        
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.getAnnotation(javax.persistence.Transient.class) != null) {
-                continue;
-            }
-            String columnName = field.getName();
-            javax.persistence.Column columnAnnotation = field.getAnnotation(javax.persistence.Column.class);
-            if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
-                columnName = columnAnnotation.name();
-            }
-            
-            boolean pk = false;
-            javax.persistence.Id idAnnotation = field.getAnnotation(javax.persistence.Id.class);
-            if (idAnnotation != null) {
-                pk = true;
-            }
-            
-            String type = DataTypeManager.getDataTypeName(normalizeType(field.getType()));
-            Column column = mf.addColumn(columnName, type, view);
-            if (pk) {
-                mf.addPrimaryKey("PK", Arrays.asList(column.getName()), view);
-            }
-        }
-        return view;
-    }
-
-    Class<?> normalizeType(Class<?> clazz){
-        if (clazz.isAssignableFrom(int.class)) {
-            return Integer.class;
-        } else if (clazz.isAssignableFrom(byte.class)) {
-            return Byte.class;
-        } else if (clazz.isAssignableFrom(short.class)) {
-            return Short.class;
-        } else if (clazz.isAssignableFrom(float.class)) {
-            return Float.class;
-        } else if (clazz.isAssignableFrom(double.class)) {
-            return Double.class;
-        } else if (clazz.isAssignableFrom(long.class)) {
-            return Long.class;
-        }
-        return clazz;
-    }
     
     /**
 	 * {@link ImportBeanDefinitionRegistrar} to register the

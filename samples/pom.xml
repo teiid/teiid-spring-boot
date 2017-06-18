@@ -25,6 +25,7 @@
 
     <modules>
 	<module>rdbms</module>
+    <module>rdbms-file</module>
 	</modules>
 
 </project>

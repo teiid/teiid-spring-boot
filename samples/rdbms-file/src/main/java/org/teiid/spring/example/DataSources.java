@@ -26,16 +26,10 @@ import org.teiid.spring.TeiidSpringDatasource;
 
 @Configuration
 public class DataSources extends TeiidSpringDatasource {
-
+    
     @ConfigurationProperties(prefix = "spring.datasource.accountsDS")
     @Bean
     public DataSource accountsDS() {
-        return DataSourceBuilder.create().build();
-    }
-    
-    @ConfigurationProperties(prefix = "spring.datasource.customerDS")
-    @Bean
-    public DataSource customerDS() {
         return DataSourceBuilder.create().build();
     }    
 }

@@ -21,7 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.teiid.view.SelectQuery;
+import org.teiid.spring.annotations.SelectQuery;
 
 @Entity
 @Table(name="all_customers")

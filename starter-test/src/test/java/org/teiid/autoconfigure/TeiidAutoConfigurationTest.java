@@ -37,11 +37,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.autoconfigure.TeiidAutoConfiguration;
-import org.teiid.autoconfigure.TeiidConstants;
-import org.teiid.autoconfigure.TeiidServer;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
+import org.teiid.spring.TeiidSpringDatasource;
+import org.teiid.spring.autoconfigure.TeiidAutoConfiguration;
+import org.teiid.spring.autoconfigure.TeiidConstants;
+import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.translator.TranslatorException;
 
 
@@ -66,13 +67,6 @@ public class TeiidAutoConfigurationTest {
         assertNotNull(datasource);
     }
 
-    @Test
-    public void testTranslatorAutoDetection() throws AdminException {
-        List<org.teiid.adminapi.Translator> translators = (List<org.teiid.adminapi.Translator>) teiidServer.getAdmin().getTranslators();
-        assertEquals(1, translators.size());
-        assertEquals("teiid", translators.get(0).getName());
-    }
-    
     @Test
     public void testSpringVDB() throws SQLException {
         
