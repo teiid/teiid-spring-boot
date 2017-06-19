@@ -43,6 +43,7 @@ import org.teiid.spring.TeiidSpringDatasource;
 import org.teiid.spring.autoconfigure.TeiidAutoConfiguration;
 import org.teiid.spring.autoconfigure.TeiidConstants;
 import org.teiid.spring.autoconfigure.TeiidServer;
+import org.teiid.spring.configuration.TestConfiguration;
 import org.teiid.translator.TranslatorException;
 
 

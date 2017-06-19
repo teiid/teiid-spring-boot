@@ -25,7 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ExampleApplication implements CommandLineRunner {
 
     @Autowired
-    private StockRepository customerRepository;
+    private StockRepository stocksRepository;
     
 	public static void main(String[] args) {
 		SpringApplication.run(ExampleApplication.class, args);
@@ -34,6 +34,6 @@ public class ExampleApplication implements CommandLineRunner {
 	
     @Override
     public void run(String... args) throws Exception {
-        customerRepository.findAll().forEach(c -> System.out.println(c));
+        stocksRepository.findAll().forEach(c -> System.out.println(c));
     }
 }

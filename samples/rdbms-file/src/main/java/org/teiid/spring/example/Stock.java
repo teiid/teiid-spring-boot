@@ -68,5 +68,29 @@ public class Stock {
     public String toString() {
         return "Stock [id=" + id + ", symbol=" + symbol + ", price=" + price + ", companyName=" + companyName + "]";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Stock other = (Stock) obj;
+        if (companyName == null) {
+            if (other.companyName != null)
+                return false;
+        } else if (!companyName.equals(other.companyName))
+            return false;
+        if (id != other.id)
+            return false;
+        if (symbol == null) {
+            if (other.symbol != null)
+                return false;
+        } else if (!symbol.equals(other.symbol))
+            return false;
+        return true;
+    }
     
 }
