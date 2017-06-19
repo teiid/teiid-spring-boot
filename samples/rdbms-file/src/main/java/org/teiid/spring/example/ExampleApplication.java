@@ -25,10 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ExampleApplication implements CommandLineRunner {
 
     @Autowired
-    private CustomerRepository customerRepository;
-    
-    @Autowired
-    private JDBCBasedRepository jdbcRepository;
+    private StockRepository customerRepository;
     
 	public static void main(String[] args) {
 		SpringApplication.run(ExampleApplication.class, args);
@@ -37,12 +34,6 @@ public class ExampleApplication implements CommandLineRunner {
 	
     @Override
     public void run(String... args) throws Exception {
-
-        System.out.println("\n\nFrom JDBC Template");
         customerRepository.findAll().forEach(c -> System.out.println(c));
-        
-        System.out.println("\n\nFrom JDBC Template");
-        jdbcRepository.findAll().forEach(c -> System.out.println(c));
-        
     }
 }

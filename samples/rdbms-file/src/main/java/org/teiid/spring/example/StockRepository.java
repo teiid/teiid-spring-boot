@@ -13,28 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.teiid.spring.example;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class JDBCBasedRepository {
-    
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    
-    public List<StockPrice> findAll() {
-        List<StockPrice> result = jdbcTemplate.query("SELECT symbol, price FROM StockPrice",
-                (rs, rowNum) -> {
-                    StockPrice sp = new StockPrice();
-                    sp.setSymbol(rs.getString(1));
-                    sp.setPrice(rs.getDouble(2));
-                    return sp;
-                });    
-        return result;
-    }    
-}
+public interface StockRepository extends CrudRepository<Stock, Integer>{
+
+}   

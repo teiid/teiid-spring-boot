@@ -13,43 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.teiid.spring.example;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import org.teiid.spring.annotations.TextTable;
+import org.teiid.spring.annotations.SelectQuery;
 
 /**
- * This entity is showing the data from a text file. Needs {@link TextTable} annotation. 
+ * This entity is showing a JOIN between table in H2 database called product and text file 
+ * bases entity StockPrice.
  */
 @Entity
-@TextTable(file="marketdata-price.txt") /*Also see property: spring.teiid.file.parent-directory=src/main/resources */
-public class StockPrice {
+@SelectQuery("SELECT  A.ID, S.symbol, S.price, A.COMPANY_NAME " + 
+        "FROM StockPrice AS S, accountsDS.PRODUCT AS A " + 
+        "WHERE S.symbol = A.SYMBOL;")
+public class Stock {
     
     @Id
-    String symbol;
+    private int id;
+    private String symbol;
+    private double price;
     
-    double price;
-
+    @Column(name="COMPANY_NAME")
+    private String companyName;
+    
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
     public String getSymbol() {
         return symbol;
     }
-
     public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
-
     public double getPrice() {
         return price;
     }
-
     public void setPrice(double price) {
         this.price = price;
     }
-
+    public String getCompanyName() {
+        return companyName;
+    }
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
     @Override
     public String toString() {
-        return "StockPrice [symbol=" + symbol + ", price=" + price + "]";
+        return "Stock [id=" + id + ", symbol=" + symbol + ", price=" + price + ", companyName=" + companyName + "]";
     }
+    
 }
