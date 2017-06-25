@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.connections;
+package org.teiid.spring.connections.file;
 
 import java.util.Map;
 
@@ -22,6 +22,7 @@ import javax.resource.ResourceException;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.teiid.core.util.StringUtil;
+import org.teiid.spring.connections.BaseConnectionFactory;
 import org.teiid.translator.FileConnection;
 
 @ConfigurationProperties(prefix="spring.teiid.file")

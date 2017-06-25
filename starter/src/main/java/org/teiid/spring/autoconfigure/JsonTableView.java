@@ -22,72 +22,46 @@ import org.apache.commons.logging.LogFactory;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
-import org.teiid.spring.annotations.TextTable;
+import org.teiid.spring.annotations.JsonTable;
 
-public class TextTableView extends ViewBuilder<TextTable> {
-    private static final Log logger = LogFactory.getLog(TextTableView.class);
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class JsonTableView extends ViewBuilder<JsonTable> {
+    private static final Log logger = LogFactory.getLog(JsonTableView.class);
 
     private StringBuilder columndef = new StringBuilder();
     private StringBuilder columns = new StringBuilder();
     
     @Override
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, TextTable annotation) {
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, JsonTable annotation) {
         String source = annotation.source();
-        String file = annotation.file();
+        String file = annotation.endpoint();
         
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
         if (annotation.source().equals("file")) {
-            sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
+            sb.append("EXEC ").append(source).append(".getFiles('").append(file).append("')");
         } else {
-            sb.append("EXEC ").append(source).append(".invoke(binding=>'HTTP', action=>'GET', endpoint=>'").append(file).append("')");
+            sb.append("EXEC ").append(source).append(".invokeHttp(binding=>'HTTP', action=>'GET', endpoint=>'");
+            sb.append(file).append("', streaming=>'true')");
         }
         sb.append(") AS f, ").append("\n");
         
+        String root = annotation.root();
+        root = "/response"+root;
+        if (root.endsWith("/")) {
+            root = root.substring(0, root.lastIndexOf('/'));
+        }
+        
         if(annotation.source().equals("file")) {
-            sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
+            sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
         } else {
-            sb.append("TEXTTABLE(f.result COLUMNS ").append(columndef.toString());
+            sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.result) ");
         }
-        
-        if (!annotation.delimiter().equals(",")) {
-            sb.append(" ");
-            if (annotation.header() == 1) {
-                sb.append("DELIMETER ").append(annotation.delimiter());
-            }
-        }
-        
-        if (annotation.quote() != '"') {
-            sb.append(" ");
-            sb.append("QUOTE ").append(annotation.quote());
-        }
-
-        if (annotation.escape() != '\\') {
-            sb.append(" ");
-            sb.append("ESCAPE ").append(annotation.quote());
-        }
-
-        if (annotation.header() > 0) {
-            sb.append(" ");
-            if (annotation.header() == 1) {
-                sb.append("HEADER");
-            } else {
-                sb.append("HEADER ");
-                sb.append(annotation.header());
-            }
-        }
-
-        if (annotation.skip() > 0) {
-            sb.append(" ");
-            sb.append("SKIP").append(annotation.skip());
-        }
-        
-        if (!annotation.notrim()) {
-            sb.append(" NO TRIM");
-        }
-        sb.append(") AS tt;");
+        sb.append("COLUMNS ").append(columndef.toString());
+        sb.append(") AS jt");
         
         logger.debug("Generated View's Transformation: "+sb.toString());
         view.setSelectTransformation(sb.toString());
@@ -95,11 +69,11 @@ public class TextTableView extends ViewBuilder<TextTable> {
     
     @Override
     void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, Field parent, boolean last,
-            TextTable annotation) {
+            JsonTable annotation) {
         
-        TextTable colAnnotation = field.getAnnotation(TextTable.class);
+        JsonTable colAnnotation = field.getAnnotation(JsonTable.class);
         
-        this.columns.append("tt.").append(column.getName());
+        this.columns.append("jt.").append(column.getName());
         if(!last) {
             this.columns.append(", ");
         } else {
@@ -114,8 +88,11 @@ public class TextTableView extends ViewBuilder<TextTable> {
             columndef.append(" ").append(column.getRuntimeType());
         }
 
-        if (colAnnotation != null && colAnnotation.width() > 0) {
-            columndef.append(" WIDTH ").append(colAnnotation.width());
+        JsonProperty jsonProperty = field.getAnnotation(JsonProperty.class);
+        if (jsonProperty != null) {
+            columndef.append(" PATH '").append(jsonProperty.value()).append("'");    
+        } else if (parent != null) {
+            columndef.append(" PATH '").append(parent.getName()).append("/").append(column.getName()).append("'");
         }
         
         if(!last) {

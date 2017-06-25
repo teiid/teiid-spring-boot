@@ -46,6 +46,7 @@ import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
+import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.TextTable;
 import org.teiid.spring.connections.BaseConnectionFactory;
@@ -146,9 +147,12 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
                 Class<?> clazz = Class.forName(c.getBeanClassName());                
                 SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
                 TextTable textTableAnnotation = clazz.getAnnotation(TextTable.class);
+                JsonTable jsonTableAnnotation = clazz.getAnnotation(JsonTable.class);
 
                 if (textTableAnnotation != null) {
                     new TextTableView().buildView(clazz, mf, textTableAnnotation);
+                } else if (jsonTableAnnotation != null) {
+                    new JsonTableView().buildView(clazz, mf, jsonTableAnnotation);
                 } else if (selectAnnotation != null) {
                     new SimpleView().buildView(clazz, mf, selectAnnotation);
                 }

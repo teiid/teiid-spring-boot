@@ -18,11 +18,11 @@ package org.teiid.spring.autoconfigure;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+
 import org.teiid.core.types.DataTypeManager;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
-import org.teiid.spring.annotations.TextTable;
 
 public class ViewBuilder<T> {
     
@@ -43,30 +43,9 @@ public class ViewBuilder<T> {
         onTableCreate(view, mf, entityClazz, annotation);
         
         for (int i = 0; i < entityClazz.getDeclaredFields().length; i++) {
-            
             Field field = entityClazz.getDeclaredFields()[i];
-            if (field.getAnnotation(javax.persistence.Transient.class) != null) {
-                continue;
-            }
-            String columnName = field.getName();
-            javax.persistence.Column columnAnnotation = field.getAnnotation(javax.persistence.Column.class);
-            if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
-                columnName = columnAnnotation.name();
-            }
-            
-            boolean pk = false;
-            javax.persistence.Id idAnnotation = field.getAnnotation(javax.persistence.Id.class);
-            if (idAnnotation != null) {
-                pk = true;
-            }
-            
-            String type = DataTypeManager.getDataTypeName(normalizeType(field.getType()));
-            Column column = mf.addColumn(columnName, type, view);
-            if (pk) {
-                mf.addPrimaryKey("PK", Arrays.asList(column.getName()), view);
-            }
-            
-            onColumnCreate(view, column,  mf, field, i == (entityClazz.getDeclaredFields().length-1), annotation);
+            boolean last = (i == (entityClazz.getDeclaredFields().length-1));
+            addColumn(field, null, view, mf, last, annotation);
         }
         onFinish(view, mf, entityClazz, annotation);
     }
@@ -74,7 +53,8 @@ public class ViewBuilder<T> {
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, T annotation) {
     }
 
-    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, boolean last, T annotation) {
+    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, Field parent, boolean last,
+            T annotation) {
     }
 
     void onTableCreate(Table view, MetadataFactory mf, Class<?> entityClazz, T annotation) {
@@ -93,7 +73,67 @@ public class ViewBuilder<T> {
             return Double.class;
         } else if (clazz.isAssignableFrom(long.class)) {
             return Long.class;
+        }else if (clazz.isAssignableFrom(int[].class)) {
+            return Integer[].class;
+        } else if (clazz.isAssignableFrom(byte[].class)) {
+            return Byte[].class;
+        } else if (clazz.isAssignableFrom(short[].class)) {
+            return Short[].class;
+        } else if (clazz.isAssignableFrom(float[].class)) {
+            return Float[].class;
+        } else if (clazz.isAssignableFrom(double[].class)) {
+            return Double[].class;
+        } else if (clazz.isAssignableFrom(long[].class)) {
+            return Long[].class;
         }
         return clazz;
-    }    
+    }
+    
+    protected boolean isArray(Class<?> clazz) {
+        return clazz.isArray();
+    }
+    
+    
+    private void addColumn(Field field, Field parent, Table view, MetadataFactory mf, boolean last, T annotation) {
+        if (field.getAnnotation(javax.persistence.Transient.class) != null) {
+            return;
+        }
+        
+        String columnName = field.getName();
+        javax.persistence.Column columnAnnotation = field.getAnnotation(javax.persistence.Column.class);
+        if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
+            columnName = columnAnnotation.name();
+        }
+        
+        boolean pk = false;
+        javax.persistence.Id idAnnotation = field.getAnnotation(javax.persistence.Id.class);
+        if (idAnnotation != null) {
+            pk = true;
+        }
+        
+        String type = DataTypeManager.getDataTypeName(normalizeType(field.getType()));
+        if (type.equals("object") && !field.getType().isArray()) {
+            if (field.getAnnotation(javax.persistence.Embedded.class) != null
+                    && field.getType().getAnnotation(javax.persistence.Embeddable.class) != null) {
+                // really need recursive logic here.
+                for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
+                    Field innerField = field.getType().getDeclaredFields()[x];
+                    boolean innerLast = (x == (field.getType().getDeclaredFields().length - 1));
+                    addColumn(innerField, field, view, mf, innerLast && last, annotation);
+                }
+                return;
+            } else {
+                throw new IllegalStateException(field.getName()
+                        + " defined without any @Entity annotation, con not inference "
+                        + "type information without additional metadata");
+            }
+        }
+        
+        Column column = mf.addColumn(columnName, type, view);
+        if (pk) {
+            mf.addPrimaryKey("PK", Arrays.asList(column.getName()), view);
+        }
+        
+        onColumnCreate(view, column,  mf, field, parent, last, annotation);        
+    }
 }

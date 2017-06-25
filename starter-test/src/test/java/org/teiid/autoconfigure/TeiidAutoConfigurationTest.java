@@ -16,8 +16,10 @@
 
 package org.teiid.autoconfigure;
 
-import static org.junit.Assert.*;
-import static org.teiid.autoconfigure.JDBCUtils.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.teiid.autoconfigure.JDBCUtils.close;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +27,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -34,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.deployers.VirtualDatabaseException;

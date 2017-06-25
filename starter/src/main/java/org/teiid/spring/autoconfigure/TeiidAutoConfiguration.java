@@ -45,7 +45,7 @@ import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
-import org.teiid.spring.connections.FileConnectionFactory;
+import org.teiid.spring.connections.file.FileConnectionFactory;
 import org.teiid.translator.ExecutionFactory;
 
 @Configuration
@@ -114,6 +114,10 @@ public class TeiidAutoConfiguration implements Ordered {
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
     public TeiidServer teiidServer(TransactionManager transactionManager) {
         logger.info("Starting Teiid Server.");
+        
+        // turning off PostgreSQL support
+        System.setProperty("org.teiid.addPGMetadata", "false");
+        
         final TeiidServer server = new TeiidServer();
         
         if(embeddedConfiguration == null) {

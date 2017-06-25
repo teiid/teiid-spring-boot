@@ -22,7 +22,7 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.teiid.spring.connections.FileConnectionFactory;
+import org.teiid.spring.connections.file.FileConnectionFactory;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
 
