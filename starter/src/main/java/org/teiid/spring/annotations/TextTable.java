@@ -21,7 +21,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.teiid.spring.connections.file.FileConnectionFactory;
+import org.teiid.spring.data.file.FileConnectionFactory;
 
 @Target(TYPE)
 @Retention(RUNTIME)

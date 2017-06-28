@@ -22,7 +22,7 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.teiid.spring.connections.file.FileConnectionFactory;
+import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
 
@@ -56,7 +56,8 @@ public enum ExternalSource {
     NETEZZA("Netezza",new String[] {"org.netezza.Driver "},"netezza"), 
     TERADATA("Teradata",new String[] {"com.teradata.jdbc.TeraDriver" }, "teradata"),
 
-    FILE("File", new String[] { FileConnectionFactory.class.getName() }, "file");
+    FILE("file", new String[] { FileConnectionFactory.class.getName() }, "file"),
+    REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, "ws");
 
     // } else if(name.equals(accumulo)) {
     // return isPresent(accumulo_classes);
@@ -138,6 +139,15 @@ public enum ExternalSource {
             } catch (ClassNotFoundException | SecurityException | IllegalArgumentException e) {
                 throw new IllegalStateException("Error loading translators", e);
             }
+        }
+        return null;
+    }
+
+    public static String findTransaltorNameFromSourceName(String sourceName) {
+        for (ExternalSource source : ExternalSource.values()) {
+                if (source.name.equalsIgnoreCase(sourceName)) {
+                    return source.getTranslatorName();
+                }
         }
         return null;
     }

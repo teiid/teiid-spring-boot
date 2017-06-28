@@ -16,24 +16,41 @@
 
 package org.teiid.spring.example;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ExampleApplication implements CommandLineRunner {
+public class Application implements CommandLineRunner {
 
     @Autowired
-    private EmployeeRepository employeeRepository;
+    private CustomerRepository customerRepository;    
+    
+    @Autowired
+    private ViewBasedCustomerRepository viewBasedCustomerRepository;
     
 	public static void main(String[] args) {
-		SpringApplication.run(ExampleApplication.class, args);
+		SpringApplication.run(Application.class, args);
 		System.exit(0);
 	}
 	
     @Override
     public void run(String... args) throws Exception {
-        employeeRepository.findAll().forEach(c -> System.out.println(c));
+
+        System.out.println("\n\nFrom JDBC Template");
+        List<Customer> list = customerRepository.findAll();
+        list.forEach(x -> System.out.println(x));
+        
+        
+        System.out.println("\n\nFrom JDBC Template, with view");
+        list = customerRepository.findViewBasedCustomers();
+        list.forEach(x -> System.out.println(x));        
+        
+        
+        System.out.println("\n\nFrom All customers entity");
+        viewBasedCustomerRepository.findAll().forEach(x->System.out.println(x));
     }
 }

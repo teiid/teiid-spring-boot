@@ -49,7 +49,10 @@ import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.TextTable;
-import org.teiid.spring.connections.BaseConnectionFactory;
+import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.views.JsonTableView;
+import org.teiid.spring.views.SimpleView;
+import org.teiid.spring.views.TextTableView;
 
 /**
  * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should only

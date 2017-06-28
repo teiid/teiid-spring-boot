@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.connections.file;
+package org.teiid.spring.data.file;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ import javax.resource.ResourceException;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.teiid.core.util.StringUtil;
-import org.teiid.spring.connections.BaseConnectionFactory;
+import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.translator.FileConnection;
 
 @ConfigurationProperties(prefix="spring.teiid.file")
@@ -34,7 +34,7 @@ public class FileConnectionFactory extends BaseConnectionFactory {
     private boolean allowParentPaths = true;
 
     public FileConnectionFactory() {
-        super.setTranslatorName("file");
+        super.setSourceName("file");
     }
     
     @Override

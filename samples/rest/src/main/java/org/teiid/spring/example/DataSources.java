@@ -16,24 +16,9 @@
 
 package org.teiid.spring.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Configuration;
+import org.teiid.spring.TeiidSpringDatasource;
 
-@SpringBootApplication
-public class ExampleApplication implements CommandLineRunner {
-
-    @Autowired
-    private StockRepository stocksRepository;
-    
-	public static void main(String[] args) {
-		SpringApplication.run(ExampleApplication.class, args);
-		System.exit(0);
-	}
-	
-    @Override
-    public void run(String... args) throws Exception {
-        stocksRepository.findAll().forEach(c -> System.out.println(c));
-    }
+@Configuration
+public class DataSources extends TeiidSpringDatasource {
 }

@@ -86,6 +86,7 @@
 	<modules>
 		<module>starter</module>
 		<module>starter-test</module>
+		<module>data/rest</module>
 		<module>samples</module>
 	</modules>
 </project>

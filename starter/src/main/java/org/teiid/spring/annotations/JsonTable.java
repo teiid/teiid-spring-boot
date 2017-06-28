@@ -28,7 +28,7 @@ public @interface JsonTable {
     /**
      * Source name; If overriding the {@link WsConnectionFactory} bean then provide the name of the bean
      */
-    String source() default "ws"; // this the default web connection manager
+    String source() default "rest"; // this the default web connection manager
     
     /**
      * On Class ONLY

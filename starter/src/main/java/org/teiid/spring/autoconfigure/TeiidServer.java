@@ -40,7 +40,7 @@ import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.runtime.EmbeddedServer;
-import org.teiid.spring.connections.BaseConnectionFactory;
+import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.translator.TranslatorException;
 
 public class TeiidServer extends EmbeddedServer {
@@ -168,14 +168,15 @@ public class TeiidServer extends EmbeddedServer {
         SourceMappingMetadata source = new SourceMappingMetadata();
         source.setName(factoryName);
         source.setConnectionJndiName(factoryName);
-        source.setTranslatorName(factory.getTranslatorName());
         
+        String translatorName = ExternalSource.findTransaltorNameFromSourceName(factory.getSourceName());
+        source.setTranslatorName(translatorName);
         try {
-            if (this.getExecutionFactory(factory.getTranslatorName()) == null) {
-                addTranslator(ExternalSource.translatorClass(factory.getTranslatorName()));
+            if (this.getExecutionFactory(translatorName) == null) {
+                addTranslator(ExternalSource.translatorClass(translatorName));
             }
         } catch (ConnectorManagerException | TranslatorException e) {
-            throw new IllegalStateException("Failed to load translator "+ factory.getTranslatorName(), e);
+            throw new IllegalStateException("Failed to load translator "+ translatorName, e);
         } 
         
         model.addSourceMapping(source);

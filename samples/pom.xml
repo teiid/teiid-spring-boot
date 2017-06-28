@@ -27,6 +27,7 @@
 	<module>rdbms</module>
     <module>rdbms-file</module>
     <module>json</module>
+    <module>rest</module>
 	</modules>
 
 </project>

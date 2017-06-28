@@ -45,7 +45,7 @@ import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
-import org.teiid.spring.connections.file.FileConnectionFactory;
+import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.translator.ExecutionFactory;
 
 @Configuration

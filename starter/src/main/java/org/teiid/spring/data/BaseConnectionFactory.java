@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.connections;
+package org.teiid.spring.data;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
@@ -29,7 +29,7 @@ import org.teiid.core.util.EquivalenceUtil;
 @SuppressWarnings("serial")
 public abstract class BaseConnectionFactory implements javax.resource.cci.ConnectionFactory {
 
-    private String translatorName;
+    private String sourceName;
     
     @Override
     public void setReference(Reference reference) {
@@ -65,11 +65,11 @@ public abstract class BaseConnectionFactory implements javax.resource.cci.Connec
         return EquivalenceUtil.areEqual(left, right);
     }
 
-    public String getTranslatorName() {
-        return translatorName;
+    public String getSourceName() {
+        return sourceName;
     }
 
-    public void setTranslatorName(String translatorName) {
-        this.translatorName = translatorName;
+    public void setSourceName(String name) {
+        this.sourceName = name;
     }    
 }

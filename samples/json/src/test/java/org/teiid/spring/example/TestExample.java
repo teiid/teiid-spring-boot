@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 import java.math.BigDecimal;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = {ExampleApplication.class, TestConfiguration.class, EmployeeRepository.class})
+@SpringBootTest(classes = {Application.class, TestConfiguration.class, EmployeeRepository.class})
 public class TestExample {
 
     @Autowired

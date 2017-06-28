@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.spring.autoconfigure;
+package org.teiid.spring.views;
 
 import java.lang.reflect.Field;
 
@@ -41,11 +41,14 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (annotation.source().equals("file")) {
+        if (annotation.source().equalsIgnoreCase("file")) {
             sb.append("EXEC ").append(source).append(".getFiles('").append(file).append("')");
+        } else if (annotation.source().equalsIgnoreCase("rest")) {
+            sb.append("EXEC ").append(source).append(".invokeHttp(action=>'GET', endpoint=>'");
+            sb.append(file).append("', stream=>'true')");
         } else {
-            sb.append("EXEC ").append(source).append(".invokeHttp(binding=>'HTTP', action=>'GET', endpoint=>'");
-            sb.append(file).append("', streaming=>'true')");
+            throw new IllegalStateException(
+                    "Source type '" + annotation.source() + " not supported on JSONTable " + view.getName());
         }
         sb.append(") AS f, ").append("\n");
         
