@@ -33,8 +33,8 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
  * @author Vlad Mihalcea
  */
 public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
-
-    public static final ArraySqlTypeDescriptor INSTANCE = new ArraySqlTypeDescriptor();
+	private static final long serialVersionUID = -8192469082066622891L;
+	public static final ArraySqlTypeDescriptor INSTANCE = new ArraySqlTypeDescriptor();
 
     @Override
     public int getSqlType() {

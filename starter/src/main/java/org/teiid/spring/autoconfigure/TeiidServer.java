@@ -15,19 +15,24 @@
  */
 package org.teiid.spring.autoconfigure;
 
-import static org.teiid.spring.autoconfigure.TeiidConstants.*;
+import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
+import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.Admin.TranlatorPropertyType;
 import org.teiid.adminapi.AdminException;
@@ -39,29 +44,40 @@ import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
+import org.teiid.metadata.MetadataFactory;
+import org.teiid.query.metadata.DDLStringVisitor;
+import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.runtime.EmbeddedServer;
+import org.teiid.spring.annotations.ExcelTable;
+import org.teiid.spring.annotations.JsonTable;
+import org.teiid.spring.annotations.SelectQuery;
+import org.teiid.spring.annotations.TextTable;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.views.ExcelTableView;
+import org.teiid.spring.views.JsonTableView;
+import org.teiid.spring.views.SimpleView;
+import org.teiid.spring.views.TextTableView;
 import org.teiid.translator.TranslatorException;
 
 public class TeiidServer extends EmbeddedServer {
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
     
-    public void addDataSource(VDBMetaData vdb, String sourceName, Object source, ApplicationContext context) {
+    public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
         // only when user did not define a explicit VDB then build one.
         if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
             
-            addConnectionFactory(sourceName, source);
+            addConnectionFactory(sourceBeanName, source);
             
             ModelMetaData model = null;            
             if (source instanceof org.apache.tomcat.jdbc.pool.DataSource) {
                 try {
-                    model = buildModelFromDataSource(sourceName,
+                    model = buildModelFromDataSource(sourceBeanName,
                             (org.apache.tomcat.jdbc.pool.DataSource) source, context);
                 } catch (AdminException e) {
                     throw new IllegalStateException("Error adding the source, cause: "+e.getMessage());
                 }
             } else if (source instanceof BaseConnectionFactory) {
-                model = buildModelFromConnectionFactory(sourceName, (BaseConnectionFactory)source);
+                model = buildModelFromConnectionFactory(sourceBeanName, (BaseConnectionFactory)source, context);
             } else {
                 throw new IllegalStateException(
                         "Auto detecting of sources currently only supports Tomcat Datasource");
@@ -69,7 +85,7 @@ public class TeiidServer extends EmbeddedServer {
 
             if (model != null) {
                 vdb.addModel(model);
-                logger.info("Added "+sourceName+" to the Teiid Database");
+                logger.info("Added "+sourceBeanName+" to the Teiid Database");
             }
             
             // since each time a data source is added the vdb is reloaded
@@ -92,7 +108,7 @@ public class TeiidServer extends EmbeddedServer {
         } else {
             for (ModelMetaData model:vdb.getModelMetaDatas().values()) {
                 for (SourceMappingMetadata smm : model.getSourceMappings()) {
-                    if (smm.getConnectionJndiName().equalsIgnoreCase(sourceName)) {
+                    if (smm.getConnectionJndiName().equalsIgnoreCase(sourceBeanName)) {
                         addConnectionFactory(smm.getName(), source);
                     }
                 }
@@ -111,7 +127,7 @@ public class TeiidServer extends EmbeddedServer {
         }
     }    
     
-    private ModelMetaData buildModelFromDataSource(String dsName, org.apache.tomcat.jdbc.pool.DataSource ds,
+    private ModelMetaData buildModelFromDataSource(String dsBeanName, org.apache.tomcat.jdbc.pool.DataSource ds,
             ApplicationContext context) throws AdminException {
 
         // This teiid database, ignore 
@@ -120,8 +136,9 @@ public class TeiidServer extends EmbeddedServer {
         }
         
         ModelMetaData model = new ModelMetaData();
-        model.setName(dsName);
+        model.setName(dsBeanName);
         model.setModelType(Model.Type.PHYSICAL);
+        model.setVisible(false);
         
         // note these can be overridden by specific ones in the configuration
         // TODO: need come up most sensible properties for this.
@@ -129,8 +146,8 @@ public class TeiidServer extends EmbeddedServer {
         model.addProperty("importer.tableTypes", "TABLE,VIEW");
         
         SourceMappingMetadata source = new SourceMappingMetadata();
-        source.setName(dsName);
-        source.setConnectionJndiName(dsName);
+        source.setName(dsBeanName);
+        source.setConnectionJndiName(dsBeanName);
 
         String driverName = ds.getDriverClassName();
         String translatorName = ExternalSource.findTransaltorNameFromDriverName(driverName);
@@ -149,7 +166,7 @@ public class TeiidServer extends EmbeddedServer {
                 .getTranslatorPropertyDefinitions(source.getTranslatorName(), TranlatorPropertyType.IMPORT);
         importProperties.forEach(prop -> {
             String key = prop.getName();
-            String value = context.getEnvironment().getProperty("spring.datasource."+dsName+"."+key);
+            String value = context.getEnvironment().getProperty("spring.datasource."+dsBeanName+"."+key);
             if (value != null) {
                 model.addProperty(key, value); 
             }
@@ -160,16 +177,18 @@ public class TeiidServer extends EmbeddedServer {
     }
 
 
-    public ModelMetaData buildModelFromConnectionFactory(String factoryName, BaseConnectionFactory factory) {
+	public ModelMetaData buildModelFromConnectionFactory(String sourceBeanName, BaseConnectionFactory factory,
+			ApplicationContext context) {
         ModelMetaData model = new ModelMetaData();
-        model.setName(factoryName);
+        model.setName(sourceBeanName);
         model.setModelType(Model.Type.PHYSICAL);
+        model.setVisible(false);
         
         SourceMappingMetadata source = new SourceMappingMetadata();
-        source.setName(factoryName);
-        source.setConnectionJndiName(factoryName);
+        source.setName(sourceBeanName);
+        source.setConnectionJndiName(sourceBeanName);
         
-        String translatorName = ExternalSource.findTransaltorNameFromSourceName(factory.getSourceName());
+        String translatorName = ExternalSource.findTransaltorNameFromAlias(factory.getTranslatorName());
         source.setTranslatorName(translatorName);
         try {
             if (this.getExecutionFactory(translatorName) == null) {
@@ -180,7 +199,101 @@ public class TeiidServer extends EmbeddedServer {
         } 
         
         model.addSourceMapping(source);
-        
         return model;
-    }    
+    }
+	
+    boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context) {
+        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(
+                false);
+        provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
+        
+        String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
+        if(basePackage == null) {
+            return false;
+        }
+        Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);
+        if (components.isEmpty()) {
+            return false;
+        }
+        
+        // check to add any source models first based on the annotations
+        boolean load = false;
+        for (BeanDefinition c : components) {
+            try {
+                Class<?> clazz = Class.forName(c.getBeanClassName());
+                ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
+             
+                if (excelAnnotation != null) {
+                    addExcelModel(vdb, clazz, excelAnnotation);
+					load = true;
+                }
+            } catch (ClassNotFoundException e) {
+                logger.warn("Error loading entity classes");
+            }        	
+        }        
+        
+        ModelMetaData model = new ModelMetaData();
+        model.setName("teiid");
+        model.setModelType(Model.Type.VIRTUAL);
+        MetadataFactory mf = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
+                model);
+        for (BeanDefinition c : components) {
+            try {
+                Class<?> clazz = Class.forName(c.getBeanClassName());                
+                SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
+                TextTable textAnnotation = clazz.getAnnotation(TextTable.class);
+                JsonTable jsonAnnotation = clazz.getAnnotation(JsonTable.class);
+                ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
+                
+                if (textAnnotation != null) {
+                    new TextTableView().buildView(clazz, mf, textAnnotation);
+                } else if (jsonAnnotation != null) {
+                    new JsonTableView().buildView(clazz, mf, jsonAnnotation);
+                } else if (selectAnnotation != null) {
+                    new SimpleView().buildView(clazz, mf, selectAnnotation);
+                } else if (excelAnnotation != null) {
+                	new ExcelTableView().buildView(clazz, mf, excelAnnotation);
+                }
+            } catch (ClassNotFoundException e) {
+                logger.warn("Error loading entity classes");
+            }
+        }
+
+        if (!mf.getSchema().getTables().isEmpty()) {
+        	load = true;
+	        String ddl = DDLStringVisitor.getDDLString(mf.getSchema(), null, null);
+	        model.addSourceMetadata("DDL", ddl);        
+	        vdb.addModel(model);	        
+        }
+        return load;
+    }
+
+	private void addExcelModel(VDBMetaData vdb, Class<?> clazz, ExcelTable excelAnnotation) {
+		ModelMetaData model = new ModelMetaData();
+		model.setName(clazz.getSimpleName().toLowerCase());
+		model.setModelType(Model.Type.PHYSICAL);
+		model.addProperty("importer.DataRowNumber", String.valueOf(excelAnnotation.dataRowStartsAt()));
+		model.addProperty("importer.ExcelFileName", excelAnnotation.file());
+		model.addProperty("importer.IgnoreEmptyHeaderCells",
+				String.valueOf(excelAnnotation.ignoreEmptyCells()));
+		if (excelAnnotation.headerRow() != -1) {
+			model.addProperty("importer.HeaderRowNumber", String.valueOf(excelAnnotation.headerRow()));
+		}
+        
+		SourceMappingMetadata source = new SourceMappingMetadata();
+        source.setName(clazz.getSimpleName().toLowerCase());
+        source.setConnectionJndiName("file");
+        source.setTranslatorName(ExternalSource.EXCEL.getTranslatorName());
+        try {
+            if (this.getExecutionFactory(ExternalSource.EXCEL.getTranslatorName()) == null) {
+                addTranslator(ExternalSource.translatorClass(ExternalSource.EXCEL.getTranslatorName()));
+            }
+        } catch (ConnectorManagerException | TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator "+ ExternalSource.EXCEL.getTranslatorName(), e);
+        }         
+        model.addSourceMapping(source);
+        
+		vdb.addModel(model);
+	}	
 }

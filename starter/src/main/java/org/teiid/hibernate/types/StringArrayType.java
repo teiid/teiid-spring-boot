@@ -26,6 +26,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 public class StringArrayType
 		extends AbstractSingleColumnStandardBasicType<String[]>
 		implements DynamicParameterizedType {
+	private static final long serialVersionUID = -4628210384160877497L;
 
 	public StringArrayType() {
 		super( ArraySqlTypeDescriptor.INSTANCE, StringArrayTypeDescriptor.INSTANCE );

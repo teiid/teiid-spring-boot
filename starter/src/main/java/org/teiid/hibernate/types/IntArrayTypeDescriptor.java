@@ -20,7 +20,7 @@ package org.teiid.hibernate.types;
  */
 public class IntArrayTypeDescriptor
 		extends AbstractArrayTypeDescriptor<int[]> {
-
+	private static final long serialVersionUID = 1092184980521691119L;
 	public static final IntArrayTypeDescriptor INSTANCE = new IntArrayTypeDescriptor();
 
 	public IntArrayTypeDescriptor() {

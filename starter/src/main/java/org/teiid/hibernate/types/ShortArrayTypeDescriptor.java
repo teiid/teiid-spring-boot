@@ -17,7 +17,7 @@ package org.teiid.hibernate.types;
 
 public class ShortArrayTypeDescriptor
 		extends AbstractArrayTypeDescriptor<short[]> {
-
+	private static final long serialVersionUID = -2634273351592972070L;
 	public static final ShortArrayTypeDescriptor INSTANCE = new ShortArrayTypeDescriptor();
 
 	public ShortArrayTypeDescriptor() {

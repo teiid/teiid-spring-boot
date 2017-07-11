@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 
 public class BigDecimalArrayTypeDescriptor
 		extends AbstractArrayTypeDescriptor<BigDecimal[]> {
-
+	private static final long serialVersionUID = 4591058568220680424L;
 	public static final BigDecimalArrayTypeDescriptor INSTANCE = new BigDecimalArrayTypeDescriptor();
 
 	public BigDecimalArrayTypeDescriptor() {

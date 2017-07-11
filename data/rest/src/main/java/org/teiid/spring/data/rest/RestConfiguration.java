@@ -35,7 +35,7 @@ public class RestConfiguration {
     }
     
     @Bean(name="rest")
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(value= {RestConnectionFactory.class})
     public RestConnectionFactory restConnectionFactory() {
         return new RestConnectionFactory();
     }    

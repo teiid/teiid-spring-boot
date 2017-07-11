@@ -49,7 +49,6 @@ import org.teiid.translator.TranslatorException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = {TeiidAutoConfiguration.class, TeiidSpringDatasource.class, TestConfiguration.class})
-@SuppressWarnings("unchecked")
 public class TeiidAutoConfigurationTest {
     
     @Autowired

@@ -23,6 +23,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 public class DoubleArrayType
 		extends AbstractSingleColumnStandardBasicType<double[]>
 		implements DynamicParameterizedType {
+	private static final long serialVersionUID = -5417262193036979576L;
 
 	public DoubleArrayType() {
 		super( ArraySqlTypeDescriptor.INSTANCE, DoubleArrayTypeDescriptor.INSTANCE );

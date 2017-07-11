@@ -19,9 +19,11 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
-import java.util.Set;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import javax.sql.DataSource;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,25 +36,14 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.teiid.adminapi.Model;
-import org.teiid.adminapi.impl.ModelMetaData;
+import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.metadata.MetadataFactory;
-import org.teiid.query.metadata.DDLStringVisitor;
-import org.teiid.query.metadata.SystemMetadata;
-import org.teiid.spring.annotations.JsonTable;
-import org.teiid.spring.annotations.SelectQuery;
-import org.teiid.spring.annotations.TextTable;
+import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.spring.data.BaseConnectionFactory;
-import org.teiid.spring.views.JsonTableView;
-import org.teiid.spring.views.SimpleView;
-import org.teiid.spring.views.TextTableView;
 
 /**
  * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should only
@@ -113,70 +104,25 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
     public void onApplicationEvent(ContextRefreshedEvent event) {
         boolean deploy = true;
         VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
+        TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
         if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
-            deploy = findAndConfigureViews(vdb, event.getApplicationContext());
+            deploy = server.findAndConfigureViews(vdb, event.getApplicationContext());
         }
 
         if (deploy) {
-            // Deploy at the end when all the datasources are configured
-            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
-            server.undeployVDB(VDBNAME, VDBVERSION);
-            server.deployVDB(vdb);
+        	try {
+	            // Deploy at the end when all the data sources are configured
+	            server.undeployVDB(VDBNAME, VDBVERSION);
+	            ByteArrayOutputStream out = new ByteArrayOutputStream();
+	            VDBMetadataParser.marshell(vdb, out);
+	            logger.debug("XML Form of VDB:\n" + new String(out.toByteArray()));
+	            server.deployVDB(vdb);
+				//logger.debug("Generated Teiid DDL:\n"+server.getAdmin().getSchema(VDBNAME, VDBVERSION, null, null, null));
+			} catch ( IOException | XMLStreamException e) {
+				// no-op
+			}            
         }
     }	
-
-    private boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context) {
-        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(
-                false);
-        provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
-        provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
-        
-        String basePackage = context.getEnvironment().getProperty("spring.teiid.model.package");
-        if(basePackage == null) {
-            return false;
-        }
-        Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);
-        if (components.isEmpty()) {
-            return false;
-        }
-        
-        ModelMetaData model = new ModelMetaData();
-        model.setName("teiid");
-        model.setModelType(Model.Type.VIRTUAL);
-        MetadataFactory mf = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
-                model);
-        for (BeanDefinition c : components) {
-            try {
-                Class<?> clazz = Class.forName(c.getBeanClassName());                
-                SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
-                TextTable textTableAnnotation = clazz.getAnnotation(TextTable.class);
-                JsonTable jsonTableAnnotation = clazz.getAnnotation(JsonTable.class);
-
-                if (textTableAnnotation != null) {
-                    new TextTableView().buildView(clazz, mf, textTableAnnotation);
-                } else if (jsonTableAnnotation != null) {
-                    new JsonTableView().buildView(clazz, mf, jsonTableAnnotation);
-                } else if (selectAnnotation != null) {
-                    new SimpleView().buildView(clazz, mf, selectAnnotation);
-                }
-                
-            } catch (ClassNotFoundException e) {
-                logger.warn("Error loading entity classes");
-            }
-        }
-
-        if (mf.getSchema().getTables().isEmpty()) {
-            return false;
-        }
-        
-        String ddl = DDLStringVisitor.getDDLString(mf.getSchema(), null, null);
-        model.addSourceMetadata("DDL", ddl);        
-        vdb.addModel(model);
-        logger.debug("Generated Teiid DDL:"+ddl);
-        
-        return true;
-    }
-
     
     /**
 	 * {@link ImportBeanDefinitionRegistrar} to register the

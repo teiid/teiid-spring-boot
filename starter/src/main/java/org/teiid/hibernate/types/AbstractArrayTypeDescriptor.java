@@ -31,8 +31,8 @@ import org.hibernate.usertype.DynamicParameterizedType;
  */
 public abstract class AbstractArrayTypeDescriptor<T>
         extends AbstractTypeDescriptor<T> implements DynamicParameterizedType {
-
-    private Class<T> arrayObjectClass;
+	private static final long serialVersionUID = 7698345570957205617L;
+	private Class<T> arrayObjectClass;
 
     @Override
     public void setParameterValues(Properties parameters) {

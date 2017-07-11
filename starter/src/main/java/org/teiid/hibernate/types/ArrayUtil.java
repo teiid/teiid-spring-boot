@@ -15,7 +15,6 @@
  */ 
 package org.teiid.hibernate.types;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -23,7 +22,8 @@ import java.util.Arrays;
  */
 public class ArrayUtil {
 
-	public static <T> T deepCopy(Object objectArray) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static <T> T deepCopy(Object objectArray) {		
 		Class arrayClass = objectArray.getClass();
 
 		if( boolean[].class.equals( arrayClass ) ) {
@@ -64,6 +64,7 @@ public class ArrayUtil {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static Object[] wrapArray(Object objectArray) {
 		Class arrayClass = objectArray.getClass();
 
@@ -136,6 +137,7 @@ public class ArrayUtil {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> T unwrapArray(Object[] objectArray, Class<T> arrayClass) {
 
 		if( boolean[].class.equals( arrayClass ) ) {
@@ -199,6 +201,7 @@ public class ArrayUtil {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> T fromString(String string, Class<T> arrayClass) {
 		String stringArray = string.replaceAll( "[\\[\\]]", "" );
 		String[] tokens = stringArray.split( "," );
@@ -266,6 +269,7 @@ public class ArrayUtil {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean isEquals(Object firstArray, Object secondArray) {
 		if(firstArray.getClass() != secondArray.getClass()) {
 			return false;

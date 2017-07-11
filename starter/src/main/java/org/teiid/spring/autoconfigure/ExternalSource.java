@@ -28,37 +28,38 @@ import org.teiid.translator.Translator;
 
 public enum ExternalSource {
 
-    ACTIAN("Actian", actian_vector_classes, actian_vector), 
-    DB2("DB2", db2_classes, db2), 
-    DERBY("Derby", derby_classes, derby), 
-    H2("H2", h2_classes, h2), 
-    HANA("Hana", hana_classes,hana), 
-    HIVE("Hive", hive_classes, hive), 
-    IMPALA("Impala", hive_1_classes, impala), // TODO: Fix me
-    HSQL("HSQL", hsql_classes, hsql), 
-    INFORMIX("Informix", informix_classes, informix), 
-    INGRES("Ingres", ingres_classes, ingres), 
-    INTERSYSTEMSCACHE("Intersystems Cache", intersystems_cache_classes, intersystems_cache), 
-    MYSQL("MySQL", mysql_classes, mysql5), 
-    OLAP("OLAP", olap_classes_mondrian, olap), 
-    MONDRIAN("Mondrian",olap_classes_mondrian,olap), 
-    ORACLE("Oracle", oracle_classes, oracle), 
-    OSISOFTPI("OSISOFT PI", osisoft_pi_classes,osisoft_pi), 
-    PHOENIX("Phoenix", phoenix_classes, phoenix), 
-    POSTGRESQL("PostgreSQL",postgresql_classes,postgresql), 
-    PRESTODB("PrestoDB", prestodb_classes, prestodb), 
-    SQLSERVER("MS-SQL Server", sqlserver_classes_native,sqlserver), 
-    JTDS("MS-SQL Server", sqlserver_classes_jtds,sqlserver), 
-    SYBASE("Sybase", sybase_classes, sybase), 
-    TEIID("Teiid", teiid_classes, teiid), 
-    ACCESS("MS Access",ucanaccess_classes, ucanaccess), 
-    VERTICA("Vertica", vertica_classes,vertica), 
+    ACTIAN("Actian", new String[] {"com.ingres.jdbc.IngresDriver"}, "actian-vector"), 
+    DB2("DB2", new String[] {"com.ibm.db2.jcc.DB2Driver"} , "db2"), 
+    DERBY("Derby", new String[] {"org.apache.derby.jdbc.ClientDriver"}, "derby"), 
+    H2("H2", new String[] {"org.h2.Driver"}, "h2"), 
+    HANA("Hana", new String[] {"com.sap.db.jdbc.Driver"}, "hana"), 
+    HIVE("Hive", new String[] {"org.apache.hive.jdbc.HiveDriver"}, "hive"), 
+    IMPALA("Impala", new String[] {"org.apache.hadoop.hive.jdbc.HiveDriver"}, "impala"), // TODO: Fix me
+    HSQL("HSQL", new String[] {"org.hsqldb.jdbc.JDBCDriver"}, "hsql"), 
+    INFORMIX("Informix", new String[] {"com.informix.jdbc.IfxDriver"}, "informix"), 
+    INGRES("Ingres", new String[] {"com.ingres.jdbc.IngresDriver"}, "ingres"), 
+    INTERSYSTEMSCACHE("Intersystems Cache", new String[] {"com.intersys.jdbc.CacheDriver"}, "intersystems-cache"), 
+    MYSQL("MySQL", new String[] {"com.mysql.jdbc.Driver"}, "mysql5"), 
+    OLAP("OLAP", new String[] {"org.olap4j.driver.xmla.XmlaOlap4jDriver"}, "olap"), 
+    MONDRIAN("Mondrian",new String[] {"mondrian.olap4j.MondrianOlap4jDriver"}, "olap"), 
+    ORACLE("Oracle", new String[] {"oracle.jdbc.OracleDriver"}, "oracle"), 
+    OSISOFTPI("OSISOFT PI", new String[] {"com.osisoft.jdbc.Driver"}, "osisoft-pi"), 
+    PHOENIX("Phoenix", new String[] {"org.apache.phoenix.jdbc.PhoenixDriver"}, "phoenix"), 
+    POSTGRESQL("PostgreSQL",new String[] {"org.postgresql.Driver"}, "postgresql"), 
+    PRESTODB("PrestoDB", new String[] {"com.facebook.presto.jdbc.PrestoDriver"}, "prestodb"), 
+    SQLSERVER("MS-SQL Server", new String[] {"com.microsoft.sqlserver.jdbc.SQLServerDriver"}, "sqlserver"), 
+    JTDS("MS-SQL Server", new String[] {"net.sourceforge.jtds.jdbc.Driver"}, "sqlserver"), 
+    SYBASE("Sybase", new String[] {"com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver"}, "sybase"), 
+    TEIID("Teiid", new String[] {"org.teiid.jdbc.TeiidDriver"}, "teiid"), 
+    ACCESS("MS Access",new String[] {"net.ucanaccess.jdbc.UcanaccessDriver"}, "ucanaccess"), 
+    VERTICA("Vertica", new String[] {"com.vertica.jdbc.Driver"}, "vertica"), 
     NETEZZA("Netezza",new String[] {"org.netezza.Driver "},"netezza"), 
     TERADATA("Teradata",new String[] {"com.teradata.jdbc.TeraDriver" }, "teradata"),
 
     FILE("file", new String[] { FileConnectionFactory.class.getName() }, "file"),
-    REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, "ws");
-
+    REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, "ws"),
+	EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, "excel");
+	
     // } else if(name.equals(accumulo)) {
     // return isPresent(accumulo_classes);
     // } else if(name.equals(cassandra)) {
@@ -143,12 +144,12 @@ public enum ExternalSource {
         return null;
     }
 
-    public static String findTransaltorNameFromSourceName(String sourceName) {
-        for (ExternalSource source : ExternalSource.values()) {
-                if (source.name.equalsIgnoreCase(sourceName)) {
-                    return source.getTranslatorName();
-                }
-        }
-        return null;
-    }
+	public static String findTransaltorNameFromAlias(String sourceName) {
+		for (ExternalSource source : ExternalSource.values()) {
+			if (source.name.equalsIgnoreCase(sourceName)) {
+				return source.getTranslatorName();
+			}
+		}
+		return null;
+	}
 }

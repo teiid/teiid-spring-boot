@@ -23,6 +23,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 public class ShortArrayType
 		extends AbstractSingleColumnStandardBasicType<short[]>
 		implements DynamicParameterizedType {
+	private static final long serialVersionUID = -1618901877045449960L;
 
 	public ShortArrayType() {
 		super( ArraySqlTypeDescriptor.INSTANCE, ShortArrayTypeDescriptor.INSTANCE );

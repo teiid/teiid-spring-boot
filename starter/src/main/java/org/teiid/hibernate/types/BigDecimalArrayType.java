@@ -24,6 +24,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 public class BigDecimalArrayType
 		extends AbstractSingleColumnStandardBasicType<BigDecimal[]>
 		implements DynamicParameterizedType {
+	private static final long serialVersionUID = 3666499981934781574L;
 
 	public BigDecimalArrayType() {
 		super(ArraySqlTypeDescriptor.INSTANCE, BigDecimalArrayTypeDescriptor.INSTANCE );

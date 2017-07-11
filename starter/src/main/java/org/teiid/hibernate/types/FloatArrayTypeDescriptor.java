@@ -17,7 +17,7 @@ package org.teiid.hibernate.types;
 
 public class FloatArrayTypeDescriptor
 		extends AbstractArrayTypeDescriptor<float[]> {
-
+	private static final long serialVersionUID = 4937550252686661858L;
 	public static final FloatArrayTypeDescriptor INSTANCE = new FloatArrayTypeDescriptor();
 
 	public FloatArrayTypeDescriptor() {

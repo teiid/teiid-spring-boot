@@ -23,6 +23,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 public class FloatArrayType
 		extends AbstractSingleColumnStandardBasicType<float[]>
 		implements DynamicParameterizedType {
+	private static final long serialVersionUID = 233850294937607019L;
 
 	public FloatArrayType() {
 		super( ArraySqlTypeDescriptor.INSTANCE, FloatArrayTypeDescriptor.INSTANCE );

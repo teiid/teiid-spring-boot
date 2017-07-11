@@ -32,7 +32,7 @@ public class RestConnectionFactory extends BaseConnectionFactory {
     RestTemplate template;
     
     public RestConnectionFactory() {
-        super.setSourceName("rest");
+        super.setTranslatorName("rest");
     }
     
     @Override

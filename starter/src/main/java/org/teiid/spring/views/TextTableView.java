@@ -45,8 +45,8 @@ public class TextTableView extends ViewBuilder<TextTable> {
             sb.append("EXEC ").append(source).append(".invokeHttp(action=>'GET', endpoint=>'").append(file)
                     .append("', stream=>'true')");
         } else {
-            throw new IllegalStateException(
-                    "Source type '" + annotation.source() + " not supported on TextTable " + view.getName());
+			throw new IllegalStateException("Source type '" + annotation.source() + " not supported on TextTable "
+					+ view.getName() + ". Only \"file\" and \"rest\" are supported");
         }
         sb.append(") AS f, ").append("\n");
         

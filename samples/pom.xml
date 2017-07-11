@@ -28,6 +28,7 @@
     <module>rdbms-file</module>
     <module>json</module>
     <module>rest</module>
+    <module>excel</module>
 	</modules>
 
 </project>

@@ -23,6 +23,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 public class LongArrayType
 		extends AbstractSingleColumnStandardBasicType<long[]>
 		implements DynamicParameterizedType {
+	private static final long serialVersionUID = 8132500623120251428L;
 
 	public LongArrayType() {
 		super( ArraySqlTypeDescriptor.INSTANCE, LongArrayTypeDescriptor.INSTANCE );

@@ -29,7 +29,7 @@ import org.teiid.core.util.EquivalenceUtil;
 @SuppressWarnings("serial")
 public abstract class BaseConnectionFactory implements javax.resource.cci.ConnectionFactory {
 
-    private String sourceName;
+    private String translatorName;
     
     @Override
     public void setReference(Reference reference) {
@@ -65,11 +65,11 @@ public abstract class BaseConnectionFactory implements javax.resource.cci.Connec
         return EquivalenceUtil.areEqual(left, right);
     }
 
-    public String getSourceName() {
-        return sourceName;
+    public String getTranslatorName() {
+        return translatorName;
     }
 
-    public void setSourceName(String name) {
-        this.sourceName = name;
+    public void setTranslatorName(String name) {
+        this.translatorName = name;
     }    
 }

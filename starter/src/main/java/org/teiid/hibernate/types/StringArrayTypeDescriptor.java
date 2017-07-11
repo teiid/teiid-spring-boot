@@ -20,7 +20,7 @@ package org.teiid.hibernate.types;
  */
 public class StringArrayTypeDescriptor
 		extends AbstractArrayTypeDescriptor<String[]> {
-
+	private static final long serialVersionUID = 2779634215463704662L;
 	public static final StringArrayTypeDescriptor INSTANCE = new StringArrayTypeDescriptor();
 
 	public StringArrayTypeDescriptor() {

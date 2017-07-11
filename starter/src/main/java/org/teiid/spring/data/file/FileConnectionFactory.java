@@ -34,7 +34,7 @@ public class FileConnectionFactory extends BaseConnectionFactory {
     private boolean allowParentPaths = true;
 
     public FileConnectionFactory() {
-        super.setSourceName("file");
+        super.setTranslatorName("file");
     }
     
     @Override

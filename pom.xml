@@ -34,7 +34,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
-		<teiid.version>10.0.0.Alpha1-SNAPSHOT</teiid.version>
+		<teiid.version>10.0.0.Alpha2-SNAPSHOT</teiid.version>
 		<javax.resource.version>1.0.0.Final</javax.resource.version>
 	</properties>
 
@@ -87,6 +87,7 @@
 		<module>starter</module>
 		<module>starter-test</module>
 		<module>data/rest</module>
+		<module>data/excel</module>
 		<module>samples</module>
 	</modules>
 </project>
