@@ -16,12 +16,15 @@
 
 package org.teiid.spring.autoconfigure;
 
-import static org.teiid.spring.autoconfigure.TeiidConstants.*;
+import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
+import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Driver;
 import java.util.List;
 
+import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.logging.Log;
@@ -30,14 +33,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.Resource;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+import org.springframework.jdbc.datasource.embedded.ConnectionProperties;
+import org.springframework.jdbc.datasource.embedded.DataSourceFactory;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.deployers.VDBRepository;
@@ -52,6 +62,7 @@ import org.teiid.translator.ExecutionFactory;
 @ConditionalOnClass({EmbeddedServer.class, ExecutionFactory.class})
 @EnableConfigurationProperties(TeiidProperties.class)
 @Import({ Registrar.class })
+@PropertySource("classpath:teiid.properties")
 public class TeiidAutoConfiguration implements Ordered {
     
     public static ThreadLocal<TeiidServer> serverContext = new ThreadLocal<>(); 
@@ -136,6 +147,40 @@ public class TeiidAutoConfiguration implements Ordered {
         serverContext.set(server);
         return server;
     }
+     
+    @Bean(name="dataSource")
+    @Primary
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSource dataSource(TeiidServer server) {
+        EmbeddedDatabaseFactory edf = new EmbeddedDatabaseFactory();
+        edf.setDatabaseConfigurer(new TeiidDatabaseConfigurer(server));
+        edf.setDataSourceFactory(new DataSourceFactory() {
+			@Override
+			public DataSource getDataSource() {
+				String url = context.getEnvironment().getProperty("spring.datasource.teiid.url");
+				return new SimpleDriverDataSource(server.getDriver(), url);
+			}
+			
+			@Override
+			public ConnectionProperties getConnectionProperties() {
+				return new ConnectionProperties() {
+					@Override
+					public void setDriverClass(Class<? extends Driver> driverClass) {
+					}
+					@Override
+					public void setUrl(String url) {
+					}
+					@Override
+					public void setUsername(String username) {
+					}
+					@Override
+					public void setPassword(String password) {
+					}
+				};
+			}
+		});
+        return edf.getDatabase();
+    }    
     
     @Bean(name="file")
     public FileConnectionFactory fileConnectionFactory() {

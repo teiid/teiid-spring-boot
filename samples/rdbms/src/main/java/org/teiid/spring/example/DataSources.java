@@ -22,10 +22,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.TeiidSpringDatasource;
 
 @Configuration
-public class DataSources extends TeiidSpringDatasource {
+public class DataSources {
 
     @ConfigurationProperties(prefix = "spring.datasource.accountsDS")
     @Bean

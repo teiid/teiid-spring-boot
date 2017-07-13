@@ -22,8 +22,8 @@ import javax.persistence.Id;
 import org.teiid.spring.annotations.ExcelTable;
 
 @Entity
-@ExcelTable(file="employees.xlsx", headerRow=1, dataRowStartsAt=2)
-public class Employee {
+@ExcelTable(file="names.xls", headerRow=13, dataRowStartsAt=14)
+public class Names {
 	@Id
     private int ROW_ID;
     @Column(name="firstname")
@@ -70,7 +70,7 @@ public class Employee {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Employee other = (Employee) obj;
+		Names other = (Names) obj;
 		if (ROW_ID != other.ROW_ID)
 			return false;
 		if (age != other.age)

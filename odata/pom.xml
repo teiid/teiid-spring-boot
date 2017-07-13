@@ -6,12 +6,11 @@
 		<groupId>org.teiid</groupId>
 		<artifactId>teiid-spring-boot-starter-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>../..</relativePath>
 	</parent>
 
-	<artifactId>data-rest</artifactId>
-	<name>teiid-data-rest</name>
-	<description>Teiid connector for REST data consumption</description>
+	<artifactId>odata</artifactId>
+	<name>teiid-odata</name>
+	<description>Expose OData interface</description>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -20,21 +19,12 @@
 			<artifactId>teiid-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.teiid.connectors</groupId>
-			<artifactId>translator-ws</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.jboss.teiid</groupId>
-			<artifactId>teiid-api</artifactId>
+			<artifactId>teiid-olingo</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 	</dependencies>
 </project>

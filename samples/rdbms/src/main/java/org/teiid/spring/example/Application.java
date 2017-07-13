@@ -33,8 +33,7 @@ public class Application implements CommandLineRunner {
     private ViewBasedCustomerRepository viewBasedCustomerRepository;
     
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-		System.exit(0);
+		SpringApplication.run(Application.class, args).close();
 	}
 	
     @Override

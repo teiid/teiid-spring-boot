@@ -39,7 +39,6 @@ import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
-import org.teiid.spring.TeiidSpringDatasource;
 import org.teiid.spring.autoconfigure.TeiidAutoConfiguration;
 import org.teiid.spring.autoconfigure.TeiidConstants;
 import org.teiid.spring.autoconfigure.TeiidServer;
@@ -48,7 +47,7 @@ import org.teiid.translator.TranslatorException;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = {TeiidAutoConfiguration.class, TeiidSpringDatasource.class, TestConfiguration.class})
+@SpringBootTest(classes = {TeiidAutoConfiguration.class, TestConfiguration.class})
 public class TeiidAutoConfigurationTest {
     
     @Autowired

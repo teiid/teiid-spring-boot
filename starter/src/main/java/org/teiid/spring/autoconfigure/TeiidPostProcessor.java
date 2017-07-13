@@ -40,7 +40,6 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
-import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.spring.data.BaseConnectionFactory;
@@ -65,9 +64,6 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 	@Autowired
 	private ApplicationContext context;
 	
-    @Autowired
-    private TeiidProperties properties;	
-
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName)
 			throws BeansException {
@@ -83,7 +79,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 		if (bean instanceof TeiidServer) {
 			// force initialization of this bean as soon as we see a TeiidServer
 			this.beanFactory.getBean(TeiidInitializer.class);
-		} else if (bean instanceof DataSource && !beanName.equals("teiidDataSource")) {
+		} else if (bean instanceof DataSource && !beanName.equals("dataSource")) {
 		    // initialize databases if any
 		    new MultiDataSourceInitializer((DataSource)bean, beanName, context).init();
 		    

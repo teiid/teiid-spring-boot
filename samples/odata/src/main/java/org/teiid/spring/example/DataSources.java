@@ -13,40 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.spring;
+
+package org.teiid.spring.example;
 
 import javax.sql.DataSource;
 
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.Ordered;
 
 @Configuration
-@PropertySource("classpath:teiid-driver.properties")
-public class TeiidSpringDatasource implements Ordered {
-
-    @Primary
-    @Bean
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource teiidDataSource() {
-        DataSource ds = DataSourceBuilder.create().build();
-        return ds;
-    }
-
-    @Bean
-    @Primary
-    @ConfigurationProperties("spring.datasource")
-    public DataSourceProperties accountsDataSourceProperties() {
-        return new DataSourceProperties();
-    }
+public class DataSources {
     
-    @Override
-    public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE - 10;
-    }
+    @ConfigurationProperties(prefix = "spring.datasource.accountsDS")
+    @Bean
+    public DataSource accountsDS() {
+        return DataSourceBuilder.create().build();
+    }    
 }
