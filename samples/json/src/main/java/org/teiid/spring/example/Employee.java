@@ -17,11 +17,16 @@ package org.teiid.spring.example;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -30,6 +35,7 @@ import org.teiid.hibernate.types.LongArrayType;
 import org.teiid.spring.annotations.JsonTable;
 
 @Entity
+@Table (name="employee")
 @JsonTable(endpoint="employee.json", source="file")
 @TypeDefs({
     @TypeDef(name = "long-array",typeClass = LongArrayType.class)
@@ -45,6 +51,9 @@ public class Employee {
     
     @Embedded
     private Address address;
+    
+    @OneToMany(mappedBy="employee", fetch=FetchType.EAGER)
+    private Set<Skills> skills = new HashSet<>();
 
     @Type(type = "long-array")
     @Column(name = "phonenumbers", columnDefinition = "long[]")    
@@ -105,7 +114,11 @@ public class Employee {
     public void setPhoneNumbers(long[] phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
     }
-
+    
+    public Set<Skills> getSkills() {
+        return this.skills;
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -117,6 +130,7 @@ public class Employee {
         sb.append("Designation: " + getDesignation() + "\n");
         sb.append("Phone Numbers: " + Arrays.toString(getPhoneNumbers()) + "\n");
         sb.append("Address: " + getAddress() + "\n");
+        sb.append("Skills: " + getSkills() + "\n");
         return sb.toString();
     }
 

@@ -98,7 +98,7 @@ public class TextTableView extends ViewBuilder<TextTable> {
     }
     
     @Override
-    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, Field parent, boolean last,
+    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,
             TextTable annotation) {
         
         TextTable colAnnotation = field.getAnnotation(TextTable.class);

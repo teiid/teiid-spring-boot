@@ -18,6 +18,7 @@ package org.teiid.spring.views;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+import javax.persistence.Id;
 
 import org.teiid.core.types.DataTypeManager;
 import org.teiid.metadata.Column;
@@ -53,7 +54,7 @@ public class ViewBuilder<T> {
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, T annotation) {
     }
 
-    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, Field parent, boolean last,
+    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,
             T annotation) {
     }
 
@@ -94,7 +95,7 @@ public class ViewBuilder<T> {
     }
     
     
-    private void addColumn(Field field, Field parent, Table view, MetadataFactory mf, boolean last, T annotation) {
+    private void addColumn(Field field, String parent, Table view, MetadataFactory mf, boolean last, T annotation) {
         if (field.getAnnotation(javax.persistence.Transient.class) != null) {
             return;
         }
@@ -107,7 +108,7 @@ public class ViewBuilder<T> {
         
         boolean pk = false;
         javax.persistence.Id idAnnotation = field.getAnnotation(javax.persistence.Id.class);
-        if (idAnnotation != null) {
+        if (idAnnotation != null && parent == null) {
             pk = true;
         }
         
@@ -119,13 +120,28 @@ public class ViewBuilder<T> {
                 for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
                     Field innerField = field.getType().getDeclaredFields()[x];
                     boolean innerLast = (x == (field.getType().getDeclaredFields().length - 1));
-                    addColumn(innerField, field, view, mf, innerLast && last, annotation);
+                    addColumn(innerField, field.getName(), view, mf, innerLast && last, annotation);
                 }
                 return;
+			}
+			if ((field.getAnnotation(javax.persistence.ManyToOne.class) != null
+					|| field.getAnnotation(javax.persistence.OneToOne.class) != null)
+					&& field.getType().getAnnotation(javax.persistence.Entity.class) != null) {
+                for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
+                    Field innerField = field.getType().getDeclaredFields()[x];
+                    if (innerField.getAnnotation(Id.class) == null) {
+                    	continue;
+                    }
+                    addColumn(innerField, "..", view, mf, last, annotation);
+                }
+                return;
+			}            
+            else if (field.getAnnotation(javax.persistence.OneToMany.class) != null
+					|| field.getAnnotation(javax.persistence.ManyToOne.class) != null) {
+            	return;
             } else {
                 throw new IllegalStateException(field.getName()
-                        + " defined without any @Entity annotation, con not inference "
-                        + "type information without additional metadata");
+                        + " failed to inference type information without additional metadata");
             }
         }
         

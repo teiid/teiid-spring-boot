@@ -37,7 +37,7 @@ public class ExcelTableView extends ViewBuilder<ExcelTable> {
     }
     
     @Override
-    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, Field parent, boolean last,
+    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,
     		ExcelTable annotation) {
       
     	boolean headerExists = annotation.headerRow() != -1;

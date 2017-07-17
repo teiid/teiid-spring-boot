@@ -17,8 +17,6 @@ package org.teiid.spring.views;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
@@ -27,8 +25,6 @@ import org.teiid.spring.annotations.JsonTable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JsonTableView extends ViewBuilder<JsonTable> {
-    private static final Log logger = LogFactory.getLog(JsonTableView.class);
-
     private StringBuilder columndef = new StringBuilder();
     private StringBuilder columns = new StringBuilder();
     
@@ -66,12 +62,11 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         sb.append("COLUMNS ").append(columndef.toString());
         sb.append(") AS jt");
         
-        logger.debug("Generated View's Transformation: "+sb.toString());
         view.setSelectTransformation(sb.toString());
     }
     
     @Override
-    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, Field parent, boolean last,
+    void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,
             JsonTable annotation) {
         
         JsonTable colAnnotation = field.getAnnotation(JsonTable.class);
@@ -95,7 +90,7 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         if (jsonProperty != null) {
             columndef.append(" PATH '").append(jsonProperty.value()).append("'");    
         } else if (parent != null) {
-            columndef.append(" PATH '").append(parent.getName()).append("/").append(column.getName()).append("'");
+            columndef.append(" PATH '").append(parent).append("/").append(column.getName()).append("'");
         }
         
         if(!last) {
