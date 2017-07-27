@@ -34,13 +34,15 @@ public abstract class AbstractArrayTypeDescriptor<T>
 	private static final long serialVersionUID = 7698345570957205617L;
 	private Class<T> arrayObjectClass;
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void setParameterValues(Properties parameters) {
         arrayObjectClass = ( (ParameterType) parameters.get( PARAMETER_TYPE ) ).getReturnedClass();
 
     }
 
-    public AbstractArrayTypeDescriptor(Class<T> arrayObjectClass) {
+    @SuppressWarnings({ "unchecked", "serial" })
+	public AbstractArrayTypeDescriptor(Class<T> arrayObjectClass) {
         super( arrayObjectClass, (MutabilityPlan<T>) new MutableMutabilityPlan<Object>() {
             @Override
             protected T deepCopyNotNull(Object value) {

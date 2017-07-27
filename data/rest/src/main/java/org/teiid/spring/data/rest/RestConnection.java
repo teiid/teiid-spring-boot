@@ -178,6 +178,7 @@ public class RestConnection extends BasicConnection implements WSConnection {
 	    throw new IOException("SOAP calling not supported yet.");
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> Dispatch<T> createDispatch(String binding, String endpoint, Class<T> type, Mode mode) {
 		Dispatch<T> dispatch = (Dispatch<T>) new HttpDispatch(endpoint, this.template, binding);
 		return dispatch;
