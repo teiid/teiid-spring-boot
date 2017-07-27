@@ -32,6 +32,7 @@ import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
 import org.teiid.core.TeiidProcessingException;
+import org.teiid.metadata.Schema;
 import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
 import org.teiid.olingo.web.ContextAwareHttpSerlvetRequest;
@@ -102,17 +103,24 @@ public class SpringODataFilter extends ODataFilter {
     }
     
 	public String modelName() {
-		try {
-			VDB vdb = server.getAdmin().getVDB(TeiidConstants.VDBNAME, TeiidConstants.VDBVERSION);
+		Schema schema = server.getSchema("teiid");
+		if (!schema.getTables().isEmpty()) {
+			return "teiid";
+		}
+
+		String modelName = null;
+		try {						
+			VDB vdb = server.getAdmin().getVDB(TeiidConstants.VDBNAME, TeiidConstants.VDBVERSION);			
 			for (Model m : vdb.getModels()) {
-				if (m.getName().equals("file") || m.getName().equals("rest")) {
+				if (m.getName().equals("file") || m.getName().equals("rest") || m.getName().equals("teiid")) {
 					continue;
 				}
-				return m.getName();
+				modelName = m.getName();
+				break;
 			}
 		} catch (AdminException e) {
 		}
-		return "teiid";
+		return modelName;
 	}
 	
     public Client buildClient(String vdbName, String version, Properties props) {

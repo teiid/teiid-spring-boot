@@ -42,11 +42,14 @@ import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
+import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadata.MetadataFactory;
+import org.teiid.metadata.Schema;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
+import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.annotations.ExcelTable;
 import org.teiid.spring.annotations.JsonTable;
@@ -290,5 +293,18 @@ public class TeiidServer extends EmbeddedServer {
 		model.addSourceMapping(source);
 
 		vdb.addModel(model);
+	}
+
+	public Schema getSchema(String modelName) {
+		VDBMetaData vdb = getVDBRepository().getVDB(VDBNAME, VDBVERSION); //$NON-NLS-1$
+		if (vdb == null) {
+			return null;
+		}
+		TransformationMetadata metadata = vdb.getAttachment(TransformationMetadata.class);
+		if (metadata == null) {
+			return null;
+		}
+		Schema schema = metadata.getMetadataStore().getSchema(modelName);
+		return schema;
 	}
 }

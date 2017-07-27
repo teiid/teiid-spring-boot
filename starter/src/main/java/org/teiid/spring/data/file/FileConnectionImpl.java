@@ -54,6 +54,10 @@ public class FileConnectionImpl extends BasicConnection implements FileConnectio
     	if (!allowParentPaths && parentRef.matcher(path).matches()) {	
 			throw new ResourceException("Parent path .. not allowed in file path " + path); //$NON-NLS-1$
 		}
+    	
+    	if (new File(path).isAbsolute()) {
+    		return new File(path);
+    	}
 		return new File(parentDirectory, path);	
     }
 
