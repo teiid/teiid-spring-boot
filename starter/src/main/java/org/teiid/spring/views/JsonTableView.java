@@ -50,6 +50,9 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         
         String root = annotation.root();
         root = "/response"+root;
+        if (annotation.rootIsArray()) {
+        	root = "/response" + root;
+        }        
         if (root.endsWith("/")) {
             root = root.substring(0, root.lastIndexOf('/'));
         }

@@ -27,6 +27,7 @@ public @interface JsonTable {
     
     /**
      * Source name; If overriding the {@link WsConnectionFactory} bean then provide the name of the bean
+     * @return string
      */
     String source() default "rest"; // this the default web connection manager
     
@@ -34,6 +35,7 @@ public @interface JsonTable {
      * On Class ONLY
      * The endpoint where the document is located at. If this is file resource then this field can be used to define
      * name of the file.
+     * @return string
      */
     String endpoint();
 
@@ -42,14 +44,21 @@ public @interface JsonTable {
     /**
      * On Column ONLY, this defines the column as ordinal identity column. The data type must be integer.
      * A FOR ORDINALITY column is typed as integer and will return the 1-based item number as its value.
+     * @return boolean
      */
     boolean ordinal() default false;
 
-    
+
     /**
-     * Root of the document where the parsing needs to start from
-     * @return
+     * Root of the document where the parsing needs to start from.
+     * @return string
      */
     String root() default "/";
     
+    
+    /**
+     * JSON root content is array. ex: [{...}, {...}] 
+     * @return boolean
+     */
+    boolean rootIsArray() default false;
 }

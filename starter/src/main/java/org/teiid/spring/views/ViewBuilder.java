@@ -139,6 +139,8 @@ public class ViewBuilder<T> {
             else if (field.getAnnotation(javax.persistence.OneToMany.class) != null
 					|| field.getAnnotation(javax.persistence.ManyToOne.class) != null) {
             	return;
+            } else if (field.getType().isEnum()){
+            	type = DataTypeManager.DefaultDataTypes.SHORT;
             } else {
                 throw new IllegalStateException(field.getName()
                         + " failed to inference type information without additional metadata");
