@@ -29,7 +29,7 @@ import org.teiid.spring.annotations.SelectQuery;
 public class Customer {
     
     @Id
-    int id;
+    long id;
     
     @Column
     String name;
@@ -51,7 +51,7 @@ public class Customer {
         return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + "]";
     }
     
-    public int getId() {
+    public long getId() {
         return id;
     }
     public void setId(int id) {
