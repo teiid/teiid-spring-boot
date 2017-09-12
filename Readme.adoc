@@ -1,6 +1,6 @@
 = Teiid Spring Boot Starter
 
-Primary purpose of `teiid-spring-boot` is enables Teiid in Spring Boot applications via adding the Maven dependency below to your Spring Boot application pom file.
+Primary purpose of `teiid-spring-boot` is to enable Teiid in Spring Boot applications. The Teiid can be added using Maven dependency below to your Spring Boot application pom.xml file.
 
 [source,xml]
 ----
@@ -15,7 +15,7 @@ Primary purpose of `teiid-spring-boot` is enables Teiid in Spring Boot applicati
 * Enables Teiid for Spring Boot applications
 * Supports translators/connectors auto-detection 
 * Enable Externalized .yml/.properties based configuration
-* Supports vdb deployment either .sql, or .xml 
+* Supports VDB building using Spring style Annotations.
 
 Refer to link:UserGuide.adoc[User Guide] for more details.
 
@@ -33,6 +33,15 @@ $ git clone https://github.com/<yourname>/teiid-spring-boot.git
 $ cd teiid-spring-boot
 $ mvn clean install -s settings.xml
 ----
+
+The directory structure is defined as follows:
+/teiid-spring-boot
+    /starter -> Main Bootstaping application
+    /data -> Contains all the different data sources that Teiid supports (RDBMS is implicitly supported)
+    /odata -> starter app for providing the odata support
+    /samples -> various examples show casing different data sources
+    /starter-test -> tests
+       
 
 ==  Useful Links
 
