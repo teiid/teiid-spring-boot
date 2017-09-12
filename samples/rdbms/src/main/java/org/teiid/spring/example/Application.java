@@ -51,5 +51,7 @@ public class Application implements CommandLineRunner {
         
         System.out.println("\n\nFrom All customers entity");
         viewBasedCustomerRepository.findAll().forEach(x->System.out.println(x));
+        
+        customerRepository.insert(100, "foo", "12312312");
     }
 }

@@ -31,16 +31,19 @@ public class SimpleView extends ViewBuilder<SelectQuery> {
         InsertQuery insertAnnotation = entityClazz.getAnnotation(InsertQuery.class);
         if (insertAnnotation != null) {
             view.setInsertPlan(insertAnnotation.value());
+            view.setSupportsUpdate(true);
         }
         
         UpdateQuery updateAnnotation = entityClazz.getAnnotation(UpdateQuery.class);
         if (updateAnnotation != null) {
             view.setUpdatePlan(updateAnnotation.value());
+            view.setSupportsUpdate(true);
         }
 
         DeleteQuery deleteAnnotation = entityClazz.getAnnotation(DeleteQuery.class);
         if (deleteAnnotation != null) {
             view.setDeletePlan(deleteAnnotation.value());
+            view.setSupportsUpdate(true);
         }        
     }
 }

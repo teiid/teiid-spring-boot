@@ -151,7 +151,7 @@ public class ViewBuilder<T> {
         if (pk) {
             mf.addPrimaryKey("PK", Arrays.asList(column.getName()), view);
         }
-        
+        column.setUpdatable(true);
         onColumnCreate(view, column,  mf, field, parent, last, annotation);        
     }
 }

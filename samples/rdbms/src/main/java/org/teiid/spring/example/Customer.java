@@ -21,11 +21,29 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.teiid.spring.annotations.DeleteQuery;
+import org.teiid.spring.annotations.InsertQuery;
 import org.teiid.spring.annotations.SelectQuery;
+import org.teiid.spring.annotations.UpdateQuery;
 
 @Entity
 @Table(name="all_customers")
 @SelectQuery("SELECT id, name, ssn FROM accountsDS.Customers UNION ALL SELECT id, name, ssn FROM customerDS.Customer")
+
+@InsertQuery("FOR EACH ROW \n"+
+             "BEGIN ATOMIC \n" +
+		     "INSERT INTO customerDS.Customer(id, name, ssn) values (NEW.id, NEW.name, NEW.ssn);\n" +
+             "END")
+
+@UpdateQuery("FOR EACH ROW \n"+
+        	 "BEGIN ATOMIC \n" +
+			 "UPDATE customerDS.Customer SET name=NEW.name, ssn=NEW.ssn WHERE id = OLD.id;\n"+
+        	 "END")
+
+@DeleteQuery("FOR EACH ROW \n"+
+   	 		"BEGIN ATOMIC \n" +
+			"DELETE FROM customerDS.Customer where id = OLD.id;\n"+
+   	 		"END")
 public class Customer {
     
     @Id

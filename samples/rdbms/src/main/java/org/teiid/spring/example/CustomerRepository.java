@@ -18,6 +18,8 @@ package org.teiid.spring.example;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -48,5 +50,11 @@ public class CustomerRepository {
      
         return result;
 
+    }    
+    
+    
+    @Transactional 
+    public int insert(long id, String name, String ssn) {
+       return jdbcTemplate.update("INSERT INTO all_customers(id, name, ssn) VALUES(?,?, ?)", id, name, ssn);
     }    
 }   
