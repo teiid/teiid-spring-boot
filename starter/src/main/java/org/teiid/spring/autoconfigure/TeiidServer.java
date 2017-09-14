@@ -86,6 +86,7 @@ public class TeiidServer extends EmbeddedServer {
 			}
 
 			if (model != null) {
+				model.setVisible(false);
 				vdb.addModel(model);
 				logger.info("Added " + sourceBeanName + " to the Teiid Database");
 			}
