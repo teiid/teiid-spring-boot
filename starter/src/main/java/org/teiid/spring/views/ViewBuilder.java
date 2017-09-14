@@ -100,7 +100,7 @@ public class ViewBuilder<T> {
             return;
         }
         
-        String columnName = field.getName();
+        String columnName = (parent == null) ? field.getName() : parent + "_" + field.getName();
         javax.persistence.Column columnAnnotation = field.getAnnotation(javax.persistence.Column.class);
         if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
             columnName = columnAnnotation.name();
@@ -132,7 +132,7 @@ public class ViewBuilder<T> {
                     if (innerField.getAnnotation(Id.class) == null) {
                     	continue;
                     }
-                    addColumn(innerField, "..", view, mf, last, annotation);
+                    addColumn(innerField, field.getName(), view, mf, last, annotation);
                 }
                 return;
 			}            

@@ -126,7 +126,7 @@ public class TeiidServer extends EmbeddedServer {
 			deployVDB(new ByteArrayInputStream(out.toByteArray()));
 		} catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
 				| IOException e) {
-			throw new IllegalStateException("Failed to deploy the VDB file, cause: " + e.getMessage());
+			throw new IllegalStateException("Failed to deploy the VDB file", e);
 		}
 	}
 
