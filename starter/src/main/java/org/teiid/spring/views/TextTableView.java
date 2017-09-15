@@ -19,16 +19,22 @@ import java.lang.reflect.Field;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.TextTable;
 
 public class TextTableView extends ViewBuilder<TextTable> {
-    private static final Log logger = LogFactory.getLog(TextTableView.class);
+	private static final Log logger = LogFactory.getLog(TextTableView.class);
 
     private StringBuilder columndef = new StringBuilder();
     private StringBuilder columns = new StringBuilder();
+
+    public TextTableView(Metadata metadata) {
+		super(metadata);
+	}
     
     @Override
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, TextTable annotation) {

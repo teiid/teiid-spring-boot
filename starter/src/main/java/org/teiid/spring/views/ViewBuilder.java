@@ -17,19 +17,31 @@ package org.teiid.spring.views;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import javax.persistence.Id;
-import javax.persistence.Lob;
 
+import org.hibernate.boot.Metadata;
+import org.hibernate.mapping.PrimaryKey;
 import org.teiid.core.types.DataTypeManager;
+import org.teiid.core.types.JDBCSQLTypeInfo;
+import org.teiid.dialect.TeiidDialect;
+import org.teiid.metadata.BaseColumn.NullType;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 
 public class ViewBuilder<T> {
+	protected Metadata metadata;
+	
+	public ViewBuilder(Metadata metadata) {
+		this.metadata = metadata;	
+	}
     
     public void buildView(Class<?> entityClazz, MetadataFactory mf, T annotation) {
-        String tableName = entityClazz.getSimpleName();
+    	
+    	org.hibernate.mapping.Table ormTable = this.metadata.getEntityBinding(entityClazz.getName()).getTable();
+        String tableName = ormTable.getQuotedName();
         javax.persistence.Entity entityAnnotation = entityClazz.getAnnotation(javax.persistence.Entity.class);
         if (entityAnnotation != null && !entityAnnotation.name().isEmpty()) {
             tableName = entityAnnotation.name();
@@ -44,11 +56,18 @@ public class ViewBuilder<T> {
 
         onTableCreate(view, mf, entityClazz, annotation);
         
-        for (int i = 0; i < entityClazz.getDeclaredFields().length; i++) {
-            Field field = entityClazz.getDeclaredFields()[i];
-            boolean last = (i == (entityClazz.getDeclaredFields().length-1));
-            addColumn(field, null, view, mf, last, annotation);
+        Iterator<org.hibernate.mapping.Column> it = ormTable.getColumnIterator();
+        while(it.hasNext()) {
+        	org.hibernate.mapping.Column ormColumn = it.next();
+        	addColumn(ormTable, ormColumn, null, view, mf, !it.hasNext(), annotation);
         }
+        
+        
+//        for (int i = 0; i < entityClazz.getDeclaredFields().length; i++) {
+//            Field field = entityClazz.getDeclaredFields()[i];
+//            boolean last = (i == (entityClazz.getDeclaredFields().length-1));
+//            addColumn(field, null, view, mf, last, annotation);
+//        }
         onFinish(view, mf, entityClazz, annotation);
     }
     
@@ -96,12 +115,14 @@ public class ViewBuilder<T> {
     }
     
     
-    private void addColumn(Field field, String parent, Table view, MetadataFactory mf, boolean last, T annotation) {
-        if (field.getAnnotation(javax.persistence.Transient.class) != null) {
+	private void addColumn(Field field, String parent, Table view, MetadataFactory mf, boolean last, T annotation) {
+        
+		if (field.getAnnotation(javax.persistence.Transient.class) != null) {
             return;
         }
         
-        String columnName = (parent == null) ? field.getName() : parent + "_" + field.getName();
+        String fieldName = field.getName();
+        String columnName = (parent == null) ? fieldName : parent + "_" + fieldName;
         javax.persistence.Column columnAnnotation = field.getAnnotation(javax.persistence.Column.class);
         if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
             columnName = columnAnnotation.name();
@@ -129,7 +150,7 @@ public class ViewBuilder<T> {
                     for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
                         Field innerField = field.getType().getDeclaredFields()[x];
                         boolean innerLast = (x == (field.getType().getDeclaredFields().length - 1));
-                        addColumn(innerField, field.getName(), view, mf, innerLast && last, annotation);
+                        addColumn(innerField, fieldName, view, mf, innerLast && last, annotation);
                     }
                     return;
                 }
@@ -141,7 +162,7 @@ public class ViewBuilder<T> {
                         if (innerField.getAnnotation(Id.class) == null) {
                             continue;
                         }
-                        addColumn(innerField, field.getName(), view, mf, last, annotation);
+                        addColumn(innerField, fieldName, view, mf, last, annotation);
                     }
                     return;
                 }
@@ -151,14 +172,12 @@ public class ViewBuilder<T> {
                 } else if (field.getType().isEnum()){
                     type = DataTypeManager.DefaultDataTypes.SHORT;
                 } else {
-                    throw new IllegalStateException(field.getName()
-                            + " failed to inference type information without additional metadata");
+					throw new IllegalStateException(
+							fieldName + " failed to inference type information without additional metadata");
                 }
             }
 
         }
-
-
         
         Column column = mf.addColumn(columnName, type, view);
         if (pk) {
@@ -167,4 +186,92 @@ public class ViewBuilder<T> {
         column.setUpdatable(true);
         onColumnCreate(view, column,  mf, field, parent, last, annotation);        
     }
+    
+	
+	private void addColumn(org.hibernate.mapping.Table ormTable, org.hibernate.mapping.Column ormColumn, String parent,
+			Table view, MetadataFactory mf, boolean last, T annotation) {
+        
+        String fieldName = ormColumn.getName();
+        String columnName = (parent == null) ? fieldName : parent + "_" + fieldName;
+
+        boolean pk = false;
+        if (parent == null) {
+            pk = isPK(ormTable, ormColumn);
+        }
+        
+        String type = JDBCSQLTypeInfo.getTypeName(ormColumn.getSqlTypeCode(metadata));
+        if (type.contains("object")  ) {
+/*
+            if (field.getAnnotation(javax.persistence.Lob.class) != null) {
+                type = DataTypeManager.DefaultDataTypes.BLOB;
+            }
+
+            // let's exclude arrays as we can handle that as a one to many
+            if(!field.getType().isArray()) {
+
+                if (field.getAnnotation(javax.persistence.Embedded.class) != null
+                        && field.getType().getAnnotation(javax.persistence.Embeddable.class) != null) {
+                    // really need recursive logic here.
+                    for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
+                        Field innerField = field.getType().getDeclaredFields()[x];
+                        boolean innerLast = (x == (field.getType().getDeclaredFields().length - 1));
+                        addColumn(innerField, fieldName, view, mf, innerLast && last, annotation);
+                    }
+                    return;
+                }
+                if ((field.getAnnotation(javax.persistence.ManyToOne.class) != null
+                        || field.getAnnotation(javax.persistence.OneToOne.class) != null)
+                        && field.getType().getAnnotation(javax.persistence.Entity.class) != null) {
+                    for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
+                        Field innerField = field.getType().getDeclaredFields()[x];
+                        if (innerField.getAnnotation(Id.class) == null) {
+                            continue;
+                        }
+                        addColumn(innerField, fieldName, view, mf, last, annotation);
+                    }
+                    return;
+                }
+                else if (field.getAnnotation(javax.persistence.OneToMany.class) != null
+                        || field.getAnnotation(javax.persistence.ManyToOne.class) != null) {
+                    return;
+                } else if (field.getType().isEnum()){
+                    type = DataTypeManager.DefaultDataTypes.SHORT;
+                } else {
+					throw new IllegalStateException(
+							fieldName + " failed to inference type information without additional metadata");
+                }
+            }
+*/
+        }
+        
+        Column column = mf.addColumn(columnName, type, view);
+        if (pk) {
+            mf.addPrimaryKey(ormTable.getPrimaryKey().getName(), Arrays.asList(column.getName()), view);
+        }
+        column.setUpdatable(true);
+        column.setLength(ormColumn.getLength());
+        column.setScale(ormColumn.getScale());
+        column.setPrecision(ormColumn.getPrecision());
+        column.setNullType(ormColumn.isNullable()?NullType.Nullable:NullType.No_Nulls);
+        column.setDefaultValue(ormColumn.getDefaultValue());
+        onColumnCreate(view, column,  mf, null, parent, last, annotation);        
+    }	
+	
+	// TODO: Support composite primary key
+	private boolean isPK(org.hibernate.mapping.Table ormTable, org.hibernate.mapping.Column ormColumn) {
+		PrimaryKey pk = ormTable.getPrimaryKey();
+		if (pk != null) {
+			Iterator<org.hibernate.mapping.Column> it = pk.getColumnIterator();
+			while(it.hasNext()) {
+				org.hibernate.mapping.Column c = it.next();
+				if (ormColumn.equals(c)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+
+    
 }

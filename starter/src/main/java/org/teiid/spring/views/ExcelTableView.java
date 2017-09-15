@@ -18,14 +18,21 @@ package org.teiid.spring.views;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.ExcelTable;
 
 public class ExcelTableView extends ViewBuilder<ExcelTable> {
-    private AtomicInteger columnIdx = new AtomicInteger();
+
+	private AtomicInteger columnIdx = new AtomicInteger();
     private StringBuilder columns = new StringBuilder();
+
+    public ExcelTableView(Metadata metadata) {
+		super(metadata);
+	}
     
     @Override
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, ExcelTable annotation) {

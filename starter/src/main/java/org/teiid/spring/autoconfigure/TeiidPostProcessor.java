@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,9 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 	
 	@Autowired
 	private ApplicationContext context;
+	
+	@Autowired
+	private PhysicalNamingStrategy namingStrategy;
 	
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName)
@@ -102,7 +106,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
         TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
         if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
-            deploy = server.findAndConfigureViews(vdb, event.getApplicationContext());
+            deploy = server.findAndConfigureViews(vdb, event.getApplicationContext(), namingStrategy);
         }
 
         if (deploy) {

@@ -15,6 +15,8 @@
  */
 package org.teiid.spring.views;
 
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.DeleteQuery;
@@ -24,7 +26,11 @@ import org.teiid.spring.annotations.UpdateQuery;
 
 public class SimpleView extends ViewBuilder<SelectQuery> {
 
-    @Override
+    public SimpleView(Metadata metadata) {
+		super(metadata);
+	}
+
+	@Override
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, SelectQuery annotation) {
         view.setSelectTransformation(annotation.value());
         

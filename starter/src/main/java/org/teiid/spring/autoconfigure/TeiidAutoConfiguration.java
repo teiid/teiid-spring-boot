@@ -29,7 +29,9 @@ import javax.transaction.TransactionManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -77,6 +79,9 @@ public class TeiidAutoConfiguration implements Ordered {
     
     @Autowired
     ApplicationContext context;
+    
+    @Value("${spring.jpa.hibernate.naming.physical-strategy:org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy}")
+    String hibernateNamingClass;
     
     @Override
     public int getOrder() {
@@ -186,4 +191,13 @@ public class TeiidAutoConfiguration implements Ordered {
     public FileConnectionFactory fileConnectionFactory() {
         return new FileConnectionFactory();
     }
+    
+    @Bean(name="teiidNamingStrategy")
+    public PhysicalNamingStrategy teiidNamingStrategy() {
+    	try {
+    		return (PhysicalNamingStrategy)Class.forName(hibernateNamingClass).newInstance();
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			return null;
+		}
+	}
 }

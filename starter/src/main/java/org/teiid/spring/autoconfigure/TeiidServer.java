@@ -29,6 +29,14 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
+import org.hibernate.boot.registry.BootstrapServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.service.ServiceRegistry;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -42,8 +50,8 @@ import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
-import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
+import org.teiid.dialect.TeiidDialect;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Schema;
@@ -203,7 +211,7 @@ public class TeiidServer extends EmbeddedServer {
 		return model;
 	}
 
-	boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context) {
+	boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context, PhysicalNamingStrategy namingStrategy) {
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
 		provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
 		provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
@@ -238,6 +246,8 @@ public class TeiidServer extends EmbeddedServer {
 		model.setModelType(Model.Type.VIRTUAL);
 		MetadataFactory mf = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
 				model);
+		
+		Metadata metadata = getMetadata(components, namingStrategy);
 		for (BeanDefinition c : components) {
 			try {
 				Class<?> clazz = Class.forName(c.getBeanClassName());
@@ -247,13 +257,13 @@ public class TeiidServer extends EmbeddedServer {
 				ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
 
 				if (textAnnotation != null) {
-					new TextTableView().buildView(clazz, mf, textAnnotation);
+					new TextTableView(metadata).buildView(clazz, mf, textAnnotation);
 				} else if (jsonAnnotation != null) {
-					new JsonTableView().buildView(clazz, mf, jsonAnnotation);
+					new JsonTableView(metadata).buildView(clazz, mf, jsonAnnotation);
 				} else if (selectAnnotation != null) {
-					new SimpleView().buildView(clazz, mf, selectAnnotation);
+					new SimpleView(metadata).buildView(clazz, mf, selectAnnotation);
 				} else if (excelAnnotation != null) {
-					new ExcelTableView().buildView(clazz, mf, excelAnnotation);
+					new ExcelTableView(metadata).buildView(clazz, mf, excelAnnotation);
 				}
 			} catch (ClassNotFoundException e) {
 				logger.warn("Error loading entity classes");
@@ -269,6 +279,24 @@ public class TeiidServer extends EmbeddedServer {
 		return load;
 	}
 
+	private Metadata getMetadata(Set<BeanDefinition> components, PhysicalNamingStrategy namingStrategy) {
+		MetadataSources metadataSources = new MetadataSources();
+		for (BeanDefinition c : components) {
+			try {
+				Class<?> clazz = Class.forName(c.getBeanClassName());
+				metadataSources.addAnnotatedClass(clazz);
+			} catch (ClassNotFoundException e) {
+			}
+		}		
+		ServiceRegistry registry = metadataSources.getServiceRegistry();
+		StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(
+				(BootstrapServiceRegistry) registry).applySetting(AvailableSettings.DIALECT, TeiidDialect.class)
+						.build();
+		Metadata metadata = metadataSources.getMetadataBuilder(serviceRegistry)
+				.applyPhysicalNamingStrategy(namingStrategy).build();
+		return metadata;
+	}	
+	
 	private void addExcelModel(VDBMetaData vdb, Class<?> clazz, ExcelTable excelAnnotation) {
 		ModelMetaData model = new ModelMetaData();
 		model.setName(clazz.getSimpleName().toLowerCase());
