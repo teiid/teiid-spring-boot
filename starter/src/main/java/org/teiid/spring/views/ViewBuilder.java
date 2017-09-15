@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 import org.teiid.core.types.DataTypeManager;
 import org.teiid.metadata.Column;
@@ -113,39 +114,51 @@ public class ViewBuilder<T> {
         }
         
         String type = DataTypeManager.getDataTypeName(normalizeType(field.getType()));
-        if (type.equals("object") && !field.getType().isArray()) {
-            if (field.getAnnotation(javax.persistence.Embedded.class) != null
-                    && field.getType().getAnnotation(javax.persistence.Embeddable.class) != null) {
-                // really need recursive logic here.
-                for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
-                    Field innerField = field.getType().getDeclaredFields()[x];
-                    boolean innerLast = (x == (field.getType().getDeclaredFields().length - 1));
-                    addColumn(innerField, field.getName(), view, mf, innerLast && last, annotation);
-                }
-                return;
-			}
-			if ((field.getAnnotation(javax.persistence.ManyToOne.class) != null
-					|| field.getAnnotation(javax.persistence.OneToOne.class) != null)
-					&& field.getType().getAnnotation(javax.persistence.Entity.class) != null) {
-                for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
-                    Field innerField = field.getType().getDeclaredFields()[x];
-                    if (innerField.getAnnotation(Id.class) == null) {
-                    	continue;
-                    }
-                    addColumn(innerField, field.getName(), view, mf, last, annotation);
-                }
-                return;
-			}            
-            else if (field.getAnnotation(javax.persistence.OneToMany.class) != null
-					|| field.getAnnotation(javax.persistence.ManyToOne.class) != null) {
-            	return;
-            } else if (field.getType().isEnum()){
-            	type = DataTypeManager.DefaultDataTypes.SHORT;
-            } else {
-                throw new IllegalStateException(field.getName()
-                        + " failed to inference type information without additional metadata");
+        if (type.contains("object")  ) {
+
+            if (field.getAnnotation(javax.persistence.Lob.class) != null) {
+                type = DataTypeManager.DefaultDataTypes.BLOB;
             }
+
+            // let's exclude arrays as we can handle that as a one to many
+            if(!field.getType().isArray()) {
+
+                if (field.getAnnotation(javax.persistence.Embedded.class) != null
+                        && field.getType().getAnnotation(javax.persistence.Embeddable.class) != null) {
+                    // really need recursive logic here.
+                    for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
+                        Field innerField = field.getType().getDeclaredFields()[x];
+                        boolean innerLast = (x == (field.getType().getDeclaredFields().length - 1));
+                        addColumn(innerField, field.getName(), view, mf, innerLast && last, annotation);
+                    }
+                    return;
+                }
+                if ((field.getAnnotation(javax.persistence.ManyToOne.class) != null
+                        || field.getAnnotation(javax.persistence.OneToOne.class) != null)
+                        && field.getType().getAnnotation(javax.persistence.Entity.class) != null) {
+                    for (int x = 0; x < field.getType().getDeclaredFields().length; x++) {
+                        Field innerField = field.getType().getDeclaredFields()[x];
+                        if (innerField.getAnnotation(Id.class) == null) {
+                            continue;
+                        }
+                        addColumn(innerField, field.getName(), view, mf, last, annotation);
+                    }
+                    return;
+                }
+                else if (field.getAnnotation(javax.persistence.OneToMany.class) != null
+                        || field.getAnnotation(javax.persistence.ManyToOne.class) != null) {
+                    return;
+                } else if (field.getType().isEnum()){
+                    type = DataTypeManager.DefaultDataTypes.SHORT;
+                } else {
+                    throw new IllegalStateException(field.getName()
+                            + " failed to inference type information without additional metadata");
+                }
+            }
+
         }
+
+
         
         Column column = mf.addColumn(columnName, type, view);
         if (pk) {
