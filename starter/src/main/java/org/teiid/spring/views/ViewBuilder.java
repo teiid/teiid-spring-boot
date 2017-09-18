@@ -248,18 +248,20 @@ public class ViewBuilder<T> {
 		String propertyName = propertyName(hibernateClass.getPropertyIterator(), hibernateClass.getIdentifierProperty(),
 				columnName);
 		FieldInfo attribute = new FieldInfo();
-		try {
-			attribute.field = entityClazz.getDeclaredField(propertyName);
-		} catch (NoSuchFieldException | SecurityException e) {
-			for (Field field:entityClazz.getDeclaredFields()) {
-				Embedded embedded = field.getAnnotation(Embedded.class);					
-				if (embedded != null) {					
-					attribute = getAttributeField(field.getType(), hibernateClass, columnName, fieldInfo);
-					if (attribute.field != null) {
-						fieldInfo.field = attribute.field;
-						fieldInfo.path = fieldInfo.path == null?field.getName():field.getName()+"/"+fieldInfo.path;
-						attribute = fieldInfo;
-						break;
+		if (propertyName != null) {
+			try {
+				attribute.field = entityClazz.getDeclaredField(propertyName);
+			} catch (NoSuchFieldException | SecurityException e) {
+				for (Field field:entityClazz.getDeclaredFields()) {
+					Embedded embedded = field.getAnnotation(Embedded.class);					
+					if (embedded != null) {					
+						attribute = getAttributeField(field.getType(), hibernateClass, columnName, fieldInfo);
+						if (attribute.field != null) {
+							fieldInfo.field = attribute.field;
+							fieldInfo.path = fieldInfo.path == null?field.getName():field.getName()+"/"+fieldInfo.path;
+							attribute = fieldInfo;
+							break;
+						}
 					}
 				}
 			}
