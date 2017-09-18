@@ -219,7 +219,12 @@ public class TeiidServer extends EmbeddedServer {
 
 		String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
 		if (basePackage == null) {
-			return false;
+			logger.warn("***************************************************************");
+			logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
+					+ "\" is NOT set, scanning entire classpath for @Entity classes.");
+			logger.warn("consider setting this property to avoid time consuming scanning");
+			logger.warn("***************************************************************");
+			basePackage = "*";
 		}
 		Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);
 		if (components.isEmpty()) {
