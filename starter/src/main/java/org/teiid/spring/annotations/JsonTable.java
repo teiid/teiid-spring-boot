@@ -21,6 +21,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Use this annotation on any Entity class, that defines the data from a JSON file. 
+ */
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface JsonTable {

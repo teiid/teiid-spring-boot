@@ -23,6 +23,9 @@ import java.lang.annotation.Target;
 
 import org.teiid.spring.data.file.FileConnectionFactory;
 
+/**
+ * Use this annotation on any Entity class, that defines the data from any flat file like CSV, fixed format etc. 
+ */
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface TextTable {

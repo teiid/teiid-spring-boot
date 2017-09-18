@@ -21,6 +21,26 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Defines the Teiid View's Transformation Update query. This is optional annotation,
+ * that can be defined only when you want support Update on the view.<br/>
+ * 
+ * 
+ * <pre>
+ * <code>
+ * &#64;UpdateQuery(
+ *   "FOR EACH ROW \n"+
+ *   "BEGIN ATOMIC \n" +
+ *       "UPDATE customerDS.person SET full_name=NEW.full_name, dob=NEW.dob WHERE id = OLD.id;\n"+
+ *   "END"
+ *   )            
+ * </code>
+ * </pre>
+ *
+ * For more information checkout <a href=
+ * "https://teiid.gitbooks.io/documents/content/reference/Update_Procedures_Triggers.html">Update
+ * procedures</a> in Teiid.
+ */
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface UpdateQuery {

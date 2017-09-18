@@ -21,6 +21,24 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Defines the Teiid View's Transformation Insert query. This is optional annotation,
+ * that can be defined only when you want support insert on the view.<br/>
+ * 
+ * 
+ * <pre>
+ * <code>
+ * &#64;InsertQuery("FOR EACH ROW \n"+
+             "BEGIN ATOMIC \n" +
+		     "INSERT INTO customerDS.person(id, full_name, dob) values (NEW.id, NEW.full_name, NEW.dob);\n" +
+             "END")
+ * </code>
+ * </pre>
+ *
+ * For more information checkout <a href=
+ * "https://teiid.gitbooks.io/documents/content/reference/Update_Procedures_Triggers.html">Update
+ * procedures</a> in Teiid.
+ */
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface InsertQuery {

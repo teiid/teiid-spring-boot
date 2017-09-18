@@ -18,7 +18,6 @@ package org.teiid.spring.views;
 import java.lang.reflect.Field;
 
 import org.hibernate.boot.Metadata;
-import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;

@@ -213,6 +213,7 @@ public class ViewBuilder<T> {
 		return null;
 	}	
 	
+	@SuppressWarnings("unchecked")
 	boolean propertyMatches(org.hibernate.mapping.Property property, String colName) {
 		if (property.isComposite()) {
 			Component comp = (Component) property.getValue();
