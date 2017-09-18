@@ -214,6 +214,7 @@ public class TeiidServer extends EmbeddedServer {
 	boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context, PhysicalNamingStrategy namingStrategy) {
 		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
 		provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
+		provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Embeddable.class));
 		provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
 
 		String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
@@ -335,5 +336,5 @@ public class TeiidServer extends EmbeddedServer {
 		}
 		Schema schema = metadata.getMetadataStore().getSchema(modelName);
 		return schema;
-	}
+	}	
 }

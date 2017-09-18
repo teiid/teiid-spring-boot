@@ -27,9 +27,9 @@ import org.teiid.spring.annotations.SelectQuery;
  * bases entity StockPrice.
  */
 @Entity
-@SelectQuery("SELECT  A.ID, S.symbol, S.price, A.COMPANY_NAME " + 
-        "FROM StockPrice AS S, accountsDS.PRODUCT AS A " + 
-        "WHERE S.symbol = A.SYMBOL;")
+@SelectQuery("SELECT  A.ID as id, A.company_name as company_name, S.price as price, S.symbol as symbol " + 
+        "FROM stock_price AS S, accountsDS.product AS A " + 
+        "WHERE S.symbol = A.symbol;")
 public class Stock {
     
     @Id
