@@ -26,7 +26,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 import org.teiid.spring.annotations.DeleteQuery;
 import org.teiid.spring.annotations.InsertQuery;
@@ -34,28 +33,27 @@ import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.UpdateQuery;
 
 @Entity
-@Table(name="all_customers")
-@SelectQuery("SELECT id, name, ssn FROM accountsDS.Customers UNION ALL SELECT id, name, ssn FROM customerDS.Customer")
+@SelectQuery("SELECT id, name, ssn FROM mydb.customer")
 
 @InsertQuery("FOR EACH ROW \n"+
              "BEGIN ATOMIC \n" +
-		     "INSERT INTO customerDS.Customer(name, ssn) values (NEW.name, NEW.ssn);\n" +
+		     "INSERT INTO mydb.customer(name, ssn) values (NEW.name, NEW.ssn);\n" +
              "END")
 
 @UpdateQuery("FOR EACH ROW \n"+
         	 "BEGIN ATOMIC \n" +
-			 "UPDATE customerDS.Customer SET name=NEW.name, ssn=NEW.ssn WHERE id = OLD.id;\n"+
+			 "UPDATE mydb.customer SET name=NEW.name, ssn=NEW.ssn WHERE id = OLD.id;\n"+
         	 "END")
 
 @DeleteQuery("FOR EACH ROW \n"+
    	 		"BEGIN ATOMIC \n" +
-			"DELETE FROM customerDS.Customer where id = OLD.id;\n"+
+			"DELETE FROM mydb.customer where id = OLD.id;\n"+
    	 		"END")
 public class Customer {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    Long id;
     
     @Column
     String name;
@@ -70,7 +68,7 @@ public class Customer {
     public Customer() {
     }
     
-    public Customer(int id, String name, String ssn) {
+    public Customer(Long id, String name, String ssn) {
         this.id = id;
         this.name = name;
         this.ssn= ssn;
@@ -81,10 +79,11 @@ public class Customer {
         return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + ", address=" + address + "]";
     }
     
-    public long getId() {
+    public Long getId() {
         return id;
     }
-    public void setId(int id) {
+    
+    public void setId(Long id) {
         this.id = id;
     }
     public String getName() {

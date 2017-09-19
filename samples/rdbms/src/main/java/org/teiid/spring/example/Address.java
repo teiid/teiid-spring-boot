@@ -6,13 +6,15 @@ import javax.persistence.Id;
 import org.teiid.spring.annotations.SelectQuery;
 
 @Entity
-@SelectQuery("SELECT id, street, customer_id FROM customerDS.address")
+@SelectQuery("SELECT id, street, zip, customer_id FROM mydb.address")
 public class Address {
 
 	@Id
 	long id;
 	
 	String street;
+	
+	String zip;
 
 	public long getId() {
 		return id;
@@ -32,6 +34,6 @@ public class Address {
 
 	@Override
 	public String toString() {
-		return "Address [id=" + id + ", street=" + street + "]";
+		return "Address [id=" + id + ", street=" + street + ", zip=" + zip+ "]";
 	}
 }

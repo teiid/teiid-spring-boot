@@ -16,7 +16,7 @@
 
 package org.teiid.spring.example;
 
-import java.util.List;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -27,10 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Application implements CommandLineRunner {
 
     @Autowired
-    private CustomerRepository customerRepository;    
-    
-    @Autowired
-    private ViewBasedCustomerRepository viewBasedCustomerRepository;
+    private ViewBasedCustomerRepository customerRepository;
     
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args).close();
@@ -40,19 +37,21 @@ public class Application implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         System.out.println("\n\nFrom JDBC Template");
-        List<Customer> list = customerRepository.findAll();
-        list.forEach(x -> System.out.println(x));
+        customerRepository.findAll().forEach(x -> System.out.println(x));
         
-        
-        System.out.println("\n\nFrom JDBC Template, with view");
-        list = customerRepository.findViewBasedCustomers();
-        list.forEach(x -> System.out.println(x));        
-        
-        
-        System.out.println("\n\nFrom All customers entity");
-        viewBasedCustomerRepository.findAll().forEach(x->System.out.println(x));
-        
-        customerRepository.insert("foo", "12312312");
+        Customer c = new Customer();
+//        c.setId(100L);
+        c.setName("John Doe");
+        c.setSsn("111-11-1111");
 
+//        Address a = new Address();
+//        a.setStreet("230 Market St.");
+//        c.setAddress(Arrays.asList(a));
+        
+        customerRepository.save(c);
+        
+        System.out.println("\n\nFrom JDBC Template");
+        customerRepository.findAll().forEach(x -> System.out.println(x));
+        
     }
 }
