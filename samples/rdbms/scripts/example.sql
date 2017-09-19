@@ -19,4 +19,9 @@ CREATE TABLE customer (
     ssn character varying(25)
 );
 
+CREATE TABLE address (
+    id bigint NOT NULL,
+    street character varying(25),
+    customer_id bigint
+);
 INSERT INTO Customer values (1, 'claire', '777-77-7777');

@@ -16,9 +16,14 @@
 
 package org.teiid.spring.example;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.teiid.spring.annotations.DeleteQuery;
@@ -54,6 +59,10 @@ public class Customer {
     
     @Column
     String ssn;
+    
+    @OneToMany(fetch=FetchType.EAGER)
+    @JoinColumn(name="customer_id")
+    private List<Address> address;
 
     public Customer() {
     }
@@ -66,7 +75,7 @@ public class Customer {
 
     @Override
     public String toString() {
-        return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + "]";
+        return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + ", address=" + address + "]";
     }
     
     public long getId() {
@@ -87,4 +96,12 @@ public class Customer {
     public void setSsn(String ssn) {
         this.ssn = ssn;
     }
+
+	public List<Address> getAddress() {
+		return address;
+	}
+
+	public void setAddress(List<Address> address) {
+		this.address = address;
+	}
 }
