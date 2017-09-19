@@ -168,7 +168,7 @@ http://localhost:8080/$metadata
 You can issue to see the contents of Entity by issuing a call like
 
 [source,json]
-http://localhost:8080/ACCOUNTS?$format=json
+http://localhost:8080/ACCOUNT?$format=json
 ----
 {  
    "@odata.context":"$metadata#ACCOUNT",
