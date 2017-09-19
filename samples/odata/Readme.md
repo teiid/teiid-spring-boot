@@ -1,2 +1,194 @@
-This example shows how to expose a OData interface on any datasource using Teiid
+== Expose your Data Source as OData V4 endpoint.
 
+This guide walks you through the process of building an application that uses Teiid Spring Boot to expose OData V4 
+interface on relational database. Please note that you can easily extend the same concept to *any* data sources, like
+flat files, excel files, MongoDB etc. that are supported by Teiid's translator eco-system. 
+
+=== What you’ll build
+
+You’ll build an application that exposes a OData V4 interface on a embedded H2 database. The init scripts for this 
+embedded database are also included in this example. When you finished, you should be able to issue a call to 
+http://localhost:8080/$metadata and see the OData schema for your database.
+
+=== What you’ll need
+
+* About 10 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+
+and create pom.xml file of your choosing and add following maven dependencies
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+----
+
+[source,xml]
+.*teiid-spring-boot-starter, odata*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+   <groupId>org.teiid.spring</groupId>
+   <artifactId>odata</artifactId>
+   <version>${project.version}</version>
+</dependency>
+----
+
+Since we are going to connect H2 database, add the JDBC driver dependency. You can replace this with database driver of your choosing.
+[source,xml]
+.*h2*
+----
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
+----
+
+=== Define the Data Sources
+In this example, first we need to define the data sources that in play. To capture data source information, create the following Java class.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+    @ConfigurationProperties(prefix = "spring.datasource.accounts")
+    @Bean
+    public DataSource accounts() {
+        return DataSourceBuilder.create().build();
+    }
+}
+----
+
+We are creating one data source connection, with name "accounts". Now we need to provide the corresponding configuration for this data sources. In "application.properties" file, define *your* configuration similar to
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.datasource.accounts.url=jdbc:postgresql://localhost/test
+spring.datasource.accounts.username=<username>
+spring.datasource.accounts.password=<password>
+spring.datasource.accounts.driver-class-name=org.h2.Driver
+spring.datasource.accounts.platform=accounts
+spring.jpa.hibernate.ddl-auto=none
+----
+
+Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for Translator "import" properties.
+
+property "spring.datasource.accounts.platform" defines the prefix for the init scripts for your database, data-${platform}.sql and schema-${platform}.sql. Also disable hibernate to generate any hb2ddl scripts. 
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application {    
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+}
+----
+
+Now build using maven
+----
+mvn clean install
+----
+
+and run the application
+
+----
+java -jar target/example-1.0.0-SNAPSHOT.jar
+----
+
+==== That's it, You are done exposing the Data Source as OData.
+
+Once you execute this application, Teiid Spring Boot will connect to the data source configured and expose a OData V4 rest interface using the Spring Boot's built in Tomcat engine. You can issue a call to 
+
+[source,xml]
+http://localhost:8080/$metadata
+----
+<?xml version='1.0' encoding='UTF-8'?>
+<edmx:Edmx Version="4.0"
+    xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:Reference Uri="/static/org.teiid.v1.xml">
+        <edmx:Include Namespace="org.teiid.v1" Alias="teiid"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="/static/org.apache.olingo.v1.xml">
+        <edmx:Include Namespace="org.apache.olingo.v1" Alias="olingo-extensions"/>
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema
+            xmlns="http://docs.oasis-open.org/odata/ns/edm" Namespace="spring.1.0.0.accounts" Alias="accounts">
+            <EntityType Name="ACCOUNT">
+                <Key>
+                    <PropertyRef Name="ACCOUNT_ID"/>
+                </Key>
+                <Property Name="ACCOUNT_ID" Type="Edm.Int32" Nullable="false">
+                    <Annotation>
+                        <String></String>
+                    </Annotation>
+                    <Annotation Term="teiid.NAMEINSOURCE">
+                        <String>"ACCOUNT_ID"</String>
+                    </Annotation>
+                    <Annotation Term="teiid.UPDATABLE">
+                        <Bool>true</Bool>
+                    </Annotation>
+                </Property>
+                ..
+----
+
+You can issue to see the contents of Entity by issuing a call like
+
+[source,json]
+http://localhost:8080/ACCOUNTS?$format=json
+----
+{  
+   "@odata.context":"$metadata#ACCOUNT",
+   "value":[  
+      {  
+         "ACCOUNT_ID":19980002,
+         "SSN":"CST01002",
+         "STATUS":"Personal",
+         "TYPE":"Active",
+         "DATEOPENED":"1998-02-01T06:00:00Z",
+         "DATECLOSED":null
+      },
+      {  
+         "ACCOUNT_ID":19980003,
+         "SSN":"CST01003",
+         "STATUS":"Personal",
+         "TYPE":"Active",
+         "DATEOPENED":"1998-03-06T06:00:00Z",
+         "DATECLOSED":null
+      },..
+     ----
+     
+That's it you have sucessfully implemented OData interface on top of your database. For full support of all the data sources supported checkout Teiid documentation on at link:http://teiid.org[Teiid.org]

@@ -54,7 +54,7 @@ public class CustomerRepository {
     
     
     @Transactional 
-    public int insert(long id, String name, String ssn) {
-       return jdbcTemplate.update("INSERT INTO all_customers(id, name, ssn) VALUES(?,?, ?)", id, name, ssn);
+    public int insert(String name, String ssn) {
+       return jdbcTemplate.update("INSERT INTO all_customers(name, ssn) VALUES(?, ?)", name, ssn);
     }    
 }   

@@ -21,6 +21,8 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -37,7 +39,7 @@ import org.teiid.spring.annotations.UpdateQuery;
 
 @InsertQuery("FOR EACH ROW \n"+
              "BEGIN ATOMIC \n" +
-		     "INSERT INTO customerDS.Customer(id, name, ssn) values (NEW.id, NEW.name, NEW.ssn);\n" +
+		     "INSERT INTO customerDS.Customer(name, ssn) values (NEW.name, NEW.ssn);\n" +
              "END")
 
 @UpdateQuery("FOR EACH ROW \n"+
@@ -52,7 +54,8 @@ import org.teiid.spring.annotations.UpdateQuery;
 public class Customer {
     
     @Id
-    long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer id;
     
     @Column
     String name;

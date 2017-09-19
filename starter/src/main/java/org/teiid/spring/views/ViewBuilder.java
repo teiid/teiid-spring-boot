@@ -26,6 +26,7 @@ import org.hibernate.mapping.Component;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.PrimaryKey;
 import org.teiid.core.types.JDBCSQLTypeInfo;
+import org.teiid.dialect.TeiidDialect;
 import org.teiid.hibernate.types.BigDecimalArrayType;
 import org.teiid.hibernate.types.BigIntegerArrayType;
 import org.teiid.hibernate.types.BooleanArrayType;
@@ -44,6 +45,7 @@ import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 
 public class ViewBuilder<T> {
+	public static final TeiidDialect dialect = new TeiidDialect();
 	protected Metadata metadata;
 	
 	public ViewBuilder(Metadata metadata) {
@@ -69,7 +71,7 @@ public class ViewBuilder<T> {
         view.setVirtual(true);
 
         onTableCreate(view, mf, entityClazz, annotation);
-               
+
 		Iterator<org.hibernate.mapping.Column> it = ormTable.getColumnIterator();
         while(it.hasNext()) {
         	org.hibernate.mapping.Column ormColumn = it.next();
@@ -145,6 +147,9 @@ public class ViewBuilder<T> {
         column.setPrecision(ormColumn.getPrecision());
         column.setNullType(ormColumn.isNullable()?NullType.Nullable:NullType.No_Nulls);
         column.setDefaultValue(ormColumn.getDefaultValue());
+        if (pk && ormTable.getPrimaryKey().isGenerated(dialect)) {
+        	column.setAutoIncremented(true);
+        }
         onColumnCreate(view, column,  mf, attributeField, parent, last, annotation);        
     }	
 	

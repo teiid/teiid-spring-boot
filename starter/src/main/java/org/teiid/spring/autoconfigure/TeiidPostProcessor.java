@@ -53,7 +53,6 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
-import org.teiid.adminapi.AdminException;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.spring.data.BaseConnectionFactory;
@@ -130,7 +129,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 	            server.undeployVDB(VDBNAME, VDBVERSION);
 	            ByteArrayOutputStream out = new ByteArrayOutputStream();
 	            VDBMetadataParser.marshell(vdb, out);
-	            logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
+	            logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));	            
 	            server.deployVDB(vdb);
 			} catch ( IOException | XMLStreamException e) {
 				// no-op

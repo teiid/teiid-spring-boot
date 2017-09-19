@@ -35,7 +35,6 @@ import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.UpdateQuery;
 
 public class SimpleView extends ViewBuilder<SelectQuery> {
-	private static final Log logger = LogFactory.getLog(SimpleView.class);
 	
     public SimpleView(Metadata metadata) {
 		super(metadata);

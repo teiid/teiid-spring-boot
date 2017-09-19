@@ -104,7 +104,7 @@ public class SpringODataFilter extends ODataFilter {
     
 	public String modelName() {
 		Schema schema = server.getSchema("teiid");
-		if (!schema.getTables().isEmpty()) {
+		if (schema != null && !schema.getTables().isEmpty()) {
 			return "teiid";
 		}
 

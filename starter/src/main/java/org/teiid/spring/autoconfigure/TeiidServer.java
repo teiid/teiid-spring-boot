@@ -130,6 +130,18 @@ public class TeiidServer extends EmbeddedServer {
 
 	void deployVDB(VDBMetaData vdb) {
 		try {
+            // if there is no view model, then keep all the other models as visible.
+            if (vdb.getModel("teiid") == null) {
+            	for (ModelMetaData model:vdb.getModelMetaDatas().values()) {
+            		model.setVisible(true);
+            	}
+            } else {
+            	for (ModelMetaData model:vdb.getModelMetaDatas().values()) {
+            		if (!model.getName().equals("teiid")) {
+            			model.setVisible(false);
+            		}
+            	}            	
+            }
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			VDBMetadataParser.marshell(vdb, out);
 			deployVDB(new ByteArrayInputStream(out.toByteArray()));
