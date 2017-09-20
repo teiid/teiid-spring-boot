@@ -18,6 +18,7 @@ package org.teiid.spring.example;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -68,7 +69,7 @@ public class Customer {
     @Column
     String ssn;
     
-    @OneToMany(fetch=FetchType.EAGER)
+    @OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
     @JoinColumn(name="customer_id")
     private List<Address> address;
 

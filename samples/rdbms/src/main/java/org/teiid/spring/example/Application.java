@@ -40,13 +40,13 @@ public class Application implements CommandLineRunner {
         customerRepository.findAll().forEach(x -> System.out.println(x));
         
         Customer c = new Customer();
-//        c.setId(100L);
         c.setName("John Doe");
         c.setSsn("111-11-1111");
 
-//        Address a = new Address();
-//        a.setStreet("230 Market St.");
-//        c.setAddress(Arrays.asList(a));
+        Address a = new Address();
+        a.setStreet("230 Market St.");
+        a.setZip("12345");
+        c.setAddress(Arrays.asList(a));
         
         customerRepository.save(c);
         
