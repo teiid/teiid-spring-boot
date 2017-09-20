@@ -27,7 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Application implements CommandLineRunner {
 
     @Autowired
-    private ViewBasedCustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
     
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args).close();

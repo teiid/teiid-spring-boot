@@ -22,7 +22,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-public interface ViewBasedCustomerRepository extends CrudRepository<Customer, Long> {
+public interface CustomerRepository extends CrudRepository<Customer, Long> {
 
     @Query("select c from Customer c where c.ssn = :ssn")
     Stream<Customer> findBySSNReturnStream(@Param("ssn") String ssn);

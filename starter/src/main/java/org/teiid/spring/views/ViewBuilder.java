@@ -69,6 +69,7 @@ public class ViewBuilder<T> {
         }
         Table view = mf.addTable(tableName);
         view.setVirtual(true);
+        view.setSupportsUpdate(true);
 
         onTableCreate(view, mf, entityClazz, annotation);
 

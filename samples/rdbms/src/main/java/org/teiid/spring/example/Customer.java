@@ -26,6 +26,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.TableGenerator;
 
 import org.teiid.spring.annotations.DeleteQuery;
 import org.teiid.spring.annotations.InsertQuery;
@@ -37,7 +38,7 @@ import org.teiid.spring.annotations.UpdateQuery;
 
 @InsertQuery("FOR EACH ROW \n"+
              "BEGIN ATOMIC \n" +
-		     "INSERT INTO mydb.customer(name, ssn) values (NEW.name, NEW.ssn);\n" +
+		     "INSERT INTO mydb.customer(id, name, ssn) values (NEW.id, NEW.name, NEW.ssn);\n" +
              "END")
 
 @UpdateQuery("FOR EACH ROW \n"+
@@ -50,10 +51,16 @@ import org.teiid.spring.annotations.UpdateQuery;
 			"DELETE FROM mydb.customer where id = OLD.id;\n"+
    	 		"END")
 public class Customer {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+
+	@TableGenerator(name = "customer", 
+			table = "id_generator", 
+			pkColumnName = "idkey", 
+			valueColumnName = "idvalue", 
+			pkColumnValue = "customer", 
+			allocationSize = 1)
+	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "customer")
+	Long id;
     
     @Column
     String name;
