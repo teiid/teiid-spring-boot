@@ -19,7 +19,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.TableGenerator;
+import javax.persistence.SequenceGenerator;
 
 import org.teiid.spring.annotations.SelectQuery;
 
@@ -27,14 +27,16 @@ import org.teiid.spring.annotations.SelectQuery;
 @SelectQuery("SELECT id, street, zip, customer_id FROM mydb.address")
 public class Address {
 
-	@TableGenerator(name = "address", 
-			table = "id_generator", 
-			pkColumnName = "idkey", 
-			valueColumnName = "idvalue", 
-			pkColumnValue = "address", 
-			allocationSize = 1)
+//	@TableGenerator(name = "address", 
+//			table = "id_generator", 
+//			pkColumnName = "idkey", 
+//			valueColumnName = "idvalue", 
+//			pkColumnValue = "address", 
+//			allocationSize = 1)	
+//	@GeneratedValue(strategy = GenerationType.TABLE, generator = "address")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "address_generator")
+	@SequenceGenerator(name="address_generator", sequenceName = "mydb.addr_seq")
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "address")
 	private Long id;
 	
 	private String street;

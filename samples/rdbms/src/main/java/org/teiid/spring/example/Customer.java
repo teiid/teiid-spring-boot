@@ -27,6 +27,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.TableGenerator;
 
 import org.teiid.spring.annotations.DeleteQuery;
@@ -35,7 +36,7 @@ import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.UpdateQuery;
 
 @Entity
-@SelectQuery("SELECT id, name, ssn FROM mydb.customer")
+@SelectQuery("SELECT id, addHello(name), ssn FROM mydb.customer")
 
 @InsertQuery("FOR EACH ROW \n"+
              "BEGIN ATOMIC \n" +
@@ -53,14 +54,16 @@ import org.teiid.spring.annotations.UpdateQuery;
    	 		"END")
 public class Customer {
 
-	@TableGenerator(name = "customer", 
-			table = "id_generator", 
-			pkColumnName = "idkey", 
-			valueColumnName = "idvalue", 
-			pkColumnValue = "customer", 
-			allocationSize = 1)
+//	@TableGenerator(name = "customer", 
+//			table = "id_generator", 
+//			pkColumnName = "idkey", 
+//			valueColumnName = "idvalue", 
+//			pkColumnValue = "customer", 
+//			allocationSize = 1)
+//	@GeneratedValue(strategy = GenerationType.TABLE, generator = "customer")	
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customer_generator")
+	@SequenceGenerator(name="customer_generator", sequenceName = "mydb.customer_seq")
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "customer")
 	Long id;
     
     @Column

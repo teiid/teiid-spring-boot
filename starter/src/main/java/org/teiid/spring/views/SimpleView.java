@@ -17,8 +17,6 @@ package org.teiid.spring.views;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.boot.Metadata;
 import org.teiid.api.exception.query.QueryParserException;
 import org.teiid.language.DerivedColumn;

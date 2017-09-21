@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Entity;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
@@ -63,11 +64,13 @@ import org.teiid.spring.annotations.ExcelTable;
 import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.TextTable;
+import org.teiid.spring.annotations.UserDefinedFunctions;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.views.ExcelTableView;
 import org.teiid.spring.views.JsonTableView;
 import org.teiid.spring.views.SimpleView;
 import org.teiid.spring.views.TextTableView;
+import org.teiid.spring.views.UDFProcessor;
 import org.teiid.translator.TranslatorException;
 
 public class TeiidServer extends EmbeddedServer {
@@ -228,6 +231,7 @@ public class TeiidServer extends EmbeddedServer {
 		provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
 		provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Embeddable.class));
 		provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
+		provider.addIncludeFilter(new AnnotationTypeFilter(UserDefinedFunctions.class));
 
 		String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
 		if (basePackage == null) {
@@ -266,14 +270,17 @@ public class TeiidServer extends EmbeddedServer {
 				model);
 		
 		Metadata metadata = getMetadata(components, namingStrategy);
+		UDFProcessor udfProcessor = new UDFProcessor(metadata, vdb);
 		for (BeanDefinition c : components) {
 			try {
 				Class<?> clazz = Class.forName(c.getBeanClassName());
+				Entity entityAnnotation = clazz.getAnnotation(Entity.class);
 				SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
 				TextTable textAnnotation = clazz.getAnnotation(TextTable.class);
 				JsonTable jsonAnnotation = clazz.getAnnotation(JsonTable.class);
 				ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
-
+				UserDefinedFunctions udfAnnotation = clazz.getAnnotation(UserDefinedFunctions.class);
+				
 				if (textAnnotation != null) {
 					new TextTableView(metadata).buildView(clazz, mf, textAnnotation);
 				} else if (jsonAnnotation != null) {
@@ -282,12 +289,19 @@ public class TeiidServer extends EmbeddedServer {
 					new SimpleView(metadata).buildView(clazz, mf, selectAnnotation);
 				} else if (excelAnnotation != null) {
 					new ExcelTableView(metadata).buildView(clazz, mf, excelAnnotation);
+				}  else if (udfAnnotation != null) {
+					udfProcessor.buildFunctions(clazz, mf, udfAnnotation);
 				}
+				
+				// check for sequence
+				if (entityAnnotation != null) {
+					udfProcessor.buildSequence(clazz, mf, entityAnnotation);
+				}				
 			} catch (ClassNotFoundException e) {
 				logger.warn("Error loading entity classes");
 			}
 		}
-
+		udfProcessor.finishProcessing();
 		if (!mf.getSchema().getTables().isEmpty()) {
 			load = true;
 			String ddl = DDLStringVisitor.getDDLString(mf.getSchema(), null, null);

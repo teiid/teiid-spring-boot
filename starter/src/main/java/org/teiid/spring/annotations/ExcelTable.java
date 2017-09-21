@@ -22,8 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Use this annotation on any Entity class, that defines the data from a Excel file. Note that only 2 demintional 
- * tabular structure based content is supported. Must define "file" attribute to define where to read from. 
+ * Use this annotation on any Entity class, that defines the data from a Excel
+ * file. Note that only 2 dimensional tabular structure based content is
+ * supported. Must define "file" attribute to define where to read from.
  */
 @Target(TYPE)
 @Retention(RUNTIME)
