@@ -1,7 +1,0 @@
-teiid:
-
-  translators:
-    loopback
-    
-  vdbs:
-    loopback-vdb.xml

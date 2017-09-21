@@ -1,0 +1,3 @@
+provides: teiid-common-core,teiid-client,teiid-hibernate-dialect,teiid-api,teiid-admin,\
+ teiid-spring-boot-starter,translator-jdbc,spring-boot-starter-jta-narayana, \
+ jboss-connector-api_1.7_spec,translator-file

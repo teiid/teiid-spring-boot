@@ -1,7 +1,0 @@
-
-spring:
-  datasource:
-    url: jdbc:h2:mem:test;INIT=CREATE TABLE IF NOT EXISTS FOO(ID integer)
-    username: sa
-    password: sa
-    driver-class-name: org.h2.Driver

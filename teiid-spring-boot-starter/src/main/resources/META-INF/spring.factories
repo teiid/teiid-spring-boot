@@ -1,7 +1,0 @@
-# Configurations
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.jboss.teiid.springboot.TeiidEmbeddedAutoConfiguration
-
-# Listeners
-org.springframework.boot.SpringApplicationRunListener=\
-org.jboss.teiid.springboot.VDBDeploymentListener
