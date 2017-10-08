@@ -41,6 +41,7 @@ The directory structure is defined as follows:
     /odata -> starter app for providing the odata support
     /samples -> various examples show casing different data sources
     /starter-test -> tests
+    /docs -> Documents
        
 
 ==  Useful Links

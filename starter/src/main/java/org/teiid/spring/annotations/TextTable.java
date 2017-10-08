@@ -24,7 +24,54 @@ import java.lang.annotation.Target;
 import org.teiid.spring.data.file.FileConnectionFactory;
 
 /**
- * Use this annotation on any Entity class, that defines the data from any flat file like CSV, fixed format etc. 
+ * Use this annotation on any Entity class, to read data from any flat file like
+ * CSV, fixed format etc.<br/>
+ * <br/>
+ * 
+ * For Example if you have a CSV file like
+ * 
+ * <pre>
+ * <code>
+ * Id, FirstName, LastName, Age
+ * 1, John, Doe, 20
+ * 2, Susan, Webber, 55
+ * 3, Mike, Smith, 34
+ * </code>
+ * </pre>
+ * 
+ * You can parse and read the contents of this file into an entity by defining
+ * this annotation on a Entity class like
+ * 
+ * <pre>
+ * <code>
+ * &#64;Entity
+ * &#64;TextTable(file="/path/to/file.txt")
+ * public class Person {
+ *    &#64;Id
+ *    private int id;
+ *    
+ *    &#64;Column(name="FirstName")
+ *    private String firstName;
+ *    
+ *    &#64;Column(name="LastName")
+ *    private String lastName;
+ *    
+ *    &#64;Column(name="Age")
+ *    private int age;
+ *    ...
+ * }
+ * </code>
+ * </pre>
+ * 
+ * Note: the getters and setter are omitted for brevity.<br/>
+ * 
+ * You can define variety of other properties on this annotation to control
+ * headers, quoting, trimming and generating automatic identification numbers if
+ * your flat file does not have PK available.<br/>
+ * 
+ * For more information checkout <a href=
+ * "https://teiid.gitbooks.io/documents/content/reference/TEXTTABLE.html">TextTable</a>
+ * in Teiid.
  */
 @Target(TYPE)
 @Retention(RUNTIME)

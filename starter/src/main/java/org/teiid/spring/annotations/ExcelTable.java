@@ -24,7 +24,11 @@ import java.lang.annotation.Target;
 /**
  * Use this annotation on any Entity class, that defines the data from a Excel
  * file. Note that only 2 dimensional tabular structure based content is
- * supported. Must define "file" attribute to define where to read from.
+ * supported. Must define "file" attribute to define where to read from. This
+ * annotation is to read a Excel file into an Entity from a file location.<br/> See
+ * Excel translator in Teiid for more information <a href=
+ * "https://teiid.gitbooks.io/documents/content/reference/Microsoft_Excel_Translator.html">[Microsoft
+ * Excel Translator]</a>
  */
 @Target(TYPE)
 @Retention(RUNTIME)

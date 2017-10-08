@@ -67,7 +67,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
-		<teiid.version>10.0.0.Beta3-SNAPSHOT</teiid.version>
+		<teiid.version>10.0.0.CR1</teiid.version>
 		<javax.resource.version>1.0.0.Final</javax.resource.version>
 	</properties>
 
