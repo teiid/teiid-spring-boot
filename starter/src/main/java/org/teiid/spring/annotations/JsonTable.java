@@ -22,8 +22,64 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Use this annotation on any Entity class, that defines the data from a JSON file. 
- */
+ * Use this annotation on any Entity class, that defines the data from a JSON file or web resource.<br/> 
+ * For Example if you have a JSON payload like
+ * 
+ * <pre>
+ * <code>
+[
+   {
+      "id":1,
+      "FirstName":"John",
+      "LastName":"Doe",
+      "Age":20
+   },
+   {
+      "id":2,
+      "FirstName":"Susan",
+      "LastName":"Webber",
+      "Age":55
+   },
+   {
+      "id":1,
+      "FirstName":"Mike",
+      "LastName":"Smith",
+      "Age":34
+   }
+]
+ * </code>
+ * </pre>
+ * 
+ * You can parse and read the contents of this file into an entity by defining
+ * this annotation on a Entity class like
+ * 
+ * <pre>
+ * <code>
+ * &#64;Entity
+ * &#64;JsonTable(source=file, endpoint="/path/to/file.txt")
+ * public class Person {
+ *    &#64;Id
+ *    private int id;
+ *    
+ *    &#64;Column(name="FirstName")
+ *    private String firstName;
+ *    
+ *    &#64;Column(name="LastName")
+ *    private String lastName;
+ *    
+ *    &#64;Column(name="Age")
+ *    private int age;
+ *    ...
+ * }
+ * </code>
+ * </pre>
+ * 
+ * Note: the getters and setter are omitted for brevity.<br/>
+ *  
+ * For more information checkout <a href=
+ * "https://teiid.gitbooks.io/documents/content/reference/XMLTABLE.html">XMLTABLE</a>
+ * in Teiid.
+ */ 
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface JsonTable {

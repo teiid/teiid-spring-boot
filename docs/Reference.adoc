@@ -1,0 +1,59 @@
+= Reference Guide
+
+This is Reference guide of Teiid Spring Boot, for general Teiid Reference Guide consult link:
+
+
+== Teiid Annotations
+
+Most of the Teiid specific functionality is hidden in the set of Annotations provided by this library. Annotations are used on a Entity class. If you are familiar with regular Teiid, consider that creating an Entity is equivalent creating a View. Using the annotations, this system gathers metadata about the View, similar to what you may have done using Teiid Designer or using DDL. Most of these annotations still require the user to define the DDL underneath as is in previous tools. But at the same time this library makes use of JPA annotations to define Entity structure. So, you consider the below are extensions to JPA annotations that bring virtualization capabilities to a JPA based application.
+
+=== @SelectQuery
+This probably is important and MUST have annotation on any Entity classes that is being defined to read data or join data from two different sources. This defines the transformation query of the view. Take look at Javadoc for usage.
+
+=== @InsertQuery
+If your entity is joining the data from multiple sources, this annotation will provide a hook for a procedure where you can define the "insert" behavior. You can completely control which sources you want to update internally when a "insert" on Entity comes in from user. Take look at Javadoc for usage.
+
+
+=== @UpdateQuery
+If your entity is joining the data from multiple sources, this annotation will provide a hook for a procedure where you can define the "update" behavior. You can completely control which sources you want to update internally when a "update" on Entity comes in from user. Take look at Javadoc for usage.
+
+
+=== @DeleteQuery
+If your entity is joining the data from multiple sources, this annotation will provide a hook for a procedure where you can define the "delete" behavior. You can completely control which sources you want to update internally when a "delete" on Entity comes in from user. Take look at Javadoc for usage.
+
+=== @TextTable
+Unlike other annotations this annotation is used to read a CSV or fixed format text file. The Entity on which it is defined will behave exactly as if data were defined in a Database in like JPA to the user. Take look at Javadoc for usage.
+
+=== @JsonTable
+This annotation is similar to @TextTable, but provides a way to read a JSON payload into an Entity class. You can read the payload from a web resource or read from file location. Take look at Javadoc for usage. Also find find more complex example in samples.
+
+=== @ExcelTable
+This annotation is to read a Excel file into an Entity from a file location. See Excel translator in Teiid for more information link:https://teiid.gitbooks.io/documents/content/reference/Microsoft_Excel_Translator.html[Microsoft Excel Translator]
+
+=== @SourceFunction
+If you want to use a source specific function (like SOUNDX in Oracle) that is not already defined by Teiid, then you can define this annotation on a Java Method that mimics the signature of the function in the source database. Then you can use this function in any of your queries. This Java method needs to be defined on a class that is annotated with @UserDefinedFunctions. The evalution of this functions will be pushed to source. Take look at Javadoc for usage. For more information see in Teiid documentation link:https://teiid.gitbooks.io/documents/content/dev/Source_Supported_Functions.html[Source Supported Functions] 
+
+=== @JavaFunction
+If you want to define a user defined function (UDF) based on java code, that you can use in your Teiid queries, then you can define this annotation on a Java Method and supply the implementation of the method in Java. This Java method needs to be defined on a class that is annotated with @UserDefinedFunctions. Take look at Javadoc for usage. For more information see in Teiid documentation link:https://teiid.gitbooks.io/documents/content/dev/Support_for_User-Defined_Functions_Non-Pushdown.html[Support for User-Defined Functions (Non-Pushdown)] 
+
+
+== Teiid Properties
+
+== General Properties
+[options="header"]
+|=======================
+|Property|Description|Default Value
+|spring.teiid.model.package|This property defines the package name, where the @Entity classes are defined in the application. This will be used to scan the classes and generate necessary metadata. In absense of this property whole classpath will be scanned which can lead very slow start up |* (all classpath)
+|logging.level.org.teiid.{context}|Defines the logging lvel for Teiid specific code. "spring" is context where spring boot specific log messages are defined. example: *logging.level.org.teiid.spring=DEBUG*|n/a
+|spring.teiid.file.parent-directory|When using the "file"based resources such as @TextTable, @ExcelTable this property defines a parent directory where files exist. | ${user.dir} system property.
+|=======================
+
+== JDBC Data Source Properties
+
+For configuring the JDBC data sources please see https://docs.spring.io/spring-boot/docs/current/reference/html/howto-data-access.html[Data Access]
+[options="header"]
+|=======================
+|Property|Description|Default Value
+|spring.datasource.{dsname}.platfrom|Name of the platform, where when init SQL queries for the database are provided this will be used ad postfix. See rdbms-file-example for example.|n/a|
+|spring.datasource.{dsname}.importer.{property-name}|Translator importer properties to control the type and amount of metadata to import. See for more information about https://teiid.gitbooks.io/documents/content/reference/JDBC_Translators.html[importer properties]
+|=======================

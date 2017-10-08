@@ -29,13 +29,41 @@ import org.teiid.metadata.FunctionMethod.PushDown;
  * code.<br/>
  * Using this annotation, you can define a static method on a class that is
  * annotated with &#64;UserDefinedFunctions, at runtime this method will be
- * available for execution in Teiid queries such as {@link SelectQuery}<br/><br/>
+ * available for execution in Teiid queries such as {@link SelectQuery}<br/>
  * 
+ * <pre>
+ * <code>
+ * &#64;UserDefinedFunctions
+ * public class UserFunctions {
+ * 
+ *   &#64;JavaFunction
+ *   public static String addHello(String value) {
+ *     return "Hello "+value;
+ *   }
+ * }
+ * 
+ * </code>
+ * </pre>
+ * 
+ * Then above function can be used in annotation queries such as  &#64;SelectQuery 
+ * 
+ * <pre>
+ * <code>
+ * &#64;Entity
+ * &#64;SelectQuery(select ssn as id, addHello(concat(firstname, concat(lastname,','))) as full_name, dob as dob FROM myTable)
+ * public class Person {
+ *    &#64;Id
+ *    private Long id;
+ *    private String fullName;
+ *    private date dob;
+ * }
+ * </code>
+ * </pre>
+ * Note: functions can be used any where you are writing SQL as part of Entity definition.
  * For an example see {@link UserDefinedFunctions}.
  * 
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/dev/User_Defined_Functions.html">User
- * Defined Functions</a> in Teiid.
+ * "https://teiid.gitbooks.io/documents/content/dev/User_Defined_Functions.html">UDF</a> in Teiid.
  * 
  * @See {@link UserDefinedFunctions}
  */

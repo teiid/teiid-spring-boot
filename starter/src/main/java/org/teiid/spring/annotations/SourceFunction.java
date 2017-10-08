@@ -31,6 +31,18 @@ import org.teiid.query.function.TeiidFunction;
  * runtime the function will be evaluated in the source database as it gets
  * pushed down to source for execution<br/> <br/>
  * 
+ * <pre>
+ * <code>
+ * &#64;UserDefinedFunctions
+ * public class UserFunctions {
+ *	&#64;SourceFunction(source="mydb", nativequery="repeat")
+ *	public static String repeat(String p1, int p2) {
+ *		return null;
+ *	}	
+ * }
+ * </code>
+ * </pre>
+ * 
  * For an example see {@link UserDefinedFunctions}.
  *
  * For more information checkout <a href=

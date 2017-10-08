@@ -83,6 +83,8 @@ public class DataSources {
 }
 ----
 
+NOTE: Keep the data source property name and method name exactly SAME. From above example "accounts" in property and accounts() method, keep the names same, as additional properties will not be discovered otherwise.
+
 We are creating one data source connection, with name "accounts". Now we need to provide the corresponding configuration for this data sources. In "application.properties" file, define *your* configuration similar to
 
 [source,text]

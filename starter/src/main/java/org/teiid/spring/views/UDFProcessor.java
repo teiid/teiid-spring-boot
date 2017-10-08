@@ -31,6 +31,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.SequenceGenerator;
+import javax.swing.text.View;
 
 import org.hibernate.boot.Metadata;
 import org.teiid.adminapi.Model;
@@ -166,8 +167,9 @@ public class UDFProcessor {
 					p.setProperty("teiid_rel:native-query", nativeQuery);
 					register(seqNames[0], p);
 					
-					Procedure viewP = viewMF.addProcedure(seqNames[1]);
+					Procedure viewP = viewMF.addProcedure(seqNames[1]+"_nextval");
 					viewP.setVirtual(true);
+					viewP.setFunction(true);
 					viewMF.addProcedureParameter("return",
 							DataTypeManager.getDataTypeName(DataTypeManager.getRuntimeType(f.getType())),
 							ProcedureParameter.Type.ReturnValue, viewP);

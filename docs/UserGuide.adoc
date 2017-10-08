@@ -111,6 +111,8 @@ public class DataSources {
 }
 ----
 
+NOTE: Keep the data source property name and method name exactly SAME. From above example "accountsDS" in property and accountsDS() method, keep the names same, as additional properties will not be discovered otherwise.
+
 We are creating two(2) data source connections, with names "accountDS" and "customerDS". Now we need to provide the corresponding configuration for these data sources. In "application.properties" file, define *your* configuration similar to
 
 [source,text]
@@ -190,6 +192,8 @@ spring.teiid.model.package=org.example
 
 In absence of this property entire classpath is scanned, that could take significant time depending upon all the libraries in your application.
 
+For more available annotations, refer to Reference Guide.
+
 The convenient toString() method will print out the customer’s properties.
 
 === Create simple queries
@@ -257,22 +261,22 @@ There are many more examples, that show different capabilities of Data Virtualiz
 |===
 |*Name* |*Features Demonstrated* |*Description* |*Prerequisites*
 
-|link:./samples/rdbms/Readme.md[Database]
+|link:../samples/rdbms/Readme.md[Database]
 |Data Federation
 |Shows how to expose multiple data sources for data federation
 |None
 
-|link:./samples/json/Readme.md[JSON]
+|link:../samples/json/Readme.md[JSON]
 |@JsonTable
 |Shows how to convert JSON data from a file or REST endpoint into Entity
 |None
 
-|link:./samples/rdbms-file/Readme.md[DB and File]
+|link:../samples/rdbms-file/Readme.md[DB and File]
 |Database and CSV based Table using @TextTable
 |Shows how to convert CSV data into a Entity and combine with a Entity from relational database.
 |None
 
-|link:./samples/odata/Readme.md[OData Access]
+|link:../samples/odata/Readme.md[OData Access]
 |OData
 |Shows how to enable a OData REST interface on top of any Entity model defined using Teiid
 |None
