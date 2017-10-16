@@ -22,6 +22,7 @@ import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.JsonTable;
+import org.teiid.spring.annotations.RestConfiguration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -45,8 +46,7 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         if (annotation.source().equalsIgnoreCase("file")) {
             sb.append("EXEC ").append(source).append(".getFiles('").append(file).append("')");
         } else if (annotation.source().equalsIgnoreCase("rest")) {
-            sb.append("EXEC ").append(source).append(".invokeHttp(action=>'GET', endpoint=>'");
-            sb.append(file).append("', stream=>'true')");
+        	generateRestProcedure(entityClazz, source, file, sb);
         } else {
 			throw new IllegalStateException("Source type '" + annotation.source() + " not supported on JsonTable "
 					+ view.getName() + ". Only \"file\" and \"rest\" are supported");
@@ -72,6 +72,24 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         
         view.setSelectTransformation(sb.toString());
     }
+
+	static void generateRestProcedure(Class<?> entityClazz, String source, String file, StringBuilder sb) {
+		RestConfiguration config = entityClazz.getAnnotation(RestConfiguration.class);
+		String method = (config == null) ? "GET" : config.method();
+		String headers = (config == null) ? null : config.headersBean();
+		boolean streaming = (config == null) ? true : config.stream();
+		String body = (config == null) ? null : config.bodyBean();
+		sb.append("EXEC ").append(source).append(".invokeHttp(action=>'").append(method).append("', ");
+		sb.append("endpoint=>'").append(file).append("', ");
+		if (headers != null && !headers.isEmpty()) {
+			sb.append("headers=>jsonObject('").append(headers).append("' as \"T-Spring-Bean\"), ");
+		}
+		if (body != null && !body.isEmpty()) {
+			sb.append("body=>'").append(body).append("', ");
+		}
+		sb.append("stream=>'").append(Boolean.toString(streaming)).append("'");
+		sb.append(")");
+	}
     
     @Override
     void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,

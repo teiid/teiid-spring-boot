@@ -47,8 +47,7 @@ public class TextTableView extends ViewBuilder<TextTable> {
         if (annotation.source().equalsIgnoreCase("file")) {
             sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
         } else if (annotation.source().equalsIgnoreCase("rest")) {
-            sb.append("EXEC ").append(source).append(".invokeHttp(action=>'GET', endpoint=>'").append(file)
-                    .append("', stream=>'true')");
+        	JsonTableView.generateRestProcedure(entityClazz, source, file, sb);
         } else {
 			throw new IllegalStateException("Source type '" + annotation.source() + " not supported on TextTable "
 					+ view.getName() + ". Only \"file\" and \"rest\" are supported");

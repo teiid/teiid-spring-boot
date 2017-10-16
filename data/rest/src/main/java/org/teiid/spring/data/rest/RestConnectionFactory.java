@@ -18,6 +18,7 @@ package org.teiid.spring.data.rest;
 
 import javax.resource.ResourceException;
 
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.web.client.RestTemplate;
@@ -31,12 +32,15 @@ public class RestConnectionFactory extends BaseConnectionFactory {
     @Autowired
     RestTemplate template;
     
+    @Autowired
+	private BeanFactory beanFactory;
+    
     public RestConnectionFactory() {
         super.setTranslatorName("rest");
     }
     
     @Override
     public WSConnection getConnection() throws ResourceException {
-        return new RestConnection(template);
+        return new RestConnection(template, beanFactory);
     }
 }
