@@ -36,6 +36,8 @@ If you want to use a source specific function (like SOUNDX in Oracle) that is no
 === @JavaFunction
 If you want to define a user defined function (UDF) based on java code, that you can use in your Teiid queries, then you can define this annotation on a Java Method and supply the implementation of the method in Java. This Java method needs to be defined on a class that is annotated with @UserDefinedFunctions. Take look at Javadoc for usage. For more information see in Teiid documentation link:https://teiid.gitbooks.io/documents/content/dev/Support_for_User-Defined_Functions_Non-Pushdown.html[Support for User-Defined Functions (Non-Pushdown)] 
 
+=== @RestConfiguration
+When working with REST based sources with entities like @JsonTable or @TextTable, to configure http verbs or headers use this annotation to configure those properties. If used on any non REST based sources it will not have any effect.
 
 == Teiid Properties
 

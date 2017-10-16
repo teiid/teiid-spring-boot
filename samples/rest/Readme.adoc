@@ -1,0 +1,221 @@
+= Reading Data from REST Based Source
+
+This example shows an example to read JSON based data from REST endpoint. There may be many examples doing the similar task of reading JSON data into a POJO model using the many data binding libraries like `com.fasterxml.databinding` libraries. However this example is little different, it does similar task of reloading, however at the end of the example you will end up a JPA entity class that can be used exactly as RDBMS based entity, i.e. you can issue queries against it. Yes, that is correct!, you can issue JPA queries against a JSON document to filter the data, or join the entity with another entity to integrate data. For example, join the JSON data with RDBMS based data. See there is another example on this topic.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies Spring Boot
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+   <groupId>org.springframework</groupId>
+   <artifactId>spring-web</artifactId>
+</dependency>
+----
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>data-rest</artifactId>
+</dependency>
+----
+
+in this example, we will create Entity class that can read JSON data from web service from
+`http://gturnquist-quoters.cfapps.io/api/random` which returns JSON data like below. Note that JSON can be complex, for example sake a simple format has been selected.
+
+----
+{
+   "type":"success",
+   "value":{
+      "id":1,
+      "quote":"Working with Spring Boot is like pair-programming with the Spring developers."
+   }
+}
+----
+
+=== Define View/Entity Class
+Now it is time to define the main Entity or View class. Since we are reading a `quote` let's call it Quote class
+
+[source,java]
+.src/main/java/com/example/Quote.java
+----
+/*
+ * Copyright 2012-2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.teiid.spring.example;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+import org.teiid.spring.annotations.JsonTable;
+import org.teiid.spring.annotations.RestConfiguration;
+
+@JsonTable(endpoint="http://gturnquist-quoters.cfapps.io/api/random", source="rest", root="/value")
+@Entity
+public class Quote {
+
+    @Id
+    private Integer id;
+    private String quote;
+
+    public Quote() {
+    }
+
+    public Quote(int id, String quote) {
+        this.id = id;
+        this.quote = quote;
+    }
+    
+    public Integer getId() {
+        return this.id;
+    }
+
+    public String getQuote() {
+        return this.quote;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setQuote(String quote) {
+        this.quote = quote;
+    }
+
+    @Override
+    public String toString() {
+        return "Value{" +
+                "id=" + id +
+                ", quote='" + quote + '\'' +
+                '}';
+    }
+}
+----
+
+Here you have a Quote class with two attributes, the id, quote. You also have two constructors. The default constructor only exists for the sake of JPA. You won’t use it directly. The other constructor is the one you’ll use to create instances of Quote.
+
+The Quote class is annotated with `@Entity`, indicating that it is a JPA entity. For `@Table` annotation, is optional, but use it to give a different name. Sometimes @Table also need to be used to avoid the naming conflicts.
+
+The Quote’s id property is annotated with `@Id` so that JPA will recognize it as the object’s identity. The id property.
+
+The other property, quote is left with out any annotation. It is assumed that they’ll be mapped to columns that share the same name as the properties themselves.
+
+*@JsonTable* annotation is where most of the magic of Teiid occurring. This defines a query that reading the data from web service, and creating the entity. Note, the `source` attribute must be set to `rest` and `endpoint` attribute needs to be set to the location of the service. If there are custom headers need to be defined use @RestConfigutaion annotation and set required properties on it on this entity class.
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file.
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+In absence of this property entire classpath is scanned, that could take significant time depending upon all the libraries in your application.
+
+For more available annotations, refer to Reference Guide.
+
+The convenient toString() method will print out the Quote’s properties.
+
+=== Create simple queries
+
+Spring Data JPA focuses on using JPA to store data in a relational database. Its most compelling feature is the ability to create repository implementations automatically, at runtime, from a repository interface.
+
+To see how this works, create a repository interface that works with Quote entities:
+
+[source,java]
+.src/main/java/org/example/QuoteRepository.java
+----
+@Repository
+public class QuoteRepository {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public List<Quote> findAll() {
+
+        List<Quote> result = jdbcTemplate.query(
+                "SELECT id, quote FROM Quote",
+                (rs, rowNum) -> new Quote(rs.getInt("id"),rs.getString("quote")));
+        return result;
+    }
+}  
+----
+
+QuoteRepository uses JDBCTemplate interface to work with JPA entities.
+
+Spring Data JPA also allows you to define other query methods by simply declaring their method signature. In a typical Java application, you’d expect to write a class that implements QuoteRepository. But that’s what makes Spring Data JPA so powerful: You don’t have to write an implementation of the repository interface. Spring Data JPA creates an implementation on the fly when you run the application.
+
+Let’s wire this up and see what it looks like!
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private QuoteRepository quoteRepository;
+    
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+    
+    @Override
+    public void run(String... args) throws Exception {
+        quoteRepository.findAll().forEach(c -> System.out.println(c));
+    }
+}
+----
+
+Now when you execute this application, you should see results like below.
+
+----
+Value{id=6, quote='It embraces convention over configuration, providing an experience on par with frameworks that excel at early stage development, such as Ruby on Rails.'}
+----
+

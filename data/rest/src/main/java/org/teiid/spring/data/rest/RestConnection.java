@@ -22,12 +22,15 @@
 
 package org.teiid.spring.data.rest;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -41,11 +44,16 @@ import javax.xml.ws.EndpointReference;
 import javax.xml.ws.Response;
 import javax.xml.ws.Service.Mode;
 import javax.xml.ws.WebServiceException;
+import javax.xml.ws.handler.MessageContext;
 
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.web.client.ResponseExtractor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.teiid.core.types.InputStreamFactory;
+import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.resource.spi.BasicConnection;
 import org.teiid.translator.WSConnection;
 
@@ -88,44 +96,58 @@ public class RestConnection extends BasicConnection implements WSConnection {
 		private HashMap<String, Object> responseContext = new HashMap<String, Object>();
 		private String endpoint;
 		private RestTemplate template;
+		private BeanFactory beanFactory;
 		
-		public HttpDispatch(String endpoint, RestTemplate template, String binding) {
+		public HttpDispatch(String endpoint, RestTemplate template, BeanFactory beanFactory, String binding) {
 		    this.endpoint = endpoint;
 		    this.template = template;
+		    this.beanFactory = beanFactory;
+		    
+            Map<String, List<String>> httpHeaders = new HashMap<String, List<String>>();
+            httpHeaders.put("Content-Type", Collections.singletonList("text/xml; charset=utf-8"));//$NON-NLS-1$ //$NON-NLS-2$
+            httpHeaders.put("User-Agent", Collections.singletonList("Teiid Server"));//$NON-NLS-1$ //$NON-NLS-2$
+            getRequestContext().put(MessageContext.HTTP_REQUEST_HEADERS, httpHeaders);
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public DataSource invoke(DataSource msg) {
 			try {
 				final URL url = new URL(this.endpoint);
 				url.toURI(); //ensure this is a valid uri
 				
-				//TODO: need to set headers and payload and security pass through
+				String method = (String)this.requestContext.get(MessageContext.HTTP_REQUEST_METHOD);
+				HttpMethod httpMethod = HttpMethod.resolve(method);
 				
+				HttpHeaders headers = new HttpHeaders();
+				Map<String, List<String>> header = (Map<String, List<String>>) this.requestContext
+						.get(MessageContext.HTTP_REQUEST_HEADERS);
+				if (header != null) {
+					for (Map.Entry<String, List<String>> entry : header.entrySet()) {
+						if (entry.getKey().equals("T-Spring-Bean")) {
+							headers = (HttpHeaders)beanFactory.getBean(entry.getValue().get(0));
+						} else {
+							headers.add(entry.getKey(), entry.getValue().get(0));
+						}
+					}
+				}
+
+				// payload
 				InputStream payload = null;
 				if (msg != null) {
 					payload = msg.getInputStream();
+					String bean = ObjectConverterUtil.convertToString(payload);
+					InputStreamFactory isf = (InputStreamFactory)this.beanFactory.getBean(bean);
+					payload = isf.getInputStream();
 				}
 
-				//TODO: this materializes the response to memory, there needs to be better memory sensitive 
-				//way to do this.
-                ResponseExtractor<BufferingClientHttpResponseWrapper> contentExtractor = 
-                    new ResponseExtractor<BufferingClientHttpResponseWrapper>() {
-                    @Override
-                    public BufferingClientHttpResponseWrapper extractData(ClientHttpResponse response)
-                            throws IOException {
-                        BufferingClientHttpResponseWrapper buf=  new BufferingClientHttpResponseWrapper(response);
-                        buf.getBody(); // input stream is closed once this method exits.
-                        return buf;
-                    }
-                };
-                
-                BufferingClientHttpResponseWrapper response = template.execute(url.toURI(), HttpMethod.GET, null,
-                        contentExtractor);
+                HttpEntity<InputStream> entity = new HttpEntity<InputStream>(payload, headers);
+                ResponseEntity<byte[]> response = template.exchange(url.toURI(), httpMethod, entity,
+                        byte[].class);
 				
 				String contentType = response.getHeaders().getContentType().toString();
 				getResponseContext().put(WSConnection.STATUS_CODE, response.getStatusCode().value());
-				return new HttpDataSource(url, response.getBody(), contentType);
+				return new HttpDataSource(url, new ByteArrayInputStream(response.getBody()), contentType);
 			} catch (IOException e) {
 				throw new WebServiceException(e);
 			} catch (URISyntaxException e) {
@@ -180,14 +202,16 @@ public class RestConnection extends BasicConnection implements WSConnection {
 
 	@SuppressWarnings("unchecked")
 	public <T> Dispatch<T> createDispatch(String binding, String endpoint, Class<T> type, Mode mode) {
-		Dispatch<T> dispatch = (Dispatch<T>) new HttpDispatch(endpoint, this.template, binding);
+		Dispatch<T> dispatch = (Dispatch<T>) new HttpDispatch(endpoint, this.template, this.beanFactory, binding);
 		return dispatch;
 	}
 
 	private RestTemplate template;
+	private BeanFactory beanFactory;
 	
-	public RestConnection(RestTemplate template) {
+	public RestConnection(RestTemplate template, BeanFactory beanFactory) {
 	    this.template = template;
+	    this.beanFactory = beanFactory;
 	}
 	
     @Override

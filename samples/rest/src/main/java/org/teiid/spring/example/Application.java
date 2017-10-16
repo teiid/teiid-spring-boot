@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
 
 @SpringBootApplication
 public class Application implements CommandLineRunner {
@@ -33,6 +35,13 @@ public class Application implements CommandLineRunner {
 	
     @Override
     public void run(String... args) throws Exception {
-        quoteRepository.findAll().forEach(c -> System.out.println(c));
+        quoteRepository.findAll().forEach(c -> System.out.println("***"+c));
+    }
+    
+    @Bean(name="customHeaders")
+    public HttpHeaders customHeaders() {
+    	HttpHeaders headers = new HttpHeaders();
+    	headers.add("Authorization", "foo:bar");
+    	return headers;
     }
 }
