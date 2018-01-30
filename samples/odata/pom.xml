@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.teiid.spring</groupId>
+        <groupId>org.teiid</groupId>
         <artifactId>samples</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     
-	<artifactId>odata-example</artifactId>
+	<artifactId>spring-odata-example</artifactId>
 	<name>odata-example</name>
 	<description>Demo project for Spring Boot showcasing OData over RDBMS</description>
     <packaging>jar</packaging>
@@ -18,12 +18,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>		
   		<dependency>
-		   <groupId>org.teiid.spring</groupId>
+		   <groupId>org.teiid</groupId>
 		   <artifactId>teiid-spring-boot-starter</artifactId>
 		</dependency>  
 		<dependency>
-		   <groupId>org.teiid.spring</groupId>
+		   <groupId>org.teiid</groupId>
 		   <artifactId>odata</artifactId>
 		   <version>${project.version}</version>
 		</dependency>  
