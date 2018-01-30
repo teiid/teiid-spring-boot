@@ -1,0 +1,14 @@
+= Summary
+
+. link:LICENSE[Legal Notice]
+
+. link:docs/UserGuide.adoc[User Guide, Start Here]
+. link:docs/Reference.adoc[Reference Guide]
+
+== Examples
+. link:samples/rdbms-file/Readme.adoc[Example Showing RDBMS + File Integration]
+. link:samples/rest/Readme.adoc[Example Showing REST API + JSON Content]
+. link:samples/json/Readme.adoc[Example Showing JSON File]
+. link:samples/excel/Readme.adoc[Example Showing Excel Sheet as Source]
+. link:samples/odata/Readme.adoc[Example exposing Entity Model as OData V4 Service]
+. link:samples/udf/Readme.adoc[Example Showing How to introduce Java based Functions]
