@@ -55,8 +55,8 @@ The directory structure is defined as follows:
 
 == How to do a release
 
----
+----
 git pull upstream master
 mvn -DautoVersionSubmodules=true -P release clean package release:prepare
 mvn -P release release:perform
----
+----
