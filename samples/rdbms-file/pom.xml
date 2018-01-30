@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-rdbms-file-example</artifactId>
-	<name>rdbms-file-example</name>
+	<name>spring-rdbms-file-example</name>
 	<description>Demo project for Spring Boot showcasing RDBMS and File integration</description>
 	<packaging>jar</packaging>
 

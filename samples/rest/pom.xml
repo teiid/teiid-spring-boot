@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-rest-example</artifactId>
-	<name>rest-example</name>
+	<name>spring-rest-example</name>
 	<description>Demo project for Spring Boot showcasing Rest based entity</description>
 	<packaging>jar</packaging>
 

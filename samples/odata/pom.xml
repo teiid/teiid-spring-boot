@@ -9,7 +9,7 @@
     </parent>
     
 	<artifactId>spring-odata-example</artifactId>
-	<name>odata-example</name>
+	<name>spring-odata-example</name>
 	<description>Demo project for Spring Boot showcasing OData over RDBMS</description>
     <packaging>jar</packaging>
     
@@ -28,7 +28,7 @@
 		</dependency>  
 		<dependency>
 		   <groupId>org.teiid</groupId>
-		   <artifactId>odata</artifactId>
+		   <artifactId>spring-odata</artifactId>
 		   <version>${project.version}</version>
 		</dependency>  
         <dependency>

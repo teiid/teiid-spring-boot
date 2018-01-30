@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-udf-example</artifactId>
-	<name>udf-example</name>
+	<name>spring-udf-example</name>
 	<description>Demo project for Teiid Spring Boot show casing use of User Defined Function 	(UDF) and Pushdown functions</description>
 	<packaging>jar</packaging>
 
