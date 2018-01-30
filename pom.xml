@@ -120,7 +120,7 @@
 
 	<profiles>
 		<profile>
-			<id>final-release</id>
+			<id>release</id>
 			<build>
 				<plugins>
 					<plugin>
