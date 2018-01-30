@@ -1,0 +1,170 @@
+== Create a User Defined Function & Source PushDown function
+
+This guide walks you through the process of building an application that uses Teiid Spring Boot to create User Defined Function (UDF). The UDF will be written using the java code. This example also shows how to write pushdown function that when used inside a query will be evaluated at the source rather than as java code.
+
+=== What you’ll build
+
+You’ll build an application that creates User Defined function. This is tested against H2 database and init scripts for this 
+embedded database are also included in this example. When you finished, you should be able to use the created UDF function in your SQL queries and see the java code being executed for evalaution of the function.
+
+=== What you’ll need
+
+* About 10 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+
+and create pom.xml file of your choosing and add following maven dependencies
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+----
+
+[source,xml]
+.*teiid-spring-boot-starter, odata*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+----
+
+Since we are going to connect H2 database, add the JDBC driver dependency. You can replace this with database driver of your choosing.
+[source,xml]
+.*h2*
+----
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
+----
+
+=== Define the Data Sources
+In this example, first we need to define the data sources that in play. To capture data source information, create the following Java class.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+    @ConfigurationProperties(prefix = "spring.datasource.mydb")
+    @Bean
+    public DataSource mydb() {
+        return DataSourceBuilder.create().build();
+    }
+}
+----
+
+NOTE: Keep the data source property name and method name exactly SAME. From above example "mydb" in property and mydb() method, keep the names same, as additional properties will not be discovered otherwise.
+
+We are creating one data source connection, with name "mydb". Now we need to provide the corresponding configuration for this data sources. In "application.properties" file, define *your* configuration similar to
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.datasource.mydb.url=jdbc:postgresql://localhost/test
+spring.datasource.mydb.username=<username>
+spring.datasource.mydb.password=<password>
+spring.datasource.mydb.driver-class-name=org.h2.Driver
+spring.datasource.mydb.platform=accounts
+spring.jpa.hibernate.ddl-auto=none
+#spring.datasource.mydb.importer.SchemaPattern=<schema-name>
+----
+
+Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for Translator "import" properties.
+
+property "spring.datasource.accounts.platform" defines the prefix for the init scripts for your database, data-${platform}.sql and schema-${platform}.sql. Also disable hibernate to generate any hb2ddl scripts. 
+
+=== Create User Defined Function class
+The below is an example defining UDF function implementation in Java. The main thing to note are the annotations. To declare class to be defining a single or multiple UDFs, use @UserDefinedFunctions annotation. During the start up of the application the classpath will be scanned for this annotation, if found then each method with annotation @JavaFunction will be registered as a UDF with Teiid. If the method has @SourceFunction annotation then this will be marked as source i.e. a PushDown function. The UDF function evaluation occurs within the java code, where as a source function is evaluated at data source. Please note this class CAN NOT hold any state, effectively these are treated as STATIC methods. The methods with @SourceFunction are defined solely for defining function signature to mimic the function that data source is exposing, thus having any code in the body of the method does not really gets called.
+
+----
+package org.example;
+
+@UserDefinedFunctions
+public class UserFunctions {
+
+	@JavaFunction
+	public static String addSalutation(String value) {
+		return "Mr. "+value;
+	}
+	
+	@SourceFunction(source="mydb", nativequery="repeat")
+	public static String repeat(String p1, int p2) {
+		return null;
+	}	
+}
+----
+
+=== Define View/Entity Class
+Now it is time to define the main Entity or View class. We have the Customer table in both the databases that we need to union as one. For that, create Entity like below
+
+[source,java]
+.src/main/java/com/example/Customer.java
+----
+package org.teiid.spring.example;
+
+@Entity
+@SelectQuery("SELECT id, addSalutation(name), ssn FROM mydb.Customer")
+public class Customer {
+    @Id
+    long id;
+    @Column
+    String name;
+    @Column∂
+    String ssn;
+    
+    // rest of class ignored for brevity
+----
+
+The above view class not any different from any other view classes, but pay attention to the query in @SelectQuery annotation. See the usage of "addSalutation", which is Java method we added in above class and marked as a UDF, now you can use that function in your SQL query. Neat isn't it? This method could be any custom functionality you want to expose.
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application {    
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+}
+----
+
+Now build using maven
+----
+mvn clean install
+----
+
+and run the application
+
+----
+java -jar target/example-1.0.0-SNAPSHOT.jar
+----
+
+That's it, You are done creating the UDF. When you auery the Customer view above, you will see the name field always attached with the salutation "Mr.". The usage of @SourceQuery is exactly same, the only difference is evalution of the function happens at H2 database

@@ -26,6 +26,7 @@
 
 	<modules>
 		<module>rdbms</module>
+		<module>udf</module>
 		<module>rdbms-file</module>
 		<module>json</module>
 		<module>rest</module>

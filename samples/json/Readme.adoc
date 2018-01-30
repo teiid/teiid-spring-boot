@@ -1,2 +1,11 @@
-This example show usage of @JsonTable annotation using which an JSON content can be read as Entity using Teiid.
+This example show usage of @JsonTable annotation using which an JSON content can be read as Entity using Teiid. See `rest-example` project for a description of the example.
+
+The difference of this example is
+
+1) Instead of reading the JSON document from the a REST web service this example shows from reading from the JSON file.
+
+2) This example also shows how to read the array type variable from a table type. This is example of reading a primitive array type.
+
+3) This example also shows how to read array as object, or reading a JSON array that is not primitive type using the OneToMany type.
+
 

@@ -28,7 +28,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.TableGenerator;
 
 import org.teiid.spring.annotations.DeleteQuery;
 import org.teiid.spring.annotations.InsertQuery;
@@ -36,7 +35,7 @@ import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.UpdateQuery;
 
 @Entity
-@SelectQuery("SELECT id, addHello(name), ssn FROM mydb.customer")
+@SelectQuery("SELECT id, name, ssn FROM mydb.customer")
 
 @InsertQuery("FOR EACH ROW \n"+
              "BEGIN ATOMIC \n" +
@@ -84,11 +83,6 @@ public class Customer {
         this.name = name;
         this.ssn= ssn;
     }
-
-    @Override
-    public String toString() {
-        return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + ", address=" + address + "]";
-    }
     
     public Long getId() {
         return id;
@@ -117,4 +111,9 @@ public class Customer {
 	public void setAddress(List<Address> address) {
 		this.address = address;
 	}
+	
+    @Override
+    public String toString() {
+        return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + ", address=" + address + "]";
+    }	
 }
