@@ -7,6 +7,7 @@ Primary purpose of `teiid-spring-boot` is to enable Teiid in Spring Boot applica
 <dependency>
    <groupId>org.teiid</groupId>
    <artifactId>teiid-spring-boot-starter</artifactId>
+   <version>{{ book.versionNumber }}</version>
 </dependency>
 ----
 
