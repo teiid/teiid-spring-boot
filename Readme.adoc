@@ -31,7 +31,7 @@ Enter the following:
 ----
 $ git clone https://github.com/<yourname>/teiid-spring-boot.git
 $ cd teiid-spring-boot
-$ mvn clean install -s settings.xml
+$ mvn clean install
 ----
 
 The directory structure is defined as follows:
@@ -53,4 +53,9 @@ The directory structure is defined as follows:
 * User Forum - https://community.jboss.org/en/teiid?view=discussions
 * Wiki - https://community.jboss.org/wiki/TheTeiidProject
 
+== How to do a release
+
+git pull upstream master
+mvn -DautoVersionSubmodules=true -P release clean package release:prepare
+mvn -P release release:perform
 
