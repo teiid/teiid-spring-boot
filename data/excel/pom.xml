@@ -3,20 +3,20 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.teiid.spring</groupId>
+		<groupId>org.teiid</groupId>
 		<artifactId>teiid-spring-boot-starter-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../..</relativePath>
 	</parent>
 
-	<artifactId>data-excel</artifactId>
-	<name>teiid-data-excel</name>
+	<artifactId>spring-data-excel</artifactId>
+	<name>spring-data-excel</name>
 	<description>Teiid connector for Excel data consumption</description>
 	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.teiid.spring</groupId>
+			<groupId>org.teiid</groupId>
 			<artifactId>teiid-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>

@@ -48,8 +48,8 @@ and create pom.xml file of your choosing and add following maven dependencies
    <artifactId>teiid-spring-boot-starter</artifactId>
 </dependency>
 <dependency>
-   <groupId>org.teiid.spring</groupId>
-   <artifactId>odata</artifactId>
+   <groupId>org.teiid</groupId>
+   <artifactId>spring-odata</artifactId>
    <version>${project.version}</version>
 </dependency>
 ----
