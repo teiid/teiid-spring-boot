@@ -74,6 +74,7 @@ and create pom.xml file of your choosing and add following maven dependencies
 <dependency>
    <groupId>org.teiid</groupId>
    <artifactId>teiid-spring-boot-starter</artifactId>
+   <version>{{ book.versionNumber }}</version>
 </dependency>
 ----
 
