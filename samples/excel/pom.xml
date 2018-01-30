@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-excel-example</artifactId>
-	<name>excel-example</name>
+	<name>spring-excel-example</name>
 	<description>Demo project for Spring Boot show casing Excel based entity</description>
 	<packaging>jar</packaging>
 

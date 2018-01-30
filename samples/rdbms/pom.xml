@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-rdbms-example</artifactId>
-	<name>rdbms-example</name>
+	<name>spring-rdbms-example</name>
 	<description>Demo project for Spring Boot showcasing RDBMS</description>
 	<packaging>jar</packaging>
 

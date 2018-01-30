@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-json-example</artifactId>
-	<name>json-example</name>
+	<name>spring-json-example</name>
 	<description>Demo project for Spring Boot show casing JSON based entity</description>
 	<packaging>jar</packaging>
 
