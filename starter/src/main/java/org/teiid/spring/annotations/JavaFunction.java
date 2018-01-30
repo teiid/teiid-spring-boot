@@ -26,10 +26,10 @@ import org.teiid.metadata.FunctionMethod.PushDown;
 
 /**
  * Using this annotation define User Defined Function based on the Java
- * code.<br/>
+ * code.<br>
  * Using this annotation, you can define a static method on a class that is
  * annotated with &#64;UserDefinedFunctions, at runtime this method will be
- * available for execution in Teiid queries such as {@link SelectQuery}<br/>
+ * available for execution in Teiid queries such as {@link SelectQuery}<br>
  * 
  * <pre>
  * <code>
@@ -60,12 +60,11 @@ import org.teiid.metadata.FunctionMethod.PushDown;
  * </code>
  * </pre>
  * Note: functions can be used any where you are writing SQL as part of Entity definition.
- * For an example see {@link UserDefinedFunctions}.
+ * For an example see {@link org.teiid.spring.annotations.UserDefinedFunctions }
  * 
  * For more information checkout <a href=
  * "https://teiid.gitbooks.io/documents/content/dev/User_Defined_Functions.html">UDF</a> in Teiid.
  * 
- * @See {@link UserDefinedFunctions}
  */
 @Target(ElementType.METHOD)
 @Retention(RUNTIME)

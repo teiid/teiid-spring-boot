@@ -66,7 +66,7 @@ public @interface RestConfiguration {
 	 * <pre>
 	 * <code>
 	 * &#64;Configuration
-	 * public class MyConfigClass {<br/>
+	 * public class MyConfigClass {<br>
 	 *   &#64;Bean(name="myHeaders")
 	 *   private HttpHeaders createHttpHeaders()
 	 *   {
@@ -76,7 +76,7 @@ public @interface RestConfiguration {
 	 *     headers.setContentType(MediaType.APPLICATION_JSON);
 	 *     headers.add("Authorization", "Basic " + encodedAuth);
 	 *     return headers;
-	 *   }<br/>
+	 *   }<br>
 	 *}
 	 * </code>
 	 * </pre>
@@ -93,9 +93,9 @@ public @interface RestConfiguration {
     
     /**
 	 * Define the bean name that supplies for the payload for REST based calls. This
-	 * bean MUST be of type {@link InputStreamFactory}.
+	 * bean MUST be of type {@link org.teiid.core.types.InputStreamFactory}.
 	 * 
-	 * @return
+	 * @return body
 	 */
     String bodyBean() default "";
 }

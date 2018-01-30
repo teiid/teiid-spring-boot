@@ -21,15 +21,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.teiid.query.function.TeiidFunction;
-
 /**
- * Using this annotation define Data Source specific Function.<br/>
+ * Using this annotation define Data Source specific Function.<br>
  * Using this annotation, you can define a static method on a class that is
  * annotated with &#64;UserDefinedFunctions, at runtime this method will be
  * available for execution in Teiid queries such as {@link SelectQuery}. During
  * runtime the function will be evaluated in the source database as it gets
- * pushed down to source for execution<br/> <br/>
+ * pushed down to source for execution<br> 
  * 
  * <pre>
  * <code>
@@ -49,19 +47,18 @@ import org.teiid.query.function.TeiidFunction;
  * "https://teiid.gitbooks.io/documents/content/dev/Source_Supported_Functions.html">Source
  * Supported Functions</a> in Teiid.
  * 
- * @See {@link TeiidFunction}
  */
 @Target(ElementType.METHOD)
 @Retention(RUNTIME)
 public @interface SourceFunction {
 	/**
 	 * Defines the datasource name where the function needs to be defined.
-	 * @return
+	 * @return source database name
 	 */
 	String source();
 	/**
 	 * Adds teiid_rel:native-query to the function; when omitted the function name executed as is
-	 * @return  
+	 * @return  native query or command 
 	 */
 	String nativequery() default "";
 }

@@ -21,8 +21,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.teiid.query.function.TeiidFunction;
-
 /**
  * This is marker annotation to define class of user defined java based functions or data source functions. 
  * 
@@ -48,7 +46,6 @@ import org.teiid.query.function.TeiidFunction;
  * For more information checkout <a href=
  * "https://teiid.gitbooks.io/documents/content/dev/User_Defined_Functions.html">User Defined Functions</a> in Teiid.
  * 
- * @See {@link TeiidFunction}
  */
 @Target(TYPE)
 @Retention(RUNTIME)
