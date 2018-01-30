@@ -1,0 +1,158 @@
+= Reading Data from EXCEL Based Source
+
+This article shows an example to read Excel Sheet based data from file. There may be many examples doing the similar task of reading Excel. However this example is little different, here the Excel sheet's data is loaded into a JPA Entity class that can be used exactly as RDBMS based entity, i.e. you can issue queries against it. Yes, that is correct!, you can issue JPA queries against a Excel document to filter the data, or join the entity with another entity to integrate data using Teiid.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies Spring Boot
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+----
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter,data-excel*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>data-excel</artifactId>
+</dependency>
+----
+
+in this example, we will create Entity class that can read Excel data from file, that has following structure
+
+||FirstName ||LastName	|| Age||
+|John|Doe|44
+|Jane|Smith|40
+|Matt|Liek|13
+|Sarah|Byne|10
+|Rocky|Dog|3
+
+=== Define View/Entity Class
+Now it is time to define the main Entity or View class. Since we are reading a `Employee` information, let's call it Employee class
+
+[source,java]
+.src/main/java/com/example/Employee.java
+----
+@Entity
+@ExcelTable(file="names.xls", headerRow=1, dataRowStartsAt=2)
+public class Employee {
+	@Id
+    private int ROW_ID;
+    @Column(name="firstname")
+    private String firstName;
+    @Column(name="lastname")
+    private String lastName;
+    private int age;
+    
+    // rest of the class ignored for brevity. create all the getters and setters. See example code.
+----
+
+Here you have a Employee class with four attributes, the ROW_ID, firstname, lastname and age. The ROW_ID is special attribute that defines the row number of the excel sheet, which is also doubly used as @id of your JPA entity. This is automatically evaluated by Teiid engine. All the other attributes are individual columns from your Excel document.
+
+The "Employee" class is annotated with `@Entity`, indicating that it is a JPA entity. For `@Table` annotation, is optional, but use it to give a different name. Sometimes @Table also need to be used to avoid the naming conflicts.
+
+*@ExcelTable* annotation is where most of the magic of Teiid occurring. This defines a excel document name,  the header and data rows (these are optional, if not defined the document is scanned for these properties) and creates the entity. 
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file.
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+Since we are reading the Excel file from a directory define the parent directory in `application.properties` file as following 
+
+In absence of this property entire classpath is scanned, that could take significant time depending upon all the libraries in your application.
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.file.parent-directory=/path/to/my/document.xls
+----
+
+
+=== Create Spring Data Repository class
+
+Spring Data JPA focuses on using JPA to store data in a relational database. Its most compelling feature is the ability to create repository implementations automatically, at runtime, from a repository interface. Here we extended the same feature to work with Excel based data.
+
+To see how this works, create a repository interface that works with Employee entities:
+
+[source,java]
+.src/main/java/org/example/EmployeeRepository.java
+----
+@Repository
+public interface EmployeeRepository extends CrudRepository<Employee, Integer>{
+
+}  
+----
+
+Spring Data JPA also allows you to define other query methods by simply declaring their method signature. In a typical Java application, you’d expect to write a class that implements EmployeeRepository. But that’s what makes Spring Data JPA so powerful: You don’t have to write an implementation of the repository interface. Spring Data JPA creates an implementation on the fly when you run the application.
+
+Let’s wire this up and see what it looks like!
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args).close();
+	}
+	
+    @Override
+    public void run(String... args) throws Exception {
+        employeeRepository.findAll().forEach(c -> System.out.println(c));
+    }
+}
+----
+
+Now when you execute this application, you should see results like below.
+
+----
+Employee [ROW_ID=2, firstName=John, lastName=Doe, age=23]
+Employee [ROW_ID=3, firstName=Jane, lastName=Smith, age=40]
+Employee [ROW_ID=4, firstName=Matt, lastName=Liek, age=13]
+Employee [ROW_ID=5, firstName=Sarah, lastName=Byne, age=10]
+Employee [ROW_ID=6, firstName=Rocky, lastName=Dog, age=3]
+----
+
+You can instead of calling `employeeRepository.findAll()` call any other query or use `JDBCTemplate` class to issue a custom query, and Teiid engine will treat the Excel document data exactly any RDBMS data and apply any filters or aggregations for you and return the data.
+
+Note: You can always integrate data from multiple different types of data sources using Teiid.

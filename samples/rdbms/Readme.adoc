@@ -1,0 +1,6 @@
+This example is a reference application to show case all the features related to a given Relational database. Please see user guide for setup and details explanation.
+
+1) shows how to do a @SelectQuery transformation for combinging data.
+2) shows how to update the view
+3) shows how to use OneToMany association with different sources
+4) sequence generation on the views using identity 

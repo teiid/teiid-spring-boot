@@ -252,7 +252,7 @@ Customer [id=100, name=foo, ssn=12312312]
 ----
 
 If you need to do insert/update/delete with above example you would need to define additional annotations for them. See
-@InsertQuery, @UpdateQuery and @DeleteQuery. If you need to read data from a JSON based payload, see @JsonTable annotation. Using similar techniques you combine data from *any* data source. Currently we have rdbms, file, web-service, excel support but all the data sources that are supported by Teiid will be supported in this framework vry soon. If you want to contribute please us know.
+@InsertQuery, @UpdateQuery and @DeleteQuery. If you need to read data from a JSON based payload, see @JsonTable annotation. Using similar techniques you combine data from *any* data source. Currently we have rdbms, file, web-service, excel support but all the data sources that are supported by Teiid will be supported in this framework very soon. If you want to contribute please let us know.
 
 
 == Available Examples

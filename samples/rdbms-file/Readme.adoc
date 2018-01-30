@@ -1,0 +1,278 @@
+=== Data Integration Example (RDBMS and CSV file based data)
+
+This guide walks you through the process of building an application that uses Teiid Spring Boot and JPA to store and retrieve data from a relational database and CSV file as a *single* JPA entity.
+
+=== What you’ll build
+
+You’ll build an application that combines the data from two separate tables from H2 database and CSV file. The schema of database is assumed as below. Basically the schema represents a user brokerage account.
+
+[source,sql]
+----
+DROP TABLE IF EXISTS CUSTOMER;
+CREATE TABLE CUSTOMER
+(
+   SSN char(10),
+   FIRSTNAME varchar(64),
+   LASTNAME varchar(64),
+   ST_ADDRESS varchar(256),
+   APT_NUMBER varchar(32),
+   CITY varchar(64),
+   STATE varchar(32),
+   ZIPCODE varchar(10),
+   PHONE varchar(15),
+   CONSTRAINT CUSTOMER_PK PRIMARY KEY(SSN)
+);
+
+DROP TABLE IF EXISTS ACCOUNT;
+CREATE TABLE ACCOUNT
+(
+   ACCOUNT_ID integer,
+   SSN char(10),
+   STATUS char(10),
+   TYPE char(10),
+   DATEOPENED timestamp,
+   DATECLOSED timestamp,
+   CONSTRAINT ACCOUNT_PK PRIMARY KEY(ACCOUNT_ID),
+   CONSTRAINT CUSTOMER_FK FOREIGN KEY (SSN) REFERENCES CUSTOMER (SSN)
+);
+
+DROP TABLE IF EXISTS PRODUCT;
+CREATE TABLE PRODUCT (
+   ID integer,
+   SYMBOL varchar(16),
+   COMPANY_NAME varchar(256),
+   CONSTRAINT PRODUCT_PK PRIMARY KEY(ID)
+);
+
+DROP TABLE IF EXISTS HOLDINGS;
+CREATE TABLE HOLDINGS
+(
+   TRANSACTION_ID integer IDENTITY,
+   ACCOUNT_ID integer,
+   PRODUCT_ID integer,
+   PURCHASE_DATE timestamp,
+   SHARES_COUNT integer,
+   CONSTRAINT HOLDINGS_PK PRIMARY KEY (TRANSACTION_ID),
+   CONSTRAINT ACCOUNT_FK FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNT (ACCOUNT_ID),
+   CONSTRAINT PRODUCT_FK FOREIGN KEY (PRODUCT_ID) REFERENCES PRODUCT (ID)
+);
+----
+
+and contents of CSV file as below, where the contents are representing a stock symbol and its respective price
+
+----
+SYMBOL,PRICE
+RHT,30.00
+BA,42.75
+MON,78.75
+PNRA,84.97
+SY,24.30
+BTU,41.25
+IBM,80.89
+DELL,10.75
+HPQ,31.52
+GE,16.45
+----
+
+Now the task is combine data from these two data sources and expose JPA entity that represents an integrated view of the data.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+----
+
+[source,xml]
+.*teiid-spring-boot-starter*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+----
+
+Since we are going to connect Postgres database, add the JDBC driver dependency. You can replace this with database driver of your choosing.
+[source,xml]
+.*postgresql*
+----
+<dependency>
+	<groupId>com.h2database</groupId>
+	<artifactId>h2</artifactId>
+	<scope>runtime</scope>
+</dependency>
+----
+
+=== Define the Data Sources
+In this example, first we need to define all the data sources that in play. To capture data source information, create the following Java class.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+    
+    @ConfigurationProperties(prefix = "spring.datasource.accountsDS")
+    @Bean
+    public DataSource accountsDS() {
+        return DataSourceBuilder.create().build();
+    }    
+}
+----
+
+NOTE: Keep the data source property name and method name exactly SAME. From above example "accountsDS" in property and accountsDS() method, keep the names same, as additional properties will not be discovered otherwise.
+
+We need to provide the corresponding configuration for this data source. In "application.properties" file, define *your* configuration similar to
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.datasource.accountsDS.url=jdbc:postgresql://localhost/test
+spring.datasource.accountsDS.username=<username>
+spring.datasource.accountsDS.password=<password>
+spring.datasource.accountsDS.driver-class-name=org.postgresql.Driver
+
+# these Teiid specific source import properties
+#spring.datasource.accountsDS.importer.SchemaPattern=<schema-name>
+----
+
+Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for Translator "import" properties.
+
+=== Define View/Entity Class
+Now it is time to define the main Entity or View class. First we will define a class to read CSV file based data. 
+
+[source,java]
+.src/main/java/com/example/StockPrice.java
+----
+@Entity
+@TextTable(file="marketdata-price.txt") /*Also see property: spring.teiid.file.parent-directory=src/main/resources */
+public class StockPrice {
+    @Id
+    String symbol;
+    double price;
+    
+    //getters and setters
+----
+
+The Entity class defines two attributes that define data from CSV file. The class also defines a annotation @TextTable, which configures the file name to read the data from. During the application start up time the classpath is scanned for classes with @TextTable annotation and respectve metadata is generated for the Teiid engine to read data from CSV file. Now you can access this JPA entity in other entities, which yoiu will see in below code example.
+
+Now let's write another Entity that represents a combined view of data from H2 database and CSV based entity created above.
+
+[source,java]
+.src/main/java/com/example/Stock.java
+----
+@Entity
+@SelectQuery("SELECT  A.ID, A.company_name, S.price, S.symbol " + 
+        "FROM stock_price AS S, accountsDS.product AS A " + 
+        "WHERE S.symbol = A.symbol;")
+public class Stock {
+    
+    @Id
+    private int id;
+    private String symbol;
+    private double price;
+    
+    @Column(name="COMPANY_NAME")
+    private String companyName;
+    
+    // rest of getters and setters are omitted for brevity.
+}
+----
+Here you have a Stock class with four attributes, the id, symbol, price, and the compnayName. Note that this is View that is defining a integrated view of both sources.
+
+NOTE: In this guide, the typical getters and setters and import statements have been left out for brevity.
+
+The Stock class is annotated with `@Entity`, indicating that it is a JPA entity. For `@Table` annotation, is optional, but in give a different combined name Teiid you can provide it. Sometimes @Table also need to be used to avoid the naming conflicts.
+
+*@SelectQuery* annotation is where most of the magic of Teiid occurring. This defines a query that joins that tables from two separate data sources. This can be any ANSI compatible SQL query, make sure the entities at data source level are fully qualified. For ex: `accountsDS.Customer`, where `accountDS` represents the data source name you created in `Datasource.java` class.
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file.
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+In absence of this property entire classpath is scanned, that could take significant time depending upon all the libraries in your application.
+
+For more available annotations, refer to Reference Guide.
+
+=== Create Spring Data Repository class
+
+Spring Data JPA focuses on using JPA to store data in a relational database. Its most compelling feature is the ability to create repository implementations automatically, at runtime, from a repository interface.
+
+To see how this works, create a repository interface that works with Customer entities:
+
+[source,java]
+.src/main/java/org/example/StockRepository.java
+----
+@Repository
+public interface StockRepository extends CrudRepository<Stock, Integer>{
+}
+----
+
+StockRepository extends the CrudRepository interface. The type of entity and ID that it works with, Stock and Integer, are specified in the generic parameters on CrudRepository. By extending CrudRepository, StockRepository inherits several methods for working with Stock persistence, including methods for saving, deleting, and finding Stock entities.
+
+Spring Data JPA also allows you to define other query methods by simply declaring their method signature. In a typical Java application, you’d expect to write a class that implements StockRepository. But that’s what makes Spring Data JPA so powerful: You don’t have to write an implementation of the repository interface. Spring Data JPA creates an implementation on the fly when you run the application.
+
+Let’s wire this up and see what it looks like!
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private StockRepository stocksRepository;
+    
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args).close();
+	}
+	
+    @Override
+    public void run(String... args) throws Exception {
+        stocksRepository.findAll().forEach(c -> System.out.println(c));
+    }
+}
+----
+
+Now when you execute this application, you should see results like below, which are combined results from both of your H2 database and CSV files. 
+
+----
+Stock [id=1002, symbol=BA, price=42.75, companyName=The Boeing Company]
+Stock [id=1003, symbol=MON, price=78.75, companyName=Monsanto Company]
+Stock [id=1004, symbol=PNRA, price=84.97, companyName=Panera Bread Company]
+Stock [id=1005, symbol=SY, price=24.3, companyName=Sybase Incorporated]
+----
+
+If you need to do insert/update/delete with above example you would need to define additional annotations for them. See
+@InsertQuery, @UpdateQuery and @DeleteQuery. If you need to read data from a JSON based payload, see @JsonTable annotation. Using similar techniques you combine data from *any* data source. 

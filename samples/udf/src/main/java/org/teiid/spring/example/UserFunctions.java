@@ -28,8 +28,8 @@ public class UserFunctions {
 	 * function will be evaluated in the Teiid engine
 	 */
 	@JavaFunction
-	public static String addHello(String value) {
-		return "Hello "+value;
+	public static String addSalutation(String value) {
+		return "Mr. "+value;
 	}
 	
 	/**
