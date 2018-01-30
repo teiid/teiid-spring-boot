@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.teiid</groupId>
 	<artifactId>teiid-spring-boot-starter-parent</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
+	<name>teiid-spring-boot-starter-parent</name>
+	<url>http://teiid.org</url>
+	<description>Teiid application framework bootstrapped with SprinBoot</description>
 
 	<licenses>
 		<license>
@@ -26,40 +30,40 @@
 		<url>https://github.com/teiid/teiid-spring-boot</url>
 		<tag>HEAD</tag>
 	</scm>
-    <developers>
-        <developer>
-            <name>Steve Hawkins</name>
-            <id>steve</id>
-            <email>shawkins@redhat.com</email>
-            <organization>Red Hat</organization>
-            <roles>
-                <role>Project Lead</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-        <developer>
-            <name>Ramesh Reddy</name>
-            <id>ramesh</id>
-            <email>rareddy@redhat.com</email>
-            <organization>Red Hat</organization>
-            <roles>
-                <role>Project Lead</role>
-            </roles>
-            <timezone>-6</timezone>
-        </developer>
-    </developers>
-    
-    <distributionManagement>
-        <repository>
-            <id>oss.sonatype.org</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>oss.sonatype.org</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-    
+	<developers>
+		<developer>
+			<name>Steve Hawkins</name>
+			<id>steve</id>
+			<email>shawkins@redhat.com</email>
+			<organization>Red Hat</organization>
+			<roles>
+				<role>Project Lead</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<name>Ramesh Reddy</name>
+			<id>ramesh</id>
+			<email>rareddy@redhat.com</email>
+			<organization>Red Hat</organization>
+			<roles>
+				<role>Project Lead</role>
+			</roles>
+			<timezone>-6</timezone>
+		</developer>
+	</developers>
+
+	<distributionManagement>
+		<repository>
+			<id>oss.sonatype.org</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>oss.sonatype.org</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -69,7 +73,7 @@
 		<teiid.version>10.1.0</teiid.version>
 		<javax.resource.version>1.0.0.Final</javax.resource.version>
 		<ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
-		
+
 	</properties>
 
 	<dependencyManagement>
@@ -98,11 +102,11 @@
 				<artifactId>teiid-olingo</artifactId>
 				<version>${teiid.version}</version>
 			</dependency>
-	        <dependency>
-	            <groupId>org.teiid.connectors</groupId>
-	            <artifactId>translator-excel</artifactId>
-	            <version>${teiid.version}</version>
-	        </dependency>			
+			<dependency>
+				<groupId>org.teiid.connectors</groupId>
+				<artifactId>translator-excel</artifactId>
+				<version>${teiid.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.jboss.spec.javax.resource</groupId>
 				<artifactId>jboss-connector-api_1.7_spec</artifactId>
@@ -123,6 +127,21 @@
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.10.4</version>
+						<configuration>
+							<maxmemory>512m</maxmemory>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>1.6</version>
 						<executions>
@@ -135,6 +154,31 @@
 							</execution>
 						</executions>
 					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>3.0.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>2.5.3</version>
+						<dependencies>
+							<dependency>
+								<groupId>org.apache.maven.scm</groupId>
+								<artifactId>maven-scm-provider-gitexe</artifactId>
+								<version>1.9.5</version>
+							</dependency>
+						</dependencies>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
@@ -142,65 +186,12 @@
 
 	<build>
 		<plugins>
-		<!-- 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.17</version>
-				<executions>
-					<execution>
-						<id>verify-style</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<logViolationsToConsole>true</logViolationsToConsole>
-					<failOnViolation>false</failOnViolation>
-					<checkstyleRules>
-					<module name="Checker">
-						<module name="FileTabCharacter" />
-					</module>
-					</checkstyleRules>
-				</configuration>
-			</plugin>
-			-->
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-javadoc-plugin</artifactId>
-                 <version>2.10.4</version>
-                 <configuration>
-                     <maxmemory>512m</maxmemory>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>jar</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-             </plugin>			
-			<plugin>		
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+
 		</plugins>
 	</build>
 
