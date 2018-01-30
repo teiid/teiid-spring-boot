@@ -50,10 +50,6 @@ public abstract class BaseConnection implements Connection {
 		return null;
 	}
 	
-	/**
-	 * Tests the connection to see if it is still valid.
-	 * @return
-	 */
 	public boolean isAlive() {
 		return true;
 	}

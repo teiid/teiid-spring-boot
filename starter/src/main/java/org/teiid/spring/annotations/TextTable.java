@@ -25,8 +25,8 @@ import org.teiid.spring.data.file.FileConnectionFactory;
 
 /**
  * Use this annotation on any Entity class, to read data from any flat file like
- * CSV, fixed format etc.<br/>
- * <br/>
+ * CSV, fixed format etc.<br>
+ * <br>
  * 
  * For Example if you have a CSV file like
  * 
@@ -63,11 +63,11 @@ import org.teiid.spring.data.file.FileConnectionFactory;
  * </code>
  * </pre>
  * 
- * Note: the getters and setter are omitted for brevity.<br/>
+ * Note: the getters and setter are omitted for brevity.<br>
  * 
  * You can define variety of other properties on this annotation to control
  * headers, quoting, trimming and generating automatic identification numbers if
- * your flat file does not have PK available.<br/>
+ * your flat file does not have PK available.<br>
  * 
  * For more information checkout <a href=
  * "https://teiid.gitbooks.io/documents/content/reference/TEXTTABLE.html">TextTable</a>
@@ -79,6 +79,7 @@ public @interface TextTable {
     
     /**
      * DELIMITER sets the field delimiter character to use. Defaults to ','
+     * @return delimiter
      */
     String delimiter() default ",";
     
@@ -92,16 +93,19 @@ public @interface TextTable {
      * where only a subset of the columns are needed. If the HEADER value is not
      * specified, it defaults to 1. If HEADER is not specified, then columns are
      * expected to match positionally with the text contents.
+     * @return header row number
      */
     int header() default 1;
     
     /**
      * SKIP specifies the number of text lines (counting every new line) to skip
      * before parsing the contents. HEADER may still be specified with SKIP.
+     * @return number of lines to skip
      */
     int skip() default 0;
     /**
      * QUOTE sets the quote, or qualifier, character used to wrap field values. Defaults to '"'.+
+     * @return char to use as quote
      */
     char quote() default '\"';
     
@@ -109,16 +113,19 @@ public @interface TextTable {
      * ESCAPE sets the escape character to use if no quoting character is in
      * use. This is used in situations where the delimiter or new line
      * characters are escaped with a preceding character, e.g. \,
+     * @return escape char
      */
     char escape() default '\\';
     
     /**
      * Source name; If overriding the {@link FileConnectionFactory} bean then provide the name of the bean
+     * @return source type
      */
     String source() default "file"; // this the default file connection manager
     
     /**
      * On Class ONLY, defines the file to be read. Either relative to source's parent directory or absolute path
+     * @return file name to read
      */
     String file();
     
@@ -127,6 +134,7 @@ public @interface TextTable {
      * will affect all column and header values. If NO TRIM is specified on a
      * column, then the fixed or unqualified text value not be trimmed of
      * leading and trailing white space.
+     * @return true to not use trim on values; default true
      */
     boolean notrim() default true;
     
@@ -134,6 +142,7 @@ public @interface TextTable {
     /**
      * On Column ONLY, this defines the column as ordinal identity column. The data type must be integer.
      * A FOR ORDINALITY column is typed as integer and will return the 1-based item number as its value.
+     * @return true if column is like PK/identity column
      */
     boolean ordinal() default false;
     
@@ -141,6 +150,7 @@ public @interface TextTable {
      * On Column ONLY, WIDTH indicates the fixed-width length of a column in
      * characters - not bytes. With the default ROW DELIMITER, a CR NL sequence
      * counts as a single character.
+     * @return for fixed with, width of column
      */
     int width() default 0;
 }

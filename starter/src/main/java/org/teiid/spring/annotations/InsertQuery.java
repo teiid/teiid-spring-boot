@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Defines the Teiid View's Transformation Insert query. This is optional annotation,
- * that can be defined only when you want support insert on the view.<br/>
+ * that can be defined only when you want support insert on the view.<br>
  * 
  * 
  * <pre>

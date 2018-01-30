@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Use this annotation on any Entity class, that defines the data from a JSON file or web resource.<br/> 
+ * Use this annotation on any Entity class, that defines the data from a JSON file or web resource.<br> 
  * For Example if you have a JSON payload like
  * 
  * <pre>
@@ -74,7 +74,7 @@ import java.lang.annotation.Target;
  * </code>
  * </pre>
  * 
- * Note: the getters and setter are omitted for brevity.<br/>
+ * Note: the getters and setter are omitted for brevity.<br>
  *  
  * For more information checkout <a href=
  * "https://teiid.gitbooks.io/documents/content/reference/XMLTABLE.html">XMLTABLE</a>
@@ -85,9 +85,11 @@ import java.lang.annotation.Target;
 public @interface JsonTable {
     
     /**
-     * Source name; If overriding the {@link WsConnectionFactory} bean then provide the name of the bean
-     * @return string
-     */
+	 * Source name; If overriding the org.teiid.translator.ws.WsExecutionFactory bean then provide the name
+	 * of the bean
+	 * 
+	 * @return string
+	 */
     String source() default "rest"; // this the default web connection manager
     
     /**

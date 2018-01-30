@@ -23,14 +23,14 @@ import java.lang.annotation.Target;
 
 /**
  * Defines the Teiid View's Transformation query. This is must have annotation
- * to define Entity as View.<br/>
+ * to define Entity as View.<br>
  * 
  * If you defined a @Entity annotation on a JAVA class and would like to use
  * this class as View definition in Teiid, then use this annotation to define,
- * how Teiid can build this View based on other Tables and Views.<br/>
- * <br/>
+ * how Teiid can build this View based on other Tables and Views.<br>
+ * <br>
  * 
- * For example for entity class:<br/>
+ * For example for entity class:<br>
  * 
  * <pre>
  * <code>
@@ -45,7 +45,7 @@ import java.lang.annotation.Target;
  * </code>
  * </pre>
  * 
- * Will generate view in Teiid as follows <br/>
+ * Will generate view in Teiid as follows <br>
  * 
  * <pre>
  * <code>
@@ -64,8 +64,8 @@ import java.lang.annotation.Target;
  * select clause MUST match to that of JPA generation. If you do not follow this
  * you will either end with validation errors, or with wrong data. In the above
  * example see how the 'dob' and 'fullName' attributes have been changed in
- * order.<br/>
- * <br/>
+ * order.<br>
+ * <br>
  *
  * <b>NOTE</b>: If you used CamelCase for your attributes in the Entity class,
  * the generated Teiid's View class columns will be based on the Naming Strategy
