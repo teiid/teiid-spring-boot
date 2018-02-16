@@ -15,11 +15,11 @@ If you are familiar with Teiid or Teiid Embedded, all the functionality you are 
 
 * In the regular Teiid development, Teiid is always accessed as a external database. You connect to it using a JDBC connection, or layer a JPA on top of the JDBC connection. In Teiid Spring Boot, it is more a framework/library to join the data. Teiid engine is bootstrapped as implicit embedded database, on your application start, which user doesn't really need to know about.
 
-* There is NO VDB. You read it correct! OK, we lied, there is no user facing VDB. In the regular Teiid development one needs to use tooling like Teiid Designer or use DDL based files and build Virtual Database (VDB), then deploy that into a server environment, and data sources need to be configured before you can use virtual views in yor application. With Spring Boot extension, there is no need to use the any tooling, your application layer and View definition layer become one. The virtual View construction happens with Annotations. It is exactly same steps as to defining Entity using JPA framework with couple extra annotations.
+* There is NO VDB. You read it correct! OK, we lied there is no user facing VDB. In the regular Teiid development one needs to use tooling like Teiid Designer or use DDL based files and build Virtual Database (VDB), then deploy that into a server environment and data sources need to be configured before you can use virtual views in your application. With Teiid Spring Boot, there is no need to use the any tooling, your application layer and View definition layer become one. The virtual View construction happens with Annotations in your Java code. It is exactly same steps as to defining Entity using JPA framework with couple extra annotations that are specific to Teiid.
 
 * Teiid Spring Boot is not really designed if you are looking for running third party BI tools like Tableau, Business Objects etc to some business reports. This is designed specifically for its usage with Microservices and Spring based Java applications.
 
-* Since this is Spring Boot, this only supports Java.
+* Since this is Spring Boot, this only supports Java language.
 
 == Your First Example, Join Data From Two Postgres Databases
 
@@ -27,7 +27,7 @@ This guide walks you through the process of building an application that uses Te
 
 === What you’ll build
 
-You’ll build an application that combines the data from two separate tables from two separate Postgres databases. For simplicity, this example assumes both databases identical and both have identical following schema as follows.
+You’ll build an application that combines the data from two separate tables from two separate Postgres databases. For simplicity, this example assumes both databases identical and both have identical schema as follows.
 
 [source,sql]
 ----
@@ -79,18 +79,20 @@ and create pom.xml file of your choosing and add following maven dependencies
 ----
 
 Since we are going to connect Postgres database, add the JDBC driver dependency. You can replace this with database driver of your choosing.
+
 [source,xml]
 .*postgresql*
 ----
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
+     <version>42.2.1</version>
     <scope>runtime</scope>
 </dependency>
 ----
 
 === Define the Data Sources
-In this example, first we need to define all the data sources that in play. To capture data source information, create the following Java class.
+In this example, first we need to define all the data sources that in play. To capture data source configuration information, create the following Java class. This pattern is prescribed in Spring Boot when working more than single database. Please note the annotation `@ConfigurationProperties` defines the properties prefix as well identifier for datasource. 
 
 [source,java]
 .*src/main/java/org/example/DataSources.java*
@@ -136,7 +138,7 @@ spring.datasource.customerDS.driver-class-name=org.postgresql.Driver
 spring.datasource.customerDS.importer.SchemaPattern=public
 ----
 
-Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for Translator "import" properties.
+Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for JDBC Translator "import" properties.
 
 === Define View/Entity Class
 Now it is time to define the main Entity or View class. We have the Customer table in both the databases that we need to union as one. For that, create Entity like below
@@ -175,7 +177,7 @@ Here you have a Customer class with three attributes, the id, the Name, and the 
 
 NOTE: In this guide, the typical getters and setters and import statements have been left out for brevity.
 
-The Customer class is annotated with `@Entity`, indicating that it is a JPA entity. For `@Table` annotation, is optional, but in give a different combined name Teiid you can provide it. Sometimes @Table also need to be used to avoid the naming conflicts.
+The Customer class is annotated with `@Entity`, indicating that it is a JPA entity. For `@Table` annotation, is optional, but to give a different unioned name in Teiid you can define it. Sometimes @Table also need to be used to avoid the naming conflicts.
 
 The Customer’s id property is annotated with `@Id` so that JPA will recognize it as the object’s identity. The id property.
 
@@ -183,7 +185,7 @@ The other two properties, name and ssn are left with out any annotation. It is a
 
 *@SelectQuery* annotation is where most of the magic of Teiid occurring. This defines a query that joins that tables from two separate data sources. This can be any ANSI compatible SQL query, make sure the entities at data source level are fully qualified. For ex: `accountsDS.Customer`, where `accountDS` represents the data source name you created in `Datasource.java` class.
 
-At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file.
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to a internal server. To do this annotaion scan, define the application package name in `application.properties` file as below.
 
 [source,text]
 .*src/main/resources/application.properties*
