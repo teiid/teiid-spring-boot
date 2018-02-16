@@ -4,14 +4,14 @@ Teiid is relational data integration engine that can combine the data from multi
 
 This is a Reference guide for Teiid Spring Boot, for general Teiid Reference Guide consult link:https://teiid.gitbooks.io/documents/content/
 
-Please Read User Guide to understand the problem this library is solving, this guide is more about description of some if the annotations in play.
+Please Read User Guide to understand the problem this library is solving, this guide is more about description of the annotations in play.
 
 
 == Teiid Annotations
 
-Most of the Teiid specific functionality is hidden in the set of Annotations provided by this library. Annotations are used on a Entity class. If you are familiar with regular Teiid, consider that creating an Entity is equivalent creating a View. Using the annotations, this system gathers metadata about the View, similar to what you may have done using Teiid Designer or using DDL. Most of these annotations still require the user to define the DDL underneath as is in previous tools. But at the same time this library makes use of JPA annotations to define Entity structure. So, you consider the below are extensions to JPA annotations that bring virtualization capabilities to a JPA based application without all the jargon of Teiid or a separate independent virtualization server.
+Most of the Teiid specific functionality is hidden in the set of Annotations provided by this framework. Annotations are used on a Entity class. If you are familiar with regular Teiid, consider that creating an Entity is equivalent creating a View. Using the annotations, this system gathers metadata about the View, similar to what you may have done using Teiid Designer or using DDL. Most of these annotations still require the user to define the DDL underneath as is in previous tools. But at the same time this library makes use of JPA annotations to define Entity structure. So, consider the below are extensions to JPA annotations that bring virtualization capabilities to a JPA based application without all the jargon of Teiid or a separate independent virtualization server.
 
-The below are list of annotations that are part of the library, please refer to the JavaDoc of the annotatyion for detailed explanation and possibly code examples.
+The below are list of annotations that are part of the library, please refer to the JavaDoc of the annotation for detailed explanation and possibly code examples.
 
 === @SelectQuery
 This probably is MOST important and MUST have annotation on any Entity classes that is being defined to read data or join data from two different sources. This defines the transformation query of the view. Take look at Javadoc for usage.
