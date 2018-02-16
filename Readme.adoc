@@ -18,7 +18,7 @@ Primary purpose of `teiid-spring-boot` is to enable Teiid in Spring Boot applica
 * Enable Externalized .yml/.properties based configuration
 * Supports VDB building using Spring style Annotations.
 
-Refer to link:UserGuide.adoc[User Guide] for more details.
+Refer to link:docs/UserGuide.adoc[User Guide] for more details.
 
 == Build
 
@@ -36,6 +36,7 @@ $ mvn clean install
 ----
 
 The directory structure is defined as follows:
+----
 /teiid-spring-boot
     /starter -> Main Bootstaping application
     /data -> Contains all the different data sources that Teiid supports (RDBMS is implicitly supported)
@@ -43,7 +44,7 @@ The directory structure is defined as follows:
     /samples -> various examples show casing different data sources
     /starter-test -> tests
     /docs -> Documents
-       
+----       
 
 ==  Useful Links
 
