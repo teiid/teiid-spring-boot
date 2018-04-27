@@ -82,7 +82,7 @@ import java.lang.annotation.Target;
  * </pre>
  * 
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/reference/DDL_Metadata.html">DDL
+ * "http://teiid.github.io/teiid-documents/master/content/reference/DDL_Metadata.html">DDL
  * support in Teiid</a>
  */
 @Target(TYPE)

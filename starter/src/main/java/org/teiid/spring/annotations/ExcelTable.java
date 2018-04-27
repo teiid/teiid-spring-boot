@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * supported. Must define "file" attribute to define where to read from. This
  * annotation is to read a Excel file into an Entity from a file location.<br> See
  * Excel translator in Teiid for more information <a href=
- * "https://teiid.gitbooks.io/documents/content/reference/Microsoft_Excel_Translator.html">[Microsoft
+ * "http://teiid.github.io/teiid-documents/master/content/reference/Microsoft_Excel_Translator.html">[Microsoft
  * Excel Translator]</a>
  */
 @Target(TYPE)

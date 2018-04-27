@@ -70,7 +70,7 @@ import org.teiid.spring.data.file.FileConnectionFactory;
  * your flat file does not have PK available.<br>
  * 
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/reference/TEXTTABLE.html">TextTable</a>
+ * "http://teiid.github.io/teiid-documents/master/content/reference/TEXTTABLE.html">TextTable</a>
  * in Teiid.
  */
 @Target(TYPE)

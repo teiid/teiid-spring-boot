@@ -63,7 +63,7 @@ import org.teiid.metadata.FunctionMethod.PushDown;
  * For an example see {@link org.teiid.spring.annotations.UserDefinedFunctions }
  * 
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/dev/User_Defined_Functions.html">UDF</a> in Teiid.
+ * "http://teiid.github.io/teiid-documents/master/content/dev/User_Defined_Functions.html">UDF</a> in Teiid.
  * 
  */
 @Target(ElementType.METHOD)

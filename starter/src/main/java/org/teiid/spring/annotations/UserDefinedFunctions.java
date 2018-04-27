@@ -44,7 +44,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/dev/User_Defined_Functions.html">User Defined Functions</a> in Teiid.
+ * "http://teiid.github.io/teiid-documents/master/content/dev/User_Defined_Functions.html">User Defined Functions</a> in Teiid.
  * 
  */
 @Target(TYPE)

@@ -2,7 +2,7 @@
 
 Teiid is relational data integration engine that can combine the data from multiple heterogeneous sources.
 
-This is a Reference guide for Teiid Spring Boot, for general Teiid Reference Guide consult link:https://teiid.gitbooks.io/documents/content/
+This is a Reference guide for Teiid Spring Boot, for general Teiid Reference Guide consult link:http://teiid.github.io/teiid-documents/master/content/
 
 Please Read User Guide to understand the problem this library is solving, this guide is more about description of the annotations in play.
 
@@ -34,13 +34,13 @@ Unlike other annotations this annotation is used to read a CSV or fixed format t
 This annotation is similar to @TextTable, but provides a way to read a JSON payload into an Entity class. You can read the payload from a web resource or read from file location. Take look at Javadoc for usage. Also find find more complex example in samples.
 
 === @ExcelTable
-This annotation is to read a Excel file into an Entity from a file location. See Excel translator in Teiid for more information link:https://teiid.gitbooks.io/documents/content/reference/Microsoft_Excel_Translator.html[Microsoft Excel Translator]
+This annotation is to read a Excel file into an Entity from a file location. See Excel translator in Teiid for more information link:http://teiid.github.io/teiid-documents/master/content/reference/Microsoft_Excel_Translator.html[Microsoft Excel Translator]
 
 === @SourceFunction
-If you want to use a source specific function (like SOUNDX in Oracle) that is not already defined by Teiid, then you can define this annotation on a Java Method that mimics the signature of the function in the source database. Then you can use this function in any of your queries. This Java method needs to be defined on a class that is annotated with @UserDefinedFunctions. The evalution of this functions will be pushed to source. Take look at Javadoc for usage. For more information see in Teiid documentation link:https://teiid.gitbooks.io/documents/content/dev/Source_Supported_Functions.html[Source Supported Functions] 
+If you want to use a source specific function (like SOUNDX in Oracle) that is not already defined by Teiid, then you can define this annotation on a Java Method that mimics the signature of the function in the source database. Then you can use this function in any of your queries. This Java method needs to be defined on a class that is annotated with @UserDefinedFunctions. The evalution of this functions will be pushed to source. Take look at Javadoc for usage. For more information see in Teiid documentation link:http://teiid.github.io/teiid-documents/master/content/dev/Source_Supported_Functions.html[Source Supported Functions] 
 
 === @JavaFunction
-If you want to define a user defined function (UDF) based on java code, that you can use in your Teiid queries, then you can define this annotation on a Java Method and supply the implementation of the method in Java. This Java method needs to be defined on a class that is annotated with @UserDefinedFunctions. Take look at Javadoc for usage. For more information see in Teiid documentation link:https://teiid.gitbooks.io/documents/content/dev/Support_for_User-Defined_Functions_Non-Pushdown.html[Support for User-Defined Functions (Non-Pushdown)] 
+If you want to define a user defined function (UDF) based on java code, that you can use in your Teiid queries, then you can define this annotation on a Java Method and supply the implementation of the method in Java. This Java method needs to be defined on a class that is annotated with @UserDefinedFunctions. Take look at Javadoc for usage. For more information see in Teiid documentation link:http://teiid.github.io/teiid-documents/master/content/dev/Support_for_User-Defined_Functions_Non-Pushdown.html[Support for User-Defined Functions (Non-Pushdown)] 
 
 === @RestConfiguration
 When working with REST based sources with entities like @JsonTable or @TextTable, to configure http verbs or headers use this annotation to configure those properties. If used on any non REST based sources it will not have any effect.
@@ -63,5 +63,5 @@ For configuring the JDBC data sources please see https://docs.spring.io/spring-b
 |=======================
 |Property|Description|Default Value
 |spring.datasource.{dsname}.platfrom|Name of the platform, where when init SQL queries for the database are provided this will be used ad postfix. See rdbms-file-example for example.|n/a|
-|spring.datasource.{dsname}.importer.{property-name}|Translator importer properties to control the type and amount of metadata to import. See for more information about https://teiid.gitbooks.io/documents/content/reference/JDBC_Translators.html[importer properties]
+|spring.datasource.{dsname}.importer.{property-name}|Translator importer properties to control the type and amount of metadata to import. See for more information about http://teiid.github.io/teiid-documents/master/content/reference/JDBC_Translators.html[importer properties]
 |=======================

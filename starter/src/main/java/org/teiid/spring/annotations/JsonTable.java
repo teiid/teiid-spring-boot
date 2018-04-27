@@ -77,7 +77,7 @@ import java.lang.annotation.Target;
  * Note: the getters and setter are omitted for brevity.<br>
  *  
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/reference/XMLTABLE.html">XMLTABLE</a>
+ * "http://teiid.github.io/teiid-documents/master/content/reference/XMLTABLE.html">XMLTABLE</a>
  * in Teiid.
  */ 
 @Target(TYPE)

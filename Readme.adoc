@@ -49,7 +49,7 @@ The directory structure is defined as follows:
 ==  Useful Links
 
 * Website - http://teiid.org
-* Documentation - https://teiid.gitbooks.io/documents/content/
+* Documentation - http://teiid.github.io/teiid-documents/master/content/
 * Documentation Project - https://teiid.gitbooks.io
 * JIRA Issues -  https://issues.jboss.org/browse/TEIID
 * User Forum - https://community.jboss.org/en/teiid?view=discussions

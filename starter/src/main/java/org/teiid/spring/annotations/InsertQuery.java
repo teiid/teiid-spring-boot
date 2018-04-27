@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/reference/Update_Procedures_Triggers.html">Update
+ * "http://teiid.github.io/teiid-documents/master/content/reference/Update_Procedures_Triggers.html">Update
  * procedures</a> in Teiid.
  */
 @Target(TYPE)

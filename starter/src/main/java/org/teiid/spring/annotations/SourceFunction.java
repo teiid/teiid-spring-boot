@@ -44,7 +44,7 @@ import java.lang.annotation.Target;
  * For an example see {@link UserDefinedFunctions}.
  *
  * For more information checkout <a href=
- * "https://teiid.gitbooks.io/documents/content/dev/Source_Supported_Functions.html">Source
+ * "http://teiid.github.io/teiid-documents/master/content/dev/Source_Supported_Functions.html">Source
  * Supported Functions</a> in Teiid.
  * 
  */
