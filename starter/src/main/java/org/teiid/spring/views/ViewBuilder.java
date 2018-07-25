@@ -16,15 +16,20 @@
 package org.teiid.spring.views;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.persistence.Embedded;
 
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Component;
+import org.hibernate.mapping.ForeignKey;
+import org.hibernate.mapping.Index;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.PrimaryKey;
+import org.hibernate.mapping.UniqueKey;
 import org.teiid.core.types.JDBCSQLTypeInfo;
 import org.teiid.dialect.TeiidDialect;
 import org.teiid.hibernate.types.BigDecimalArrayType;
@@ -81,6 +86,9 @@ public class ViewBuilder<T> {
 			addColumn(ormTable, ormColumn, attribute.path, attribute.field, view, mf, !it.hasNext(),
 					annotation);
         }
+        addPrimaryKey(ormTable, view, mf);
+        addForeignKeys(ormTable, view, mf);
+        addIndexKeys(ormTable, view, mf);
         onFinish(view, mf, entityClazz, annotation);
     }
     
@@ -127,30 +135,91 @@ public class ViewBuilder<T> {
         return clazz.isArray();
     }
     
+	private void addPrimaryKey(org.hibernate.mapping.Table ormTable, Table view, MetadataFactory mf) {
+        PrimaryKey pk = ormTable.getPrimaryKey();  
+        List<String> pkColumns = new ArrayList<>();
+        if (pk != null) {
+            Iterator<org.hibernate.mapping.Column> it = pk.getColumnIterator();
+            while(it.hasNext()) {
+                org.hibernate.mapping.Column c = it.next();
+                Column col = view.getColumnByName(c.getName());
+                if (pk.isGenerated(dialect)) {
+                    col.setAutoIncremented(true);
+                }
+                pkColumns.add(c.getName());
+            }
+            mf.addPrimaryKey("PK", pkColumns, view);
+        }
+	    
+	}
+	
+    private void addIndexKeys(org.hibernate.mapping.Table ormTable, Table view, MetadataFactory mf) {
+        Iterator<UniqueKey> keys = ormTable.getUniqueKeyIterator();
+        while (keys.hasNext()) {
+            UniqueKey uk = keys.next();
+            List<String> columns = new ArrayList<>();
+            for (org.hibernate.mapping.Column c : uk.getColumns()) {
+                columns.add(c.getName());
+            }
+            mf.addIndex(uk.getName(), false, columns, view);
+        }
+        
+        Iterator<Index> iit = ormTable.getIndexIterator();
+        while (iit.hasNext()) {
+            Index idx = iit.next();
+            List<String> columns = new ArrayList<>();
+            Iterator<org.hibernate.mapping.Column> it = idx.getColumnIterator(); 
+            while(it.hasNext()) {
+                org.hibernate.mapping.Column c = it.next();
+                columns.add(c.getName());
+            }
+            mf.addIndex(idx.getName(), true, columns, view);
+        }        
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void addForeignKeys(org.hibernate.mapping.Table ormTable, Table view, MetadataFactory mf) {
+        Collection<ForeignKey> fks = ormTable.getForeignKeys().values(); 
+        for (ForeignKey fk : fks) {
+            List<String> fkColumns = new ArrayList<>();
+            List<String> refColumns = new ArrayList<>();
+            Iterator<org.hibernate.mapping.Column> it = fk.getColumnIterator();
+            while(it.hasNext()) {
+                org.hibernate.mapping.Column c = it.next();
+                fkColumns.add(c.getName());
+            }
+            
+            if (fk.isReferenceToPrimaryKey()) {
+                List<org.hibernate.mapping.Column> columns = fk.getReferencedTable().getPrimaryKey().getColumns();       
+                for (org.hibernate.mapping.Column c : columns) {
+                    refColumns.add(c.getName());
+                }
+                
+            } else {
+                List<org.hibernate.mapping.Column> columns = fk.getReferencedColumns();           
+                for (org.hibernate.mapping.Column c : columns) {
+                    refColumns.add(c.getName());
+                }
+            }
+            mf.addForeignKey(fk.getName(), fkColumns, refColumns, fk.getReferencedTable().getName(), view);
+        }
+    }	
 	
 	private void addColumn(org.hibernate.mapping.Table ormTable, org.hibernate.mapping.Column ormColumn, String parent,
 			Field attributeField, Table view, MetadataFactory mf, boolean last, T annotation) {
         
         String columnName = ormColumn.getName();
-        boolean pk = isPK(ormTable, ormColumn);
-        
         String type = JDBCSQLTypeInfo.getTypeName(ormColumn.getSqlTypeCode(metadata));
         if (type.equals("ARRAY")) {
         	type = getArrayType(ormColumn);
         }
         Column column = mf.addColumn(columnName, type, view);
-        if (pk) {
-            mf.addPrimaryKey(ormTable.getPrimaryKey().getName(), Arrays.asList(column.getName()), view);
-        }
         column.setUpdatable(true);
         column.setLength(ormColumn.getLength());
         column.setScale(ormColumn.getScale());
         column.setPrecision(ormColumn.getPrecision());
         column.setNullType(ormColumn.isNullable()?NullType.Nullable:NullType.No_Nulls);
         column.setDefaultValue(ormColumn.getDefaultValue());
-        if (pk && ormTable.getPrimaryKey().isGenerated(dialect)) {
-        	column.setAutoIncremented(true);
-        }
         onColumnCreate(view, column,  mf, attributeField, parent, last, annotation);        
     }	
 	
@@ -183,21 +252,6 @@ public class ViewBuilder<T> {
 		return ormColumn.getSqlType();
 	}
 
-	// TODO: Support composite primary key
-	private boolean isPK(org.hibernate.mapping.Table ormTable, org.hibernate.mapping.Column ormColumn) {
-		PrimaryKey pk = ormTable.getPrimaryKey();
-		if (pk != null) {
-			Iterator<org.hibernate.mapping.Column> it = pk.getColumnIterator();
-			while(it.hasNext()) {
-				org.hibernate.mapping.Column c = it.next();
-				if (ormColumn.equals(c)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
 	@SuppressWarnings("unchecked")
 	String propertyName(Iterator<org.hibernate.mapping.Property> it, org.hibernate.mapping.Property identifierProperty,
 			String colName) {

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.autoconfigure;
+package org.teiid.spring.example;
 
-public interface TeiidConstants {
+import java.util.stream.Stream;
 
-    String ENTITY_SCAN_DIR = "spring.teiid.model.package";
-    String REDIRECTED = "spring.teiid.redirected";
-    
-    String REDIRECTED_TABLE_POSTFIX = "_REDIRECTED";
-    
-    String VDBNAME = "spring";
-    String VDBVERSION = "1.0.0";
-    String EXPOSED_VIEW = "teiid";    
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+
+
+public interface CustomerRepository extends CrudRepository<Customer, Long> {
+    @Query("select c from Customer c where c.ssn = :ssn")
+    Stream<Customer> findBySSNReturnStream(@Param("ssn") String ssn);
 }
