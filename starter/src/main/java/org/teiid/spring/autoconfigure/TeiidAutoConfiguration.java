@@ -156,34 +156,34 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name="dataSource")
     @Primary
     @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource dataSource(TeiidServer server) {
+    public DataSource dataSource(TeiidServer server, TransactionManager transactionManager) {
         EmbeddedDatabaseFactory edf = new EmbeddedDatabaseFactory();
         edf.setDatabaseConfigurer(new TeiidDatabaseConfigurer(server));
         edf.setDataSourceFactory(new DataSourceFactory() {
-			@Override
-			public DataSource getDataSource() {
-				String url = context.getEnvironment().getProperty("spring.datasource.teiid.url");
-				return new SimpleDriverDataSource(server.getDriver(), url);
-			}
-			
-			@Override
-			public ConnectionProperties getConnectionProperties() {
-				return new ConnectionProperties() {
-					@Override
-					public void setDriverClass(Class<? extends Driver> driverClass) {
-					}
-					@Override
-					public void setUrl(String url) {
-					}
-					@Override
-					public void setUsername(String username) {
-					}
-					@Override
-					public void setPassword(String password) {
-					}
-				};
-			}
-		});
+            @Override
+            public DataSource getDataSource() {
+                String url = context.getEnvironment().getProperty("spring.datasource.teiid.url");
+                return new SimpleDriverDataSource(server.getDriver(), url);
+            }
+            
+            @Override
+            public ConnectionProperties getConnectionProperties() {
+                return new ConnectionProperties() {
+                    @Override
+                    public void setDriverClass(Class<? extends Driver> driverClass) {
+                    }
+                    @Override
+                    public void setUrl(String url) {
+                    }
+                    @Override
+                    public void setUsername(String username) {
+                    }
+                    @Override
+                    public void setPassword(String password) {
+                    }
+                };
+            }
+        });
         return edf.getDatabase();
     }    
     
@@ -194,10 +194,10 @@ public class TeiidAutoConfiguration implements Ordered {
     
     @Bean(name="teiidNamingStrategy")
     public PhysicalNamingStrategy teiidNamingStrategy() {
-    	try {
-    		return (PhysicalNamingStrategy)Class.forName(hibernateNamingClass).newInstance();
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			return null;
-		}
-	}
+        try {
+            return (PhysicalNamingStrategy)Class.forName(hibernateNamingClass).newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            return null;
+        }
+    }
 }

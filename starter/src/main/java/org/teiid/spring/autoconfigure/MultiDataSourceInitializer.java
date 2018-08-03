@@ -61,7 +61,7 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
 
     private boolean initialized = false;
 
-    private String sourceName;
+    String sourceName;
 
     MultiDataSourceInitializer(DataSource dataSource, String sourceName, ApplicationContext applicationContext) {
         this.dataSource = dataSource;
@@ -133,7 +133,7 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
         runScripts(scripts, username, password);
     }
 
-    private List<Resource> getScripts(String propertyName, List<String> resources, String fallback) {
+    List<Resource> getScripts(String propertyName, List<String> resources, String fallback) {
         if (resources != null && !resources.isEmpty()) {
             return getResources(propertyName, resources, true);
         }
@@ -144,7 +144,7 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
         return getResources(propertyName, fallbackResources, false);
     }
 
-    private List<Resource> getResources(String propertyName, List<String> locations, boolean validate) {
+    List<Resource> getResources(String propertyName, List<String> locations, boolean validate) {
         List<Resource> resources = new ArrayList<Resource>();
         for (String location : locations) {
             for (Resource resource : doGetResources(location)) {
@@ -171,7 +171,12 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
 
     private String getProperty(String key) {
         String k = "spring.datasource." + this.sourceName + "." + key;
-        return this.applicationContext.getEnvironment().getProperty(k);
+        String value = this.applicationContext.getEnvironment().getProperty(k);
+        if (value == null) {
+            k = "spring.xa.datasource." + this.sourceName + "." + key;
+            value = this.applicationContext.getEnvironment().getProperty(k);
+        }
+        return value;
     }
 
     private void runScripts(List<Resource> resources, String username, String password) {

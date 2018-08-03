@@ -15,8 +15,6 @@
  */
 package org.teiid.spring.autoconfigure;
 
-import static org.teiid.spring.autoconfigure.TeiidConstants.*;
-
 import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -27,78 +25,47 @@ import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
 
 public enum ExternalSource {
+    DB2("DB2", new String[] {"com.ibm.db2.jcc.DB2Driver"}, new String[] {"com.ibm.db2.jcc.DB2XADataSource"}, "db2", "org.hibernate.dialect.DB2Dialect"), 
+    DERBY("Derby", new String[] {"org.apache.derby.jdbc.ClientDriver"}, new String[] {}, "derby", "org.hibernate.dialect.DerbyTenSevenDialect"), 
+    H2("H2", new String[] {"org.h2.Driver"}, new String[] {"org.h2.jdbcx.JdbcDataSource"}, "h2", "org.hibernate.dialect.H2Dialect"), 
+    HANA("Hana", new String[] {"com.sap.db.jdbc.Driver"}, new String[] {}, "hana", "org.hibernate.dialect.HANARowStoreDialect"), 
+    HIVE("Hive", new String[] {"org.apache.hive.jdbc.HiveDriver"}, new String[] {}, "hive", null), 
+    IMPALA("Impala", new String[] {"org.apache.hadoop.hive.jdbc.HiveDriver"}, new String[] {}, "impala", null), // TODO: Fix me
+    HSQL("HSQL", new String[] {"org.hsqldb.jdbc.JDBCDriver"}, new String[] {"org.hsqldb.jdbc.pool.JDBCXADataSource"}, "hsql", "org.hibernate.dialect.HSQLDialect"), 
+    INFORMIX("Informix", new String[] {"com.informix.jdbc.IfxDriver"}, new String[] {}, "informix", "org.hibernate.dialect.InformixDialect"), 
+    INGRES("Ingres", new String[] {"com.ingres.jdbc.IngresDriver"}, new String[] {}, "ingres", "org.hibernate.dialect.Ingres10Dialect"), 
+    MYSQL("MySQL", new String[] {"com.mysql.jdbc.Driver"}, new String[] {"com.mysql.jdbc.jdbc2.optional.MysqlXADataSource"}, "mysql5", "org.hibernate.dialect.MySQL5InnoDBDialect"), 
+    ORACLE("Oracle", new String[] {"oracle.jdbc.OracleDriver"}, new String[] {"oracle.jdbc.xa.client.OracleXADataSource"}, "oracle", "org.hibernate.dialect.Oracle12cDialect"), 
+    OSISOFTPI("OSISOFT PI", new String[] {"com.osisoft.jdbc.Driver"}, new String[] {}, "osisoft-pi", null), 
+    PHOENIX("Phoenix", new String[] {"org.apache.phoenix.jdbc.PhoenixDriver"}, new String[] {}, "phoenix", null), 
+    POSTGRESQL("PostgreSQL",new String[] {"org.postgresql.Driver"}, new String[] {"org.postgresql.xa.PGXADataSource"}, "postgresql", "org.hibernate.dialect.PostgreSQL9Dialect"), 
+    PRESTODB("PrestoDB", new String[] {"com.facebook.presto.jdbc.PrestoDriver"}, new String[] {}, "prestodb", null), 
+    SQLSERVER("MS-SQL Server", new String[] {"com.microsoft.sqlserver.jdbc.SQLServerDriver"}, new String[] {"com.microsoft.sqlserver.jdbc.SQLServerXADataSource"}, "sqlserver", "org.hibernate.dialect.SQLServer2012Dialect"), 
+    JTDS("MS-SQL Server", new String[] {"net.sourceforge.jtds.jdbc.Driver"}, new String[] {}, "sqlserver",  "org.hibernate.dialect.SQLServer2012Dialect"), 
+    SYBASE("Sybase", new String[] {"com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver"}, new String[] {}, "sybase", "org.hibernate.dialect.SybaseDialect"), 
+    TEIID("Teiid", new String[] {"org.teiid.jdbc.TeiidDriver"}, new String[] {}, "teiid", "org.teiid.dialect.TeiidDialect"), 
+    VERTICA("Vertica", new String[] {"com.vertica.jdbc.Driver"}, new String[] {}, "vertica", null), 
+    NETEZZA("Netezza",new String[] {"org.netezza.Driver "},new String[] {}, "netezza", null), 
+    TERADATA("Teradata",new String[] {"com.teradata.jdbc.TeraDriver" }, new String[] {}, "teradata", "org.hibernate.dialect.Teradata14Dialect"),
 
-    ACTIAN("Actian", new String[] {"com.ingres.jdbc.IngresDriver"}, "actian-vector"), 
-    DB2("DB2", new String[] {"com.ibm.db2.jcc.DB2Driver"} , "db2"), 
-    DERBY("Derby", new String[] {"org.apache.derby.jdbc.ClientDriver"}, "derby"), 
-    H2("H2", new String[] {"org.h2.Driver"}, "h2"), 
-    HANA("Hana", new String[] {"com.sap.db.jdbc.Driver"}, "hana"), 
-    HIVE("Hive", new String[] {"org.apache.hive.jdbc.HiveDriver"}, "hive"), 
-    IMPALA("Impala", new String[] {"org.apache.hadoop.hive.jdbc.HiveDriver"}, "impala"), // TODO: Fix me
-    HSQL("HSQL", new String[] {"org.hsqldb.jdbc.JDBCDriver"}, "hsql"), 
-    INFORMIX("Informix", new String[] {"com.informix.jdbc.IfxDriver"}, "informix"), 
-    INGRES("Ingres", new String[] {"com.ingres.jdbc.IngresDriver"}, "ingres"), 
-    INTERSYSTEMSCACHE("Intersystems Cache", new String[] {"com.intersys.jdbc.CacheDriver"}, "intersystems-cache"), 
-    MYSQL("MySQL", new String[] {"com.mysql.jdbc.Driver"}, "mysql5"), 
-    OLAP("OLAP", new String[] {"org.olap4j.driver.xmla.XmlaOlap4jDriver"}, "olap"), 
-    MONDRIAN("Mondrian",new String[] {"mondrian.olap4j.MondrianOlap4jDriver"}, "olap"), 
-    ORACLE("Oracle", new String[] {"oracle.jdbc.OracleDriver"}, "oracle"), 
-    OSISOFTPI("OSISOFT PI", new String[] {"com.osisoft.jdbc.Driver"}, "osisoft-pi"), 
-    PHOENIX("Phoenix", new String[] {"org.apache.phoenix.jdbc.PhoenixDriver"}, "phoenix"), 
-    POSTGRESQL("PostgreSQL",new String[] {"org.postgresql.Driver"}, "postgresql"), 
-    PRESTODB("PrestoDB", new String[] {"com.facebook.presto.jdbc.PrestoDriver"}, "prestodb"), 
-    SQLSERVER("MS-SQL Server", new String[] {"com.microsoft.sqlserver.jdbc.SQLServerDriver"}, "sqlserver"), 
-    JTDS("MS-SQL Server", new String[] {"net.sourceforge.jtds.jdbc.Driver"}, "sqlserver"), 
-    SYBASE("Sybase", new String[] {"com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver"}, "sybase"), 
-    TEIID("Teiid", new String[] {"org.teiid.jdbc.TeiidDriver"}, "teiid"), 
-    ACCESS("MS Access",new String[] {"net.ucanaccess.jdbc.UcanaccessDriver"}, "ucanaccess"), 
-    VERTICA("Vertica", new String[] {"com.vertica.jdbc.Driver"}, "vertica"), 
-    NETEZZA("Netezza",new String[] {"org.netezza.Driver "},"netezza"), 
-    TERADATA("Teradata",new String[] {"com.teradata.jdbc.TeraDriver" }, "teradata"),
+    FILE("file", new String[] { FileConnectionFactory.class.getName() }, new String[] {},"file", null),
+    REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {},"ws", null),
+	EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {},"excel", null);
 
-    FILE("file", new String[] { FileConnectionFactory.class.getName() }, "file"),
-    REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, "ws"),
-	EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, "excel");
-	
-    // } else if(name.equals(accumulo)) {
-    // return isPresent(accumulo_classes);
-    // } else if(name.equals(cassandra)) {
-    // return isPresent(cassandra_classes);
-    // } else if(name.equals(couchbase)) {
-    // return isPresent(couchbase_classes);
-    // } else if(name.equals(file) || name.equals(excel)) {
-    // return isPresent(file_classes) || isPresent(ftp_classes);
-    // } else if(name.equals(google_spreadsheet)) {
-    // return isPresent(google_classes);
-    // } else if(name.equals(infinispan_hotrod)) {
-    // return isPresent(infinispan_classes);
-    // } else if(name.equals(ldap)) {
-    // return isPresent(ldap_classes);
-    // } else if(name.equals(mongodb)) {
-    // return isPresent(mongodb_classes);
-    // } else if(name.equals(salesforce)) {
-    // return isPresent(salesforce_classes);
-    // } else if(name.equals(salesforce_34)) {
-    // return isPresent(salesforce_34_classes);
-    // } else if(name.equals(simpledb)) {
-    // return isPresent(simpledb_classes);
-    // } else if(name.equals(solr)) {
-    // return isPresent(solr_classes);
-    // } else if(name.equals(ws) || name.equals(odata) || name.equals(odata4) ||
-    // name.equals(swagger)) {
-    // return isPresent(webservice_classes);
-    // } else {
-    // return false;
-    // }
 
     private String name;
     private String[] driverNames;
+    private String[] datasourceNames;
     private String translatorName;
+    private String dialect;
 
-    private ExternalSource(String name, String[] driverNames, String translatorName) {
+    private ExternalSource(String name, String[] driverNames, String[] datasourceNames, String translatorName,
+            String dialect) {
         this.name = name;
         this.driverNames = driverNames;
+        this.datasourceNames = datasourceNames;
         this.translatorName = translatorName;
+        this.dialect = dialect;
     }
 
     public String getName() {
@@ -113,6 +80,10 @@ public enum ExternalSource {
         return translatorName;
     }
 
+    public String getDialect() {
+        return dialect;
+    }
+    
     public static String findTransaltorNameFromDriverName(String driverName) {
         for (ExternalSource source : ExternalSource.values()) {
             for (String driver : source.driverNames) {
@@ -120,14 +91,35 @@ public enum ExternalSource {
                     return source.getTranslatorName();
                 }
             }
+            for (String driver : source.datasourceNames) {
+                if (driver.equals(driverName)) {
+                    return source.getTranslatorName();
+                }
+            }            
         }
         return "loopback";
     }
+    
+    public static String findDialectFromDriverName(String driverName) {
+        for (ExternalSource source : ExternalSource.values()) {
+            for (String driver : source.driverNames) {
+                if (driver.equals(driverName)) {
+                    return source.getDialect();
+                }
+            }
+            for (String driver : source.datasourceNames) {
+                if (driver.equals(driverName)) {
+                    return source.getDialect();
+                }
+            }            
+        }
+        return null;
+    }    
 
     public static Class<? extends ExecutionFactory<?, ?>> translatorClass(String translatorName) {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new AnnotationTypeFilter(Translator.class));
-        Set<BeanDefinition> components = provider.findCandidateComponents(FILTER_PACKAGE_TRANSLATOR);
+        Set<BeanDefinition> components = provider.findCandidateComponents("org.teiid.translator");
         for (BeanDefinition c : components) {
             try {
                 @SuppressWarnings("unchecked")

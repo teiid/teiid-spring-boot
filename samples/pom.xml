@@ -31,6 +31,7 @@
 		<module>rest</module>
 		<module>excel</module>
 		<module>odata</module>
+		<module>redirection</module>		
 	</modules>
 
 </project>

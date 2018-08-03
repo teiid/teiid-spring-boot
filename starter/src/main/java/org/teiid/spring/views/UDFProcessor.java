@@ -154,14 +154,14 @@ public class UDFProcessor {
 							DataTypeManager.getDataTypeName(DataTypeManager.getRuntimeType(f.getType())),
 							ProcedureParameter.Type.ReturnValue, p);
 					
-					String nativeQuery = "SELECT NEXTVAL('"+seqNames[1]+"');";
+					String nativeQuery = "NEXTVAL('"+seqNames[1]+"');";
 					String translatorName = model.getSources().values().iterator().next().getTranslatorName();
 					if (translatorName.equalsIgnoreCase("oracle")) {
-						nativeQuery = "SELECT " + seqNames[1] + ".NEXTVAL FROM DUAL;";
+						nativeQuery =  seqNames[1] + ".NEXTVAL FROM DUAL;";
 					} else if (translatorName.equalsIgnoreCase("sqlserver")) {
-						nativeQuery = "SELECT NEXT VALUE FOR "+seqNames[1]+";";
+						nativeQuery = " NEXT VALUE FOR "+seqNames[1]+";";
 					} else if (translatorName.equalsIgnoreCase("db2")) {
-						nativeQuery = "SELECT "+seqNames[1]+".NEXTVAL;";
+						nativeQuery = seqNames[1]+".NEXTVAL;";
 					}
 					p.setProperty("teiid_rel:native-query", nativeQuery);
 					register(seqNames[0], p);
@@ -173,8 +173,8 @@ public class UDFProcessor {
 							DataTypeManager.getDataTypeName(DataTypeManager.getRuntimeType(f.getType())),
 							ProcedureParameter.Type.ReturnValue, viewP);
 					viewP.setQueryPlan(""
-							+ "BEGIN "
-							+ "SELECT "+seqNames[0]+"."+seqNames[1]+"(); "
+							+ "BEGIN\n"
+							+ "SELECT "+seqNames[0]+"."+seqNames[1]+"();\n"
 							+ "END");
 				} else {
 					throw new IllegalArgumentException("The sequence generation on " + clazz.getName()
