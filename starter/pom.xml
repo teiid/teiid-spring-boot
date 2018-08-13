@@ -19,7 +19,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
-		<dependency>
+   		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jta-narayana</artifactId>
 		</dependency>
@@ -27,10 +27,14 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-orm</artifactId>
 		</dependency>
-            <dependency>
-               <groupId>org.hibernate</groupId>
-               <artifactId>hibernate-core</artifactId>
-            </dependency>		
+        <dependency>
+           <groupId>org.hibernate</groupId>
+           <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-tools</artifactId>
+        </dependency>              	
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>teiid-common-core</artifactId>
@@ -59,14 +63,14 @@
 			<groupId>org.teiid.connectors</groupId>
 			<artifactId>translator-jdbc</artifactId>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>org.jboss</groupId>
 			<artifactId>jboss-transaction-spi</artifactId>
-		</dependency>
-		<dependency>
+		</dependency> -->
+<!-- 		<dependency>
 			<groupId>org.jboss.spec.javax.resource</groupId>
 			<artifactId>jboss-connector-api_1.7_spec</artifactId>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>org.teiid.connectors</groupId>
 			<artifactId>translator-file</artifactId>

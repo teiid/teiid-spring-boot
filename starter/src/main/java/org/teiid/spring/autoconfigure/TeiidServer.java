@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -42,6 +43,7 @@ import org.hibernate.boot.registry.BootstrapServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.service.ServiceRegistry;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -49,6 +51,7 @@ import org.springframework.boot.jta.narayana.NarayanaDataSourceBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.Admin.TranlatorPropertyType;
 import org.teiid.adminapi.AdminException;
@@ -58,6 +61,9 @@ import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
+import org.teiid.core.TeiidException;
+import org.teiid.core.TeiidRuntimeException;
+import org.teiid.core.util.ReflectionHelper;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dialect.TeiidDialect;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
@@ -66,6 +72,7 @@ import org.teiid.metadata.Schema;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.metadata.TransformationMetadata;
+import org.teiid.query.parser.QueryParser;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.annotations.ExcelTable;
 import org.teiid.spring.annotations.JsonTable;
@@ -79,28 +86,24 @@ import org.teiid.spring.views.JsonTableView;
 import org.teiid.spring.views.SimpleView;
 import org.teiid.spring.views.TextTableView;
 import org.teiid.spring.views.UDFProcessor;
+import org.teiid.spring.views.ViewBuilder;
 import org.teiid.translator.TranslatorException;
 
 public class TeiidServer extends EmbeddedServer {
 	static final String DIALECT = "dialect";
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
-    private MetadataSources metadataSources;
+    private MetadataSources metadataSources = new MetadataSources();
     
 	public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
 		// only when user did not define a explicit VDB then build one.
 		if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
-		    boolean redirectUpdates = Boolean.parseBoolean(context.getEnvironment().getProperty(REDIRECTED));
+		    boolean redirectUpdates = isRedirectUpdatesEnabled(context);
 		    String redirectedDSName = getRedirectedDataSource(context);
 		    
-			addConnectionFactory(sourceBeanName, source);
+		    addConnectionFactoryProvider(sourceBeanName, new SBConnectionFactoryProvider(source));
 
 			ModelMetaData model = null;
 			String driverName = getDriverName(source);
-			
-//	        // This teiid database, ignore
-//	        if (ds.getUrl().startsWith("jdbc:teiid:" + VDBNAME)) {
-//	            return null;
-//	        }
 			
 			if (driverName != null) {
 				try {
@@ -150,6 +153,20 @@ public class TeiidServer extends EmbeddedServer {
 			}
 		}
 	}
+	
+	static class SBConnectionFactoryProvider implements ConnectionFactoryProvider<Object> {
+	    private Object bean;
+	    public SBConnectionFactoryProvider(Object bean) {
+	        this.bean = bean;
+	    }
+        @Override
+        public Object getConnectionFactory() throws TranslatorException {
+            if (this.bean instanceof DataSource) {
+                return new TransactionAwareDataSourceProxy((DataSource) bean);
+            }
+            return bean;
+        }
+	}
 
     String getDriverName(Object source) {
         String driverName = null;
@@ -163,7 +180,7 @@ public class TeiidServer extends EmbeddedServer {
             } catch (SQLException e) {
                 driverName = null;
             }
-        }
+        } 
         return driverName;
     }
 
@@ -288,11 +305,7 @@ public class TeiidServer extends EmbeddedServer {
 
 		// check to add any source models first based on the annotations
 		boolean load = false;
-		Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);
-		if (components.isEmpty()) {
-		    return false;
-		}
-		
+		Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);		
 		for (BeanDefinition c : components) {
 			try {
 				Class<?> clazz = Class.forName(c.getBeanClassName());
@@ -313,7 +326,17 @@ public class TeiidServer extends EmbeddedServer {
 		MetadataFactory mf = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
 				model);
 		
-		Metadata metadata = getMetadata(components, namingStrategy);
+        if (components.isEmpty()) {
+            if (isRedirectUpdatesEnabled(context)) {
+                // when no @entity classes are defined then this is service based, sniff the metadata 
+                // from Teiid models that are defined and build Hibernate metadata from it.
+                buildVirtualBaseLayer(vdb, context, mf);
+            } else {
+                return false;
+            }
+        }
+		
+		Metadata metadata = getMetadata(components, namingStrategy, mf);
 		UDFProcessor udfProcessor = new UDFProcessor(metadata, vdb);
 		for (BeanDefinition c : components) {
 			try {
@@ -346,12 +369,11 @@ public class TeiidServer extends EmbeddedServer {
 			} catch (ClassNotFoundException e) {
 				logger.warn("Error loading entity classes");
 			}
-		}
+        }
 		udfProcessor.finishProcessing();
 		
 		// check if the redirection is in play
-		boolean redirectUpdates = Boolean.parseBoolean(context.getEnvironment().getProperty(REDIRECTED));
-		if (redirectUpdates) {
+		if (isRedirectUpdatesEnabled(context)) {
 	        String redirectedDSName = getRedirectedDataSource(context);
 	        try {
 	            // rename current view model to something else
@@ -366,7 +388,7 @@ public class TeiidServer extends EmbeddedServer {
                             + " datasources allowed");	                
 	            }
 	            
-	            RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(context, redirectedDSName);
+	            RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(context, redirectedDSName);
 	            // if none of the annotations defined, create layer with tables from all data sources
 	            if (mf.getSchema().getTables().isEmpty()) {
 	                throw new IllegalStateException("Redirection of updates enabled, however there are no "
@@ -388,7 +410,7 @@ public class TeiidServer extends EmbeddedServer {
                                     + "\" cannot be used with schema initialization, choose a different data source"
                                     + "as there are no schema generation facilities for this data source.");
 	            }
-                new RedirectionSchemaInitializer(redirectedDS, redirectedDSName, dialect, metadata,
+                new RedirectionSchemaInitializer(redirectedDS, redirectedDSName, getDialect(dialect), metadata,
                         this.metadataSources.getServiceRegistry(), mf.getSchema(), context).init();
 	            
 	            // reload the redirection model as it has new entries now after schema generation.
@@ -411,27 +433,49 @@ public class TeiidServer extends EmbeddedServer {
         }		
 		return load;
 	}
+
+    boolean isRedirectUpdatesEnabled(ApplicationContext context) {
+        return Boolean.parseBoolean(context.getEnvironment().getProperty(REDIRECTED));
+    }
 	
-	public String getRedirectedDataSource(ApplicationContext context) {
+	private void buildVirtualBaseLayer(VDBMetaData vdb, ApplicationContext context, MetadataFactory target) {
+	    // Build Virtual Base Layer first
+	    String redirectedDSName = getRedirectedDataSource(context);
+	    SchemaBuilderUtility builder = new SchemaBuilderUtility();	    
+        for (ModelMetaData m : vdb.getModelMetaDatas().values()) {
+            if (ViewBuilder.isBuiltInModel(m.getName()) || m.getModelType() != Model.Type.PHYSICAL
+                    || m.getName().equals(redirectedDSName)) {
+                continue;
+            }
+            String dialect = m.getPropertyValue(DIALECT);
+            MetadataFactory source = new MetadataFactory("x", 1, m.getName(), 
+                    SystemMetadata.getInstance().getRuntimeTypeMap(), new Properties(), null);
+            for (String ddl : m.getSourceMetadataText()) {
+                QueryParser.getQueryParser().parseDDL(source, ddl);    
+            }
+            builder.generateVBLSchema(context, source, target, getDialect(dialect), this.metadataSources);
+        }
+    }
+
+    public String getRedirectedDataSource(ApplicationContext context) {
 	    return context.getEnvironment().getProperty(TeiidConstants.REDIRECTED+".datasource", "redirected");
 	}
 	
-	private Metadata getMetadata(Set<BeanDefinition> components, PhysicalNamingStrategy namingStrategy) {
-	    this.metadataSources = new MetadataSources();
+    private Metadata getMetadata(Set<BeanDefinition> components, PhysicalNamingStrategy namingStrategy,
+            MetadataFactory mf) {
+        ServiceRegistry registry = metadataSources.getServiceRegistry();
+        StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(
+                (BootstrapServiceRegistry) registry).applySetting(AvailableSettings.DIALECT, TeiidDialect.class)
+                        .build();	    
+        // Generate Hibernate model based on @Entity definitions  
 		for (BeanDefinition c : components) {
 			try {
 				Class<?> clazz = Class.forName(c.getBeanClassName());
 				metadataSources.addAnnotatedClass(clazz);
 			} catch (ClassNotFoundException e) {
 			}
-		}		
-		ServiceRegistry registry = metadataSources.getServiceRegistry();
-		StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(
-				(BootstrapServiceRegistry) registry).applySetting(AvailableSettings.DIALECT, TeiidDialect.class)
-						.build();
-		Metadata metadata = metadataSources.getMetadataBuilder(serviceRegistry)
-				.applyPhysicalNamingStrategy(namingStrategy).build();
-		return metadata;
+		}
+        return metadataSources.getMetadataBuilder(serviceRegistry).applyPhysicalNamingStrategy(namingStrategy).build();
 	}	
 	
 	private void addExcelModel(VDBMetaData vdb, Class<?> clazz, ExcelTable excelAnnotation) {
@@ -472,5 +516,14 @@ public class TeiidServer extends EmbeddedServer {
 		}
 		Schema schema = metadata.getMetadataStore().getSchema(modelName);
 		return schema;
-	}	
+	}
+    
+	private Dialect getDialect(String className) {
+        try {
+            return Dialect.class.cast(ReflectionHelper.create(className, null, this.getClass().getClassLoader()));
+        } catch (TeiidException e) {
+            throw new TeiidRuntimeException(className + " could not be loaded. Add the dependecy required "
+                    + "dependency to your classpath"); //$NON-NLS-1$
+        }
+    }	
 }

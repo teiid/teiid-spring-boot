@@ -108,7 +108,7 @@ public class TestModelGenerator {
     
     @Test(expected=IllegalStateException.class)
     public void testRedirectionLayer_noPK() {
-        RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(this.context, "redirected");
+        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         VDBMetaData vdb = new VDBMetaData();
         vdb.addModel(buildSourceTable());
         mg.buildRedirectionLayer(buildSourceTable().getAttachment(MetadataFactory.class), "base");
@@ -116,7 +116,7 @@ public class TestModelGenerator {
     
     @Test
     public void testRedirectionLayerSelectPlan() {
-        RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(this.context, "redirected");
+        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         VDBMetaData vdb = new VDBMetaData();
         vdb.addModel(buildSourceTable());
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
@@ -133,7 +133,7 @@ public class TestModelGenerator {
     
     @Test
     public void testRedirectionLayerInsertPlan() {
-        RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(this.context, "redirected");
+        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         VDBMetaData vdb = new VDBMetaData();
         vdb.addModel(buildSourceTable());
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
@@ -158,7 +158,7 @@ public class TestModelGenerator {
     
     @Test
     public void testRedirectionLayerCompositePKCheck() {
-        RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(this.context, "redirected");
+        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         VDBMetaData vdb = new VDBMetaData();
         vdb.addModel(buildSourceTable());
         ModelMetaData model = mg
@@ -183,7 +183,7 @@ public class TestModelGenerator {
     
     @Test
     public void testRedirectionLayerPKCheck() {
-        RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(this.context, "redirected");
+        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         VDBMetaData vdb = new VDBMetaData();
         vdb.addModel(buildSourceTable());
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
@@ -205,7 +205,7 @@ public class TestModelGenerator {
     
     @Test
     public void testRedirectionLayerUpdatePlan() {
-        RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(this.context, "redirected");
+        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
                 "base");
         String expected = 
@@ -242,7 +242,7 @@ public class TestModelGenerator {
     
     @Test
     public void testRedirectionLayerDeletePlan() {
-        RedirectionViewSchemaBuilder mg = new RedirectionViewSchemaBuilder(this.context, "redirected");
+        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
                 "base");
         String expected = "FOR EACH ROW\n" + 

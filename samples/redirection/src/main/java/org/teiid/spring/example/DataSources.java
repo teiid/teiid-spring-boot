@@ -28,7 +28,6 @@ import org.teiid.spring.autoconfigure.xa.XADataSourceBuilder;
 
 @Configuration
 public class DataSources{
-    
     @Autowired
     private XADataSourceWrapper wrapper;
 
@@ -52,35 +51,18 @@ public class DataSources{
     @Bean(name="redirected")
     public DataSource redirected(@Qualifier("redirected.xa") XADataSourceBuilder x) throws Exception {
         return x.build(wrapper, x.buildXA());
-    }    
-    /*
-    @Bean(name="sampledb")
-    public DataSource sampledb() throws Exception {
-        PGXADataSource ds = new PGXADataSource();
-        ds.setServerName("0.0.0.0");
-        ds.setPortNumber(5432);
-        ds.setDatabaseName("sampledb");
-        ds.setUser("admin");
-        ds.setPassword("admin");
-        
-        return wrapper.wrapDataSource(ds);
     }
 
-//    @Bean    
-//    public XADataSourceBuilder redirectedXA() throws Exception {
-//        return XADataSourceBuilder.create();
-//    }
-         
-    @Bean(name="redirected")
-    public DataSource redirected() throws Exception {
-        PGXADataSource ds = new PGXADataSource();
-        ds.setServerName("0.0.0.0");
-        ds.setPortNumber(5433);
-        ds.setDatabaseName("redirected");
-        ds.setUser("admin");
-        ds.setPassword("admin");
-        
-        return wrapper.wrapDataSource(ds);    
+      
+/*    @Bean(name="sampledb")
+    @ConfigurationProperties(prefix = "spring.datasource.sampledb")
+    public DataSource sampledb() throws Exception {
+        return DataSourceBuilder.create().build();
     }
-    */
+   
+    @Bean(name="redirected")
+    @ConfigurationProperties(prefix = "spring.datasource.redirected")
+    public DataSource redirected() throws Exception {
+        return DataSourceBuilder.create().build();   
+    }  */ 
 }

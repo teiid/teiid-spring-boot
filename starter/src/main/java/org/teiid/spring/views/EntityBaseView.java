@@ -25,7 +25,7 @@ import org.teiid.metadata.KeyRecord;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Table;
-import org.teiid.spring.autoconfigure.RedirectionViewSchemaBuilder;
+import org.teiid.spring.autoconfigure.RedirectionSchemaBuilder;
 import org.teiid.spring.autoconfigure.TeiidServer;
 
 /**
@@ -55,13 +55,13 @@ public class EntityBaseView extends ViewBuilder<Entity> {
         view.setDeletePlan(buildDeletePlan(view, sourceName));
     }
 
-	private String buildDeletePlan(Table view, String sourceName) {
+	public static String buildDeletePlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("FOR EACH ROW\n");
         sb.append("BEGIN ATOMIC\n");
         sb.append("DELETE FROM ").append(sourceName).append(".").append(view.getName());
         sb.append(" WHERE ");
-        KeyRecord pk = RedirectionViewSchemaBuilder.getPK(view);
+        KeyRecord pk = RedirectionSchemaBuilder.getPK(view);
         for (int i = 0; i < pk.getColumns().size(); i++) {
             Column c = pk.getColumns().get(i);
             if (i > 0) {
@@ -74,7 +74,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
         return sb.toString();
     }
 
-    private String buildUpdatePlan(Table view, String sourceName) {
+	public static String buildUpdatePlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("FOR EACH ROW\n");
         sb.append("BEGIN ATOMIC\n");
@@ -88,7 +88,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
             sb.append(c.getName()).append(" = ").append("NEW.").append(c.getName());
         }
         
-        KeyRecord pk = RedirectionViewSchemaBuilder.getPK(view);
+        KeyRecord pk = RedirectionSchemaBuilder.getPK(view);
         sb.append(" WHERE ");
         for (int i = 0; i < pk.getColumns().size(); i++) {
             Column c = pk.getColumns().get(i);
@@ -102,7 +102,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
         return sb.toString();
     }
 
-    private String buildInsertPlan(Table view, String sourceName) {
+	public static String buildInsertPlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("FOR EACH ROW\n");
         sb.append("BEGIN ATOMIC\n");
@@ -115,7 +115,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
         return sb.toString();
     }
 
-    private String buildSelectPlan(Table view, String sourceName) {
+	public static String buildSelectPlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
         appendColumnNames(view, sb, null);
@@ -143,7 +143,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
         return foundIn;
     }
 
-    private void appendColumnNames(Table srcTable, StringBuilder sb, String alias) {
+    private static void appendColumnNames(Table srcTable, StringBuilder sb, String alias) {
         boolean first = true;
         for (Column srcColumn : srcTable.getColumns()) {
             if (!first) {

@@ -43,22 +43,19 @@ import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.teiid.core.TeiidException;
-import org.teiid.core.TeiidRuntimeException;
 import org.teiid.core.types.JDBCSQLTypeInfo;
-import org.teiid.core.util.ReflectionHelper;
 import org.teiid.metadata.Schema;
 import org.teiid.translator.TypeFacility;
 
 class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
     private static final Log logger = LogFactory.getLog(RedirectionSchemaInitializer.class);
 
-    private String dialect;
+    private Dialect dialect;
     private Schema schema;
     private Metadata metadata;
     private ServiceRegistry registry;
     
-    RedirectionSchemaInitializer(DataSource dataSource, String sourceName, String dialect, Metadata metadata,
+    RedirectionSchemaInitializer(DataSource dataSource, String sourceName, Dialect dialect, Metadata metadata,
             ServiceRegistry registry, Schema schema, ApplicationContext applicationContext) {
         super(dataSource, sourceName, applicationContext);
         this.dialect = dialect;
@@ -85,13 +82,11 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
     List<Resource> generatedScripts() {
         List<Resource> resources = Collections.emptyList();
         
-        Dialect d = getDialect(this.dialect);
-        
         for (PersistentClass clazz:metadata.getEntityBindings()) {
             org.hibernate.mapping.Table ormTable = clazz.getTable();
             String tableName = ormTable.getQuotedName();
             if (this.schema.getTable(tableName) != null) {
-                org.hibernate.mapping.Column c = new org.hibernate.mapping.Column(RedirectionViewSchemaBuilder.ROW_STATUS_COLUMN);
+                org.hibernate.mapping.Column c = new org.hibernate.mapping.Column(RedirectionSchemaBuilder.ROW_STATUS_COLUMN);
                 c.setSqlTypeCode(TypeFacility.getSQLTypeFromRuntimeType(Integer.class));
                 c.setSqlType(JDBCSQLTypeInfo.getTypeName(TypeFacility.getSQLTypeFromRuntimeType(Integer.class)));
                 ormTable.addColumn(c);
@@ -99,7 +94,7 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
             }
         }
         
-        List<String> statements = createScript(metadata, d, true);
+        List<String> statements = createScript(metadata, dialect, true);
         StringBuilder sb = new StringBuilder();
         for (String s: statements) {
             // we have no need for sequences in the redirected scenario, they are fed from other side.
@@ -164,14 +159,5 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
         @Override
         public void release() {
         }
-    }    
-    
-    private Dialect getDialect(String className) {
-        try {
-            return Dialect.class.cast(ReflectionHelper.create(className, null, this.getClass().getClassLoader()));
-        } catch (TeiidException e) {
-            throw new TeiidRuntimeException(dialect + " could not be loaded. Add the dependecy required "
-                    + "dependency to your classpath"); //$NON-NLS-1$
-        }
-    }    
+    }          
 }
