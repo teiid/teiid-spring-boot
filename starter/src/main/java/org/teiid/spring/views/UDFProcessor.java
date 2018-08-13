@@ -166,15 +166,17 @@ public class UDFProcessor {
 					p.setProperty("teiid_rel:native-query", nativeQuery);
 					register(seqNames[0], p);
 					
+					String returnType = DataTypeManager.getDataTypeName(DataTypeManager.getRuntimeType(f.getType()));
 					Procedure viewP = viewMF.addProcedure(seqNames[1]+"_nextval");
 					viewP.setVirtual(true);
 					viewP.setFunction(true);
 					viewMF.addProcedureParameter("return",
-							DataTypeManager.getDataTypeName(DataTypeManager.getRuntimeType(f.getType())),
+							returnType,
 							ProcedureParameter.Type.ReturnValue, viewP);
 					viewP.setQueryPlan(""
 							+ "BEGIN\n"
-							+ "SELECT "+seqNames[0]+"."+seqNames[1]+"();\n"
+							+ "DECLARE "+returnType+" VARIABLES.X = SELECT "+seqNames[0]+"."+seqNames[1]+"();\n"
+							+ "RETURN X;\n"
 							+ "END");
 				} else {
 					throw new IllegalArgumentException("The sequence generation on " + clazz.getName()

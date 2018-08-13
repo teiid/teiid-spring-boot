@@ -327,5 +327,9 @@ public class ViewBuilder<T> {
 			}
 		}
 		return attribute;
-	}	
+	}
+	
+    public static boolean isBuiltInModel(String name) {
+        return name.equals("file") || name.equals("rest");
+    }	
 }

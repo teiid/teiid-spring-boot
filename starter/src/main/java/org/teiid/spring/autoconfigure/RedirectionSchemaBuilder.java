@@ -36,7 +36,7 @@ import org.teiid.metadata.Table;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
 
-public class RedirectionViewSchemaBuilder {
+public class RedirectionSchemaBuilder {
     static String ROW_STATUS_COLUMN = "ROW__STATUS";
     private static String TAB = "\t";
     
@@ -45,7 +45,7 @@ public class RedirectionViewSchemaBuilder {
     private HashMap<String, List<ConstraintCheck>> deleteChecks = new HashMap<>();
     private HashMap<String, Procedure> pkChecks = new HashMap<>();
 
-    public RedirectionViewSchemaBuilder(ApplicationContext context, String redirectedDS) {
+    public RedirectionSchemaBuilder(ApplicationContext context, String redirectedDS) {
         this.context = context;
         this.redirectedDS = redirectedDS;
     }
@@ -61,10 +61,6 @@ public class RedirectionViewSchemaBuilder {
         String ddl = DDLStringVisitor.getDDLString(target.getSchema(), null, null);
         model.addSourceMetadata("DDL", ddl);
         return model;
-    }
-
-    public static boolean isBuiltInModel(String name) {
-        return name.equals("file") || name.equals("rest");
     }
     
     private String buildSelectPlan(Table srcTable, String redirected) {
@@ -455,6 +451,14 @@ public class RedirectionViewSchemaBuilder {
             for (Column srcColumn : srcTable.getColumns()) {
                 Column c = target.addColumn(srcColumn.getName(), srcColumn.getRuntimeType(), table);
                 c.setUpdatable(true);
+                if (srcColumn.isAutoIncremented()) {
+                    c.setAutoIncremented(true);
+                }
+                c.setLength(srcColumn.getLength());
+                c.setScale(srcColumn.getScale());
+                c.setPrecision(srcColumn.getPrecision());
+                c.setNullType(srcColumn.getNullType());
+                c.setDefaultValue(srcColumn.getDefaultValue());
             }
             
             table.setVirtual(true);
@@ -518,7 +522,7 @@ public class RedirectionViewSchemaBuilder {
                 .getProperty(TeiidConstants.REDIRECTED + "." + tblName.toLowerCase() + ".skip"));
     }
 
-    private List<String> getColumnNames(List<Column> columns) {
+    public static List<String> getColumnNames(List<Column> columns) {
         ArrayList<String> list = new ArrayList<>();
         columns.forEach((i) -> list.add(i.getName()));
         return list;

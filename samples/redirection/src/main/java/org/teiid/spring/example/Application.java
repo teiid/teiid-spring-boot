@@ -16,50 +16,57 @@
 
 package org.teiid.spring.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application implements CommandLineRunner {
+public class Application { //implements CommandLineRunner {
 
-    @Autowired
-    private BusinessService svc;
-    @Autowired
-    private CustomerRepository customerRepository;
+//    @Autowired
+//    private BusinessService svc;
+//    @Autowired
+//    private CustomerRepository customerRepository;
     
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args).close();
+		SpringApplication.run(Application.class, args);
 	}
-	
+	/*
     @Override
     public void run(String... args) throws Exception {
                         
-        System.out.println("\n\nShow All the users: Start");
-        customerRepository.findAll().forEach(x -> System.out.println(x));
-        
-        Customer c = new Customer();
-        c.setName("John Doe");
-        c.setSsn("111-11-1111");
-        
-        svc.updateCustomer(c);
-
-        System.out.println("\n\nafter Adding John Doe");
-        customerRepository.findAll().forEach(x -> System.out.println(x));
-        
-        Customer joseph = customerRepository.findOne(10L);
-        joseph.setSsn("222-22-2222");
-        svc.updateCustomer(joseph);
-        
-        System.out.println("\n\nAfter Updating Joseph");
-        customerRepository.findAll().forEach(x -> System.out.println(x));
-        
-        customerRepository.delete(12L);
-        
-        System.out.println("\n\nAfter deleting Jane");
-        customerRepository.findAll().forEach(x -> System.out.println(x));
-        
-        customerRepository.delete(10L);
+//        System.out.println("\n\nShow All the users: Start");
+//        customerRepository.findAll().forEach(x -> System.out.println(x));
+        boolean expired = false;
+        long start = System.currentTimeMillis();
+        long counter = 0L;
+        long duration = 60*5000L;
+        while (!expired) {
+            // insert
+            Customer c = new Customer();            
+            c.setName("John Doe");
+            c.setSsn("111-11-1111");
+            c = svc.updateCustomer(c);
+            System.out.println("inserted" + c);
+            
+            // select
+            c = customerRepository.findAll().iterator().next();
+            System.out.println("selected" + c);
+            
+            // update
+            c.setSsn("222-22-2222");            
+            c = svc.updateCustomer(c);
+            System.out.println("updated" + c);
+            
+            //delete
+            customerRepository.delete(c.getId());
+            System.out.println("deleted" + c);
+            
+            System.out.println("");
+            
+            counter++;
+            expired = ((System.currentTimeMillis() - start) > duration);
+        }
+        System.out.println("iteration count = " + counter + " in " + duration/1000 + "secs");
     }
+    */
 }

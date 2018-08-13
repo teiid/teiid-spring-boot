@@ -128,7 +128,7 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name = "teiid")
     @ConditionalOnMissingBean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public TeiidServer teiidServer(TransactionManager transactionManager) {
+    public TeiidServer teiidServer(TransactionManager tm) {
         logger.info("Starting Teiid Server.");
         
         // turning off PostgreSQL support
@@ -138,7 +138,7 @@ public class TeiidAutoConfiguration implements Ordered {
         
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
-            embeddedConfiguration.setTransactionManager(transactionManager);
+            embeddedConfiguration.setTransactionManager(tm);
         }
         
         server.start(embeddedConfiguration);
@@ -156,7 +156,7 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name="dataSource")
     @Primary
     @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource dataSource(TeiidServer server, TransactionManager transactionManager) {
+    public DataSource dataSource(TeiidServer server) {
         EmbeddedDatabaseFactory edf = new EmbeddedDatabaseFactory();
         edf.setDatabaseConfigurer(new TeiidDatabaseConfigurer(server));
         edf.setDataSourceFactory(new DataSourceFactory() {
