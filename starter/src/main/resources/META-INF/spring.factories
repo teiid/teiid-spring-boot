@@ -1,5 +1,5 @@
 # Configurations
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.teiid.spring.autoconfigure.TeiidAutoConfiguration
+org.teiid.spring.autoconfigure.TeiidAutoConfiguration,org.teiid.spring.autoconfigure.TeiidDataSourceAutoConfiguration
 
 # Listeners

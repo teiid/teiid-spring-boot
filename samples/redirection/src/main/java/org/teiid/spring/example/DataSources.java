@@ -18,17 +18,14 @@ package org.teiid.spring.example;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jta.XADataSourceWrapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.autoconfigure.xa.XADataSourceBuilder;
 
 @Configuration
 public class DataSources{
-    @Autowired
+/*    @Autowired
     private XADataSourceWrapper wrapper;
 
     @Bean(name="sampledb.xa")
@@ -51,10 +48,10 @@ public class DataSources{
     @Bean(name="redirected")
     public DataSource redirected(@Qualifier("redirected.xa") XADataSourceBuilder x) throws Exception {
         return x.build(wrapper, x.buildXA());
-    }
+    }*/
 
-      
-/*    @Bean(name="sampledb")
+    
+    @Bean(name="sampledb")
     @ConfigurationProperties(prefix = "spring.datasource.sampledb")
     public DataSource sampledb() throws Exception {
         return DataSourceBuilder.create().build();
@@ -64,5 +61,5 @@ public class DataSources{
     @ConfigurationProperties(prefix = "spring.datasource.redirected")
     public DataSource redirected() throws Exception {
         return DataSourceBuilder.create().build();   
-    }  */ 
+    }
 }
