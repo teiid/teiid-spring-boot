@@ -93,6 +93,7 @@ public class TeiidServer extends EmbeddedServer {
 	static final String DIALECT = "dialect";
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
     private MetadataSources metadataSources = new MetadataSources();
+    private PlatformTransactionManagerAdapter platformTransactionManagerAdapter = new PlatformTransactionManagerAdapter();
     
 	public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
 		// only when user did not define a explicit VDB then build one.
@@ -525,5 +526,10 @@ public class TeiidServer extends EmbeddedServer {
             throw new TeiidRuntimeException(className + " could not be loaded. Add the dependecy required "
                     + "dependency to your classpath"); //$NON-NLS-1$
         }
-    }	
+    }
+	
+	public PlatformTransactionManagerAdapter getPlatformTransactionManagerAdapter() {
+		return platformTransactionManagerAdapter;
+	}
+
 }

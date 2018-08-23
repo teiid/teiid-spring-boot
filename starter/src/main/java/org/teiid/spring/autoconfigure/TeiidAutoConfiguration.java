@@ -25,7 +25,6 @@ import java.sql.Driver;
 import java.util.List;
 
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,9 +75,6 @@ public class TeiidAutoConfiguration implements Ordered {
     
     @Autowired
     private TeiidProperties properties;
-    
-    @Autowired(required=false)
-    private TransactionManager tm;
     
     @Autowired
     ApplicationContext context;
@@ -175,7 +171,10 @@ public class TeiidAutoConfiguration implements Ordered {
         
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
-            embeddedConfiguration.setTransactionManager(this.tm);
+        }
+        
+        if (embeddedConfiguration.getTransactionManager() == null) {
+        	embeddedConfiguration.setTransactionManager(server.getPlatformTransactionManagerAdapter());
         }
         
         server.start(embeddedConfiguration);
