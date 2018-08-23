@@ -23,6 +23,8 @@ import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
@@ -32,7 +34,17 @@ import java.util.Set;
 import javax.persistence.Entity;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,6 +100,8 @@ import org.teiid.spring.views.TextTableView;
 import org.teiid.spring.views.UDFProcessor;
 import org.teiid.spring.views.ViewBuilder;
 import org.teiid.translator.TranslatorException;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class TeiidServer extends EmbeddedServer {
 	static final String DIALECT = "dialect";
@@ -143,7 +157,7 @@ public class TeiidServer extends EmbeddedServer {
 			}
 
 			undeployVDB(VDBNAME, VDBVERSION);
-			deployVDB(vdb);
+			deployVDB(vdb, false);
 		} else {
 			for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
 				for (SourceMappingMetadata smm : model.getSourceMappings()) {
@@ -185,7 +199,7 @@ public class TeiidServer extends EmbeddedServer {
         return driverName;
     }
 
-	void deployVDB(VDBMetaData vdb) {
+	void deployVDB(VDBMetaData vdb, boolean last) {
 		try {
             // if there is no view model, then keep all the other models as visible.
             if (vdb.getModel("teiid") == null) {
@@ -201,6 +215,9 @@ public class TeiidServer extends EmbeddedServer {
             }
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			VDBMetadataParser.marshell(vdb, out);
+			if (last) {
+			    logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
+			}
 			deployVDB(new ByteArrayInputStream(out.toByteArray()));
 		} catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
 				| IOException e) {
@@ -208,6 +225,24 @@ public class TeiidServer extends EmbeddedServer {
 		}
 	}
 
+    private static String prettyFormat(String xml){
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            StreamResult result = new StreamResult(new StringWriter());
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();      
+            InputSource is = new InputSource(new StringReader(xml));
+            DOMSource source = new DOMSource(db.parse(is));
+            transformer.transform(source, result);
+            return result.getWriter().toString();
+        } catch (IllegalArgumentException | TransformerFactoryConfigurationError | ParserConfigurationException
+                | SAXException | IOException | TransformerException e) {
+            return xml;
+        }
+    }
+    
 	private ModelMetaData buildModelFromDataSource(String dsBeanName, String driverName,
 			ApplicationContext context, boolean createInitTable) throws AdminException {
 

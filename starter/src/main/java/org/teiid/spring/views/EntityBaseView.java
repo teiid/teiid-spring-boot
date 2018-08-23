@@ -50,9 +50,9 @@ public class EntityBaseView extends ViewBuilder<Entity> {
 		}
 		
         view.setSelectTransformation(buildSelectPlan(view, sourceName));
-        view.setInsertPlan(buildInsertPlan(view, sourceName));
-        view.setUpdatePlan(buildUpdatePlan(view, sourceName));
-        view.setDeletePlan(buildDeletePlan(view, sourceName));
+        //view.setInsertPlan(buildInsertPlan(view, sourceName));
+        //view.setUpdatePlan(buildUpdatePlan(view, sourceName));
+        //view.setDeletePlan(buildDeletePlan(view, sourceName));
     }
 
 	public static String buildDeletePlan(Table view, String sourceName) {
