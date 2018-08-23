@@ -22,9 +22,15 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.transaction.ChainedTransactionManager;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 
 @Configuration
-public class DataSources{
+@EnableTransactionManagement
+public class DataSources implements TransactionManagementConfigurer {
 /*    @Autowired
     private XADataSourceWrapper wrapper;
 
@@ -53,13 +59,26 @@ public class DataSources{
     
     @Bean(name="sampledb")
     @ConfigurationProperties(prefix = "spring.datasource.sampledb")
-    public DataSource sampledb() throws Exception {
+    public DataSource sampledb() {
         return DataSourceBuilder.create().build();
     }
    
     @Bean(name="redirected")
     @ConfigurationProperties(prefix = "spring.datasource.redirected")
-    public DataSource redirected() throws Exception {
+    public DataSource redirected() {
         return DataSourceBuilder.create().build();   
     }
+    
+    @Bean
+    public PlatformTransactionManager platformTransactionManager() {
+    	return new ChainedTransactionManager(
+				new DataSourceTransactionManager(sampledb()), 
+				new DataSourceTransactionManager(redirected()));
+    }
+    
+    @Override
+	public PlatformTransactionManager annotationDrivenTransactionManager() {
+		return platformTransactionManager();
+	}
+    
 }

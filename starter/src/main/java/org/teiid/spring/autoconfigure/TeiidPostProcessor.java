@@ -53,6 +53,7 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.spring.data.BaseConnectionFactory;
@@ -110,6 +111,9 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
             VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
             server.addDataSource(vdb, beanName, (BaseConnectionFactory)bean, context);                     
             logger.info("Non JDBC Datasource added to Teiid = " + beanName);
+		} else if (bean instanceof PlatformTransactionManager) {
+			TeiidServer server = this.beanFactory.getBean(TeiidServer.class);		    
+		    server.getPlatformTransactionManagerAdapter().setPlatformTransactionManager((PlatformTransactionManager)bean);
 		}
 		return bean;
 	}
