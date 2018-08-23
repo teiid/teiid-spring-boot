@@ -19,23 +19,7 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-
 import javax.sql.DataSource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,10 +39,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.spring.data.BaseConnectionFactory;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should only
@@ -128,38 +109,12 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         }
 
         if (deploy) {
-        	try {
-	            // Deploy at the end when all the data sources are configured
-	            server.undeployVDB(VDBNAME, VDBVERSION);
-	            ByteArrayOutputStream out = new ByteArrayOutputStream();
-	            VDBMetadataParser.marshell(vdb, out);
-	            logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));	            
-	            server.deployVDB(vdb);
-			} catch ( IOException | XMLStreamException e) {
-				// no-op
-			}            
+            // Deploy at the end when all the data sources are configured
+            server.undeployVDB(VDBNAME, VDBVERSION);
+            server.deployVDB(vdb, true);
         }
     }	
-    
-    
-    private String prettyFormat(String xml){
-    	try {
-			Transformer transformer = TransformerFactory.newInstance().newTransformer();
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-			StreamResult result = new StreamResult(new StringWriter());
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();    	
-			InputSource is = new InputSource(new StringReader(xml));
-			DOMSource source = new DOMSource(db.parse(is));
-			transformer.transform(source, result);
-			return result.getWriter().toString();
-		} catch (IllegalArgumentException | TransformerFactoryConfigurationError | ParserConfigurationException
-				| SAXException | IOException | TransformerException e) {
-			return xml;
-		}
-    }
-    
+          
     /**
 	 * {@link ImportBeanDefinitionRegistrar} to register the
 	 * {@link TeiidPostProcessor} without causing early bean instantiation

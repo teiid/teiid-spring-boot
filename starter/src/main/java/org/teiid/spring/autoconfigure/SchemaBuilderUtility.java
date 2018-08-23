@@ -134,9 +134,6 @@ public class SchemaBuilderUtility {
             }
             
             table.setSelectTransformation(EntityBaseView.buildSelectPlan(table, source.getSchema().getName()));
-            table.setInsertPlan(EntityBaseView.buildInsertPlan(table, source.getSchema().getName()));
-            table.setUpdatePlan(EntityBaseView.buildUpdatePlan(table, source.getSchema().getName()));
-            table.setDeletePlan(EntityBaseView.buildDeletePlan(table, source.getSchema().getName()));
         }
     }
     

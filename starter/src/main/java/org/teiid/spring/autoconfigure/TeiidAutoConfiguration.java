@@ -50,6 +50,9 @@ import org.springframework.jdbc.datasource.embedded.ConnectionProperties;
 import org.springframework.jdbc.datasource.embedded.DataSourceFactory;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.cache.Cache;
+import org.teiid.cache.CacheFactory;
+import org.teiid.core.util.LRUCache;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.deployers.VDBRepository;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
@@ -171,6 +174,15 @@ public class TeiidAutoConfiguration implements Ordered {
         
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
+            embeddedConfiguration.setCacheFactory(new CacheFactory() {
+                @Override
+                public <K, V> Cache<K, V> get(String name) {
+                    return new LocalCache<>(name, 10);
+                }
+                @Override
+                public void destroy() {
+                }
+            });            
         }
         
         if (embeddedConfiguration.getTransactionManager() == null) {
@@ -183,12 +195,37 @@ public class TeiidAutoConfiguration implements Ordered {
         VDBMetaData vdb =  new VDBMetaData();
         vdb.setName(VDBNAME);
         vdb.setVersion(VDBVERSION);                    
-        server.deployVDB(vdb);        
+        server.deployVDB(vdb, false);        
         
         serverContext.set(server);
         return server;
     }
-         
+
+    static class LocalCache<K, V> extends LRUCache<K, V> implements Cache<K, V> {
+        private static final long serialVersionUID = -7894312381042966398L;
+        private String name;
+
+        public LocalCache(String cacheName, int maxSize) {
+            super(maxSize < 0 ? Integer.MAX_VALUE : maxSize);
+            this.name = cacheName;
+        }
+
+        @Override
+        public V put(K key, V value, Long ttl) {
+            return put(key, value);
+        }
+
+        @Override
+        public String getName() {
+            return this.name;
+        }
+
+        @Override
+        public boolean isTransactional() {
+            return false;
+        }
+    }    
+    
     @Bean(name="file")
     public FileConnectionFactory fileConnectionFactory() {
         return new FileConnectionFactory();

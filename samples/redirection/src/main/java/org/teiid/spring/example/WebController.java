@@ -1,16 +1,8 @@
 package org.teiid.spring.example;
 
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
@@ -20,7 +12,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -145,4 +136,18 @@ public class WebController {
 		//	DataSourceUtils.releaseConnection(c, dataSource);
 		//}
     }
+    
+    @RequestMapping("/count")
+    public String count() {
+        StringBuilder sb = new StringBuilder();
+        JdbcTemplate template = new JdbcTemplate(dataSource);
+        template.query("select count(*) from customer", new Object[] {}, new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                //System.out.println(rs.getInt(1) + ":" + rs.getString(2));
+                sb.append(rs.getObject(1));
+            }
+        });      
+        return sb.toString();
+    }    
 }

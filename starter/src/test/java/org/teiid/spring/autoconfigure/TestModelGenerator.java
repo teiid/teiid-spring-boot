@@ -30,7 +30,6 @@ import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.MetadataFactory;
-import org.teiid.metadata.Procedure;
 import org.teiid.metadata.Table;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
@@ -140,8 +139,8 @@ public class TestModelGenerator {
                 "base");
         String expected = "FOR EACH ROW\n" + 
                 "BEGIN ATOMIC\n" + 
-                "    DECLARE boolean VARIABLES.X_Person_PK_EXISTS = (SELECT x.return FROM (EXECUTE base.Person_PK_EXISTS(NEW.id)) AS x);\n" + 
-                "    IF (VARIABLES.X_Person_PK_EXISTS)\n" + 
+                "    DECLARE boolean VARIABLES.Person_PK_EXISTS = (SELECT true FROM source.Person WHERE id = NEW.id);\n" + 
+                "    IF (VARIABLES.Person_PK_EXISTS)\n" + 
                 "    BEGIN\n" + 
                 "        RAISE SQLEXCEPTION 'duplicate key';\n" + 
                 "    END\n" + 
@@ -157,53 +156,6 @@ public class TestModelGenerator {
     }
     
     @Test
-    public void testRedirectionLayerCompositePKCheck() {
-        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
-        VDBMetaData vdb = new VDBMetaData();
-        vdb.addModel(buildSourceTable());
-        ModelMetaData model = mg
-                .buildRedirectionLayer(buildSourceTableWithCompositePK().getAttachment(MetadataFactory.class), "base");
-        String expected = 
-                "BEGIN\n" + 
-                "    DECLARE object[] VARIABLES.X = (SELECT (count(id), count(name)) FROM internal.Person WHERE id = id_value AND name = name_value);\n" + 
-                "    DECLARE object[] VARIABLES.Y = (SELECT (count(id), count(name)) FROM redirected.Person_REDIRECTED WHERE id = id_value AND ROW__STATUS <> 3);\n" + 
-                " AND name = name_value AND ROW__STATUS <> 3);\n" + 
-                ");\n" + 
-                "    IF ((ARRAY_GET(VARIABLES.X, 0) > 0 AND ARRAY_GET(VARIABLES.X, 1) > 0) OR (ARRAY_GET(VARIABLES.Y, 0) > 0 AND ARRAY_GET(VARIABLES.Y, 1) > 0))\n" + 
-                "    BEGIN\n" + 
-                "        RETURN TRUE;\n" + 
-                "    END\n" + 
-                "    RETURN FALSE;\n" + 
-                "END";
-        
-        MetadataFactory mf = model.getAttachment(MetadataFactory.class);
-        Procedure proc = mf.getSchema().getProcedure("Person_PK_EXISTS");
-        assertEquals(expected, proc.getQueryPlan().replace("\t", "    "));
-    }
-    
-    @Test
-    public void testRedirectionLayerPKCheck() {
-        RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
-        VDBMetaData vdb = new VDBMetaData();
-        vdb.addModel(buildSourceTable());
-        ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
-                "base");
-        String expected = "BEGIN\n" + 
-                "    DECLARE long VARIABLES.X = (SELECT count(id) FROM internal.Person WHERE id = id_value);\n" + 
-                "    DECLARE long VARIABLES.Y = (SELECT count(id) FROM redirected.Person_REDIRECTED WHERE id = id_value AND ROW__STATUS <> 3);\n" + 
-                "    IF (VARIABLES.X > 0 OR VARIABLES.Y > 0)\n" + 
-                "    BEGIN\n" + 
-                "        RETURN TRUE;\n" + 
-                "    END\n" + 
-                "    RETURN FALSE;\n" + 
-                "END";
-        
-        MetadataFactory mf = model.getAttachment(MetadataFactory.class);
-        Procedure proc = mf.getSchema().getProcedure("Person_PK_EXISTS");
-        assertEquals(expected, proc.getQueryPlan().replace("\t", "    "));
-    }    
-    
-    @Test
     public void testRedirectionLayerUpdatePlan() {
         RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
@@ -213,20 +165,20 @@ public class TestModelGenerator {
                 "BEGIN ATOMIC\n" + 
                 "IF (CHANGING.id)\n" + 
                 "BEGIN\n" + 
-                "    DECLARE boolean VARIABLES.X_Person_PK_EXISTS = (SELECT x.return FROM (EXECUTE base.Person_PK_EXISTS(NEW.id)) AS x);\n" + 
-                "    IF (VARIABLES.X_Person_PK_EXISTS)\n" + 
+                "    DECLARE boolean VARIABLES.Person_PK_EXISTS = (SELECT true FROM source.Person WHERE id = NEW.id);\n" + 
+                "    IF (VARIABLES.Person_PK_EXISTS)\n" + 
                 "    BEGIN\n" + 
-                "        DECLARE boolean VARIABLES.X_address_FK_EXISTS=(SELECT x.return FROM (EXECUTE base.address_FK_EXISTS(OLD.id)) AS x);\n" + 
-                "        IF (VARIABLES.X_address_FK_EXISTS)\n" + 
-                "        BEGIN\n" + 
-                "            RAISE SQLEXCEPTION 'referential integrity check failed on address table, cascade deletes are not supported';\n" + 
-                "        END\n" +                
-                "        UPSERT INTO redirected.Person_REDIRECTED(id, ROW__STATUS) VALUES (OLD.id, 3);\n" + 
-                "        UPSERT INTO redirected.Person_REDIRECTED(id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 1);\n" + 
+                "        RAISE SQLEXCEPTION 'duplicate key';\n" + 
                 "    END\n" + 
                 "    ELSE\n" + 
                 "    BEGIN\n" + 
-                "        RAISE SQLEXCEPTION 'duplicate key';\n" + 
+                "        DECLARE boolean VARIABLES.address_FK_EXISTS = (SELECT COUNT(*) > 0 FROM teiid.address WHERE pid = OLD.id);\n" + 
+                "        IF (VARIABLES.address_FK_EXISTS)\n" + 
+                "        BEGIN\n" + 
+                "            RAISE SQLEXCEPTION 'referential integrity check failed on address table, cascade deletes are not supported';\n" + 
+                "        END\n" + 
+                "        UPSERT INTO redirected.Person_REDIRECTED(id, ROW__STATUS) VALUES (OLD.id, 3);\n" + 
+                "        UPSERT INTO redirected.Person_REDIRECTED(id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 1);\n" + 
                 "    END\n" + 
                 "END\n" + 
                 "ELSE\n" + 
@@ -247,16 +199,12 @@ public class TestModelGenerator {
                 "base");
         String expected = "FOR EACH ROW\n" + 
                 "BEGIN ATOMIC\n" + 
-                "    DECLARE boolean VARIABLES.X_Person_PK_EXISTS = (SELECT x.return FROM (EXECUTE base.Person_PK_EXISTS(OLD.id)) AS x);\n" + 
-                "    IF (VARIABLES.X_Person_PK_EXISTS)\n" + 
-                "    BEGIN\n" + 
-                "        DECLARE boolean VARIABLES.X_address_FK_EXISTS=(SELECT x.return FROM (EXECUTE base.address_FK_EXISTS(OLD.id)) AS x);\n" + 
-                "        IF (VARIABLES.X_address_FK_EXISTS)\n" + 
+                "        DECLARE boolean VARIABLES.address_FK_EXISTS = (SELECT COUNT(*) > 0 FROM teiid.address WHERE pid = OLD.id);\n" + 
+                "        IF (VARIABLES.address_FK_EXISTS)\n" + 
                 "        BEGIN\n" + 
                 "            RAISE SQLEXCEPTION 'referential integrity check failed on address table, cascade deletes are not supported';\n" + 
-                "        END\n" +
-                "        UPSERT INTO redirected.Person_REDIRECTED(id, name, dob, ROW__STATUS) VALUES (OLD.id, OLD.name, OLD.dob, 3);\n" + 
-                "    END\n" + 
+                "        END\n" + 
+                "        UPSERT INTO redirected.Person_REDIRECTED(id, ROW__STATUS) VALUES (OLD.id, 3);\n" + 
                 "END";
         MetadataFactory mf = model.getAttachment(MetadataFactory.class);
         Table table = mf.getSchema().getTable("Person");
