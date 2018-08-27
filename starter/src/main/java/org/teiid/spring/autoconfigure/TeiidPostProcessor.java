@@ -20,6 +20,7 @@ import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.boot.jta.XADataSourceWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -64,6 +66,9 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 	@Autowired
 	private PhysicalNamingStrategy namingStrategy;
 	
+    @Autowired(required=false)
+    private XADataSourceWrapper xaWrapper;
+	
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName)
 			throws BeansException {
@@ -79,19 +84,38 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 		if (bean instanceof TeiidServer) {
 			// force initialization of this bean as soon as we see a TeiidServer
 			this.beanFactory.getBean(TeiidInitializer.class);
-		} else if (bean instanceof DataSource && !beanName.equals("dataSource")) {
-		    // initialize databases if any
-		    new MultiDataSourceInitializer((DataSource)bean, beanName, context).init();
+		} else if ((bean instanceof DataSource || bean instanceof XADataSource) && !beanName.equals("dataSource")) {
+            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);           
+            VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
 		    
-		    TeiidServer server = this.beanFactory.getBean(TeiidServer.class);		    
-		    VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
-		    server.addDataSource(vdb, beanName, (DataSource)bean, context);		        		
+            DataSource ds = null;
+            if (bean instanceof XADataSource) {
+                try {
+                    if (this.xaWrapper == null) {
+                        throw new IllegalStateException("XA data source is configured, however no JTA "
+                                + "transaction manager is defined in the pom.xml as dependency to this project");
+                    }
+                    ds = xaWrapper.wrapDataSource((XADataSource)bean);
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            } else {
+                // only add the data source to transaction adapter when source is non-xa, in xa case the sources
+                // should auto enlist themselves.
+                ds = (DataSource)bean;
+                server.getPlatformTransactionManagerAdapter().addDataSource(ds);
+            }
+            
+		    // initialize databases if any
+		    new MultiDataSourceInitializer(ds, beanName, context).init();
+		    server.addDataSource(vdb, beanName, ds, context);
 		    logger.info("Datasource added to Teiid = " + beanName);
 		} else if (bean instanceof BaseConnectionFactory) {
             TeiidServer server = this.beanFactory.getBean(TeiidServer.class);           
             VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
             server.addDataSource(vdb, beanName, (BaseConnectionFactory)bean, context);                     
             logger.info("Non JDBC Datasource added to Teiid = " + beanName);
+            server.getPlatformTransactionManagerAdapter().addDataSource((BaseConnectionFactory)bean);
 		} else if (bean instanceof PlatformTransactionManager) {
 			TeiidServer server = this.beanFactory.getBean(TeiidServer.class);		    
 		    server.getPlatformTransactionManagerAdapter().setPlatformTransactionManager((PlatformTransactionManager)bean);

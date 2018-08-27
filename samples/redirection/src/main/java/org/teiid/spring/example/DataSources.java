@@ -22,63 +22,35 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.transaction.ChainedTransactionManager;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.annotation.TransactionManagementConfigurer;
+import org.teiid.spring.autoconfigure.MultiDataSourceTransactionManagement;
 
 @Configuration
-@EnableTransactionManagement
-public class DataSources implements TransactionManagementConfigurer {
-/*    @Autowired
-    private XADataSourceWrapper wrapper;
-
-    @Bean(name="sampledb.xa")
-    @ConfigurationProperties(prefix="spring.xa.datasource.sampledb")
-    public XADataSourceBuilder sampledbXA() throws Exception {
-        return new XADataSourceBuilder();
-    }
-
+public class DataSources extends MultiDataSourceTransactionManagement {
+    /*
     @Bean(name="sampledb")
-    public DataSource sampledb(@Qualifier("sampledb.xa") XADataSourceBuilder x) throws Exception {
-        return x.build(wrapper, x.buildXA());
-    }
-    
-    @Bean(name="redirected.xa")
-    @ConfigurationProperties(prefix="spring.xa.datasource.redirected")
-    public XADataSourceBuilder redirectedXA() throws Exception {
-        return new XADataSourceBuilder();
+    @Primary
+    @ConfigurationProperties(prefix="spring.xa.datasource.sampledb")
+    public XADataSource sampledbXA() throws Exception {
+        return XADataSourceBuilder.create().build();
     }
 
     @Bean(name="redirected")
-    public DataSource redirected(@Qualifier("redirected.xa") XADataSourceBuilder x) throws Exception {
-        return x.build(wrapper, x.buildXA());
-    }*/
+    @ConfigurationProperties(prefix="spring.xa.datasource.redirected")
+    public XADataSource redirectedXA() throws Exception {
+        return XADataSourceBuilder.create().build();
+    }
+    */
 
-    
     @Bean(name="sampledb")
     @ConfigurationProperties(prefix = "spring.datasource.sampledb")
     public DataSource sampledb() {
         return DataSourceBuilder.create().build();
     }
-   
+
     @Bean(name="redirected")
     @ConfigurationProperties(prefix = "spring.datasource.redirected")
     public DataSource redirected() {
-        return DataSourceBuilder.create().build();   
+        return DataSourceBuilder.create().build();
     }
-    
-    @Bean
-    public PlatformTransactionManager platformTransactionManager() {
-    	return new ChainedTransactionManager(
-				new DataSourceTransactionManager(sampledb()), 
-				new DataSourceTransactionManager(redirected()));
-    }
-    
-    @Override
-	public PlatformTransactionManager annotationDrivenTransactionManager() {
-		return platformTransactionManager();
-	}
-    
+
 }
