@@ -12,3 +12,4 @@ m2e-wtp
 # btm transaction
 *.tlog
 ObjectStore
+transaction-logs

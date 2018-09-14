@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.autoconfigure.xa;
+package org.teiid.spring.xa;
 
+import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import javax.sql.DataSource;
+import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
 import org.springframework.beans.BeanUtils;
@@ -30,7 +34,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.bind.RelaxedDataBinder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DatabaseDriver;
-import org.springframework.boot.jta.XADataSourceWrapper;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
@@ -42,7 +45,7 @@ import org.springframework.util.StringUtils;
  * properties. 
  */
 @ConfigurationProperties(prefix = "spring.xa.datasource")
-public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAware, InitializingBean {
+public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAware, InitializingBean, XADataSource {
 
 	private ClassLoader classLoader;
 	
@@ -123,9 +126,12 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
      * Do not stop if an error occurs while initializing the database.
      */
     private boolean continueOnError = false;
+    
+    private XADataSource delegate;
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        this.delegate = createXaDataSource();
     }
 
     @Override
@@ -145,16 +151,16 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 	public XADataSourceBuilder(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
-
-    public DataSource build(XADataSourceWrapper wrapper, XADataSource xaDataSource) throws Exception {
-        return wrapper.wrapDataSource(xaDataSource);
-    }
     
-    public XADataSource buildXA() throws Exception {
-        return createXaDataSource();
+    public XADataSource build() throws Exception {
+        return this;
     }    
 
-    private XADataSource createXaDataSource() {
+    public static XADataSourceBuilder create() throws Exception {
+        return new XADataSourceBuilder();
+    }    
+    
+    protected XADataSource createXaDataSource() {
         String className = getDataSourceClassName();
         if (!StringUtils.hasLength(className)) {
             className = DatabaseDriver.fromJdbcUrl(getUrl())
@@ -332,5 +338,39 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
     public void setContinueOnError(boolean continueOnError) {
         this.continueOnError = continueOnError;
     }
-    
+
+    @Override
+    public PrintWriter getLogWriter() throws SQLException {
+        return delegate.getLogWriter();
+    }
+
+    @Override
+    public int getLoginTimeout() throws SQLException {
+        return delegate.getLoginTimeout();
+    }
+
+    @Override
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        return delegate.getParentLogger();
+    }
+
+    @Override
+    public void setLogWriter(PrintWriter out) throws SQLException {
+        this.delegate.setLogWriter(out);
+    }
+
+    @Override
+    public void setLoginTimeout(int seconds) throws SQLException {
+       this.delegate.setLoginTimeout(seconds);
+    }
+
+    @Override
+    public XAConnection getXAConnection() throws SQLException {
+        return this.delegate.getXAConnection();
+    }
+
+    @Override
+    public XAConnection getXAConnection(String user, String password) throws SQLException {
+        return this.delegate.getXAConnection(user, password);
+    }
 }
