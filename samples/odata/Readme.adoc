@@ -191,6 +191,6 @@ http://localhost:8080/ACCOUNT?$format=json
          "DATEOPENED":"1998-03-06T06:00:00Z",
          "DATECLOSED":null
       },..
-     ----
+----
      
-That's it you have sucessfully implemented OData interface on top of your database. For full support of all the data sources supported checkout Teiid documentation on at link:http://teiid.org[Teiid.org]
+That's it you have successfully implemented OData interface on top of your database. For full support of all the data sources supported checkout Teiid documentation on at link:http://teiid.org[Teiid.org]

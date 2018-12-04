@@ -44,11 +44,11 @@ import org.teiid.vdb.runtime.VDBKey;
 public class SpringODataFilter extends ODataFilter {
 
 	private TeiidServer server;
-	
+
 	public SpringODataFilter(TeiidServer server) {
 		this.server = server;
 	}
-	
+
 	@Override
     public void internalDoFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException, TeiidProcessingException {
@@ -61,33 +61,40 @@ public class SpringODataFilter extends ODataFilter {
             chain.doFilter(httpRequest, response);
             return;
         }
-        
+
         String contextPath = httpRequest.getContextPath();
+        if (contextPath.isEmpty()) {
+            // if model name is defined in the URL
+            if (uri.startsWith("/") && uri.indexOf('/', 1) != -1) {
+                contextPath = uri.substring(1, uri.indexOf('/', 1));
+            }
+        }
+
         String baseURI = fullURL.substring(0, fullURL.indexOf(contextPath));
 
         ContextAwareHttpSerlvetRequest contextAwareRequest = new ContextAwareHttpSerlvetRequest(httpRequest);
         contextAwareRequest.setContextPath(contextPath);
         httpRequest = contextAwareRequest;
-        
+
         VDBKey key = new VDBKey(TeiidConstants.VDBNAME, TeiidConstants.VDBVERSION);
-        
+
         SoftReference<OlingoBridge> ref = this.contextMap.get(key);
         OlingoBridge context = null;
         if (ref != null) {
             context = ref.get();
         }
-        
+
         if (context == null) {
             context = new OlingoBridge();
             ref = new SoftReference<OlingoBridge>(context);
             this.contextMap.put(key, ref);
         }
-        
+
         Client client = buildClient(key.getName(), key.getVersion(), this.initProperties);
         try {
             Connection connection = client.open();
             registerVDBListener(client, connection);
-            ODataHttpHandler handler = context.getHandler(baseURI, client, modelName());
+            ODataHttpHandler handler = context.getHandler(baseURI, client, modelName(contextPath));
             httpRequest.setAttribute(ODataHttpHandler.class.getName(), handler);
             httpRequest.setAttribute(Client.class.getName(), client);
             chain.doFilter(httpRequest, response);
@@ -101,29 +108,36 @@ public class SpringODataFilter extends ODataFilter {
             }
         }
     }
-    
-	public String modelName() {
+
+	public String modelName(String contextPath) {
 		Schema schema = server.getSchema("teiid");
 		if (schema != null && !schema.getTables().isEmpty()) {
 			return "teiid";
 		}
 
 		String modelName = null;
-		try {						
-			VDB vdb = server.getAdmin().getVDB(TeiidConstants.VDBNAME, TeiidConstants.VDBVERSION);			
+		try {
+			VDB vdb = server.getAdmin().getVDB(TeiidConstants.VDBNAME, TeiidConstants.VDBVERSION);
 			for (Model m : vdb.getModels()) {
 				if (m.getName().equals("file") || m.getName().equals("rest") || m.getName().equals("teiid")) {
 					continue;
 				}
-				modelName = m.getName();
-				break;
+				if (contextPath.isEmpty()) {
+				    modelName = m.getName();
+				    break;
+				} else if (contextPath.equalsIgnoreCase(m.getName())) {
+                    modelName = m.getName();
+                    break;
+				}
 			}
 		} catch (AdminException e) {
+		    //ignore
 		}
 		return modelName;
 	}
-	
+
+    @Override
     public Client buildClient(String vdbName, String version, Properties props) {
-        return new SpringClient(vdbName, version, props, server);        
+        return new SpringClient(vdbName, version, props, server);
     }
 }

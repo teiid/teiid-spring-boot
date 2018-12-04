@@ -165,6 +165,7 @@ public class TeiidServer extends EmbeddedServer {
 		} else {
 			for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
 				for (SourceMappingMetadata smm : model.getSourceMappings()) {
+			        addTranslator(smm.getTranslatorName());
 					if (smm.getConnectionJndiName().equalsIgnoreCase(sourceBeanName)) {
 						addConnectionFactory(smm.getName(), source);
 					}
@@ -172,6 +173,16 @@ public class TeiidServer extends EmbeddedServer {
 			}
 		}
 	}
+
+    void addTranslator(String translatorname) {
+        try {
+            if (this.getExecutionFactory(translatorname) == null) {
+                addTranslator(ExternalSource.translatorClass(translatorname));
+            }
+        } catch (ConnectorManagerException | TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator " + translatorname, e);
+        }
+    }
 
 	static class SBConnectionFactoryProvider implements ConnectionFactoryProvider<Object> {
 	    private Object bean;
@@ -279,13 +290,9 @@ public class TeiidServer extends EmbeddedServer {
 		if (dialect != null) {
 		    model.addProperty(DIALECT, dialect);
 		}
-		try {
-			if (this.getExecutionFactory(translatorName) == null) {
-				addTranslator(ExternalSource.translatorClass(translatorName));
-			}
-		} catch (ConnectorManagerException | TranslatorException e) {
-			throw new IllegalStateException("Failed to load translator " + translatorName, e);
-		}
+
+		// load the translator class
+		addTranslator(translatorName);
 
 		// add the importer properties from the configuration
 		// note that above defaults can be overridden with this too.

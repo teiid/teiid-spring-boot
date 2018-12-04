@@ -86,7 +86,7 @@ class TeiidInitializer implements ApplicationListener<TeiidInitializedEvent> {
             vdb = fallback;
         }
         List<String> fallbackResources = new ArrayList<String>();
-        fallbackResources.add("classpath*:" + fallback);
+        fallbackResources.add("classpath*:" + vdb);
         return getResources(propertyName, fallbackResources, false, context);
     }
 

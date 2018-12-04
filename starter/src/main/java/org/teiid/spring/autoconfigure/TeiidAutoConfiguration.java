@@ -19,17 +19,23 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.Driver;
 import java.util.List;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
+import org.jboss.vfs.VirtualFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -51,17 +57,23 @@ import org.springframework.jdbc.datasource.embedded.ConnectionProperties;
 import org.springframework.jdbc.datasource.embedded.DataSourceFactory;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.cache.Cache;
 import org.teiid.cache.CacheFactory;
 import org.teiid.core.util.LRUCache;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.deployers.VDBRepository;
+import org.teiid.deployers.VirtualDatabaseException;
+import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
+import org.teiid.query.metadata.PureZipFileSystem;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
 import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.translator.ExecutionFactory;
+import org.teiid.translator.TranslatorException;
+import org.xml.sax.SAXException;
 
 @Configuration
 @ConditionalOnClass({EmbeddedServer.class, ExecutionFactory.class})
@@ -142,17 +154,35 @@ public class TeiidAutoConfiguration implements Ordered {
 
         VDBMetaData vdb = null;
         if (!resources.isEmpty()) {
-            try {
-                DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
-                String db = "CREATE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
-                db = db + "USE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
-                db = db + ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
-                vdb = store.getVDBMetadata(db);
-                logger.info("Predefined VDB found :" + resources.get(0).getFilename());
-            } catch (FileNotFoundException e) {
-                // no-op
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to parse the VDB defined");
+            for (Resource resource : resources) {
+                if (resource.getFilename().endsWith(".ddl")) {
+                    try {
+                        DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
+                        String db = "CREATE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
+                        db = db + "USE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
+                        db = db + ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
+                        vdb = store.getVDBMetadata(db);
+                        logger.info("Predefined VDB found :" + resources.get(0).getFilename());
+                    } catch (FileNotFoundException e) {
+                        // no-op
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Failed to parse the VDB defined");
+                    }
+                    break;
+                } else if (resource.getFilename().endsWith("-vdb.xml")) {
+                    try {
+                        vdb =  VDBMetadataParser.unmarshell(resources.get(0).getInputStream());
+                    } catch (XMLStreamException | IOException e) {
+                        throw new IllegalStateException("Failed to load the VDB defined", e);
+                    }
+                } else if (resource.getFilename().endsWith(".vdb")) {
+                    try {
+                        vdb = loadVDB(new File(resource.getFilename()).toURI().toURL());
+                    } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | IOException
+                            | URISyntaxException e) {
+                        throw new IllegalStateException("Failed to load the VDB defined", e);
+                    }
+                }
             }
         }
 
@@ -163,6 +193,32 @@ public class TeiidAutoConfiguration implements Ordered {
         vdb.setName(VDBNAME);
         vdb.setVersion(VDBVERSION);
         return vdb;
+    }
+
+    private VDBMetaData loadVDB(URL url) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
+            IOException, URISyntaxException {
+        VirtualFile root = PureZipFileSystem.mount(url);
+        VDBMetaData metadata;
+
+        VirtualFile vdbMetadata = root.getChild("/META-INF/vdb.xml"); //$NON-NLS-1$
+        if (vdbMetadata.exists()) {
+            try {
+                VDBMetadataParser.validate(vdbMetadata.openStream());
+            } catch (SAXException e) {
+                throw new VirtualDatabaseException(e);
+            }
+            InputStream is = vdbMetadata.openStream();
+            try {
+                metadata = VDBMetadataParser.unmarshell(is);
+            } catch (XMLStreamException e) {
+                throw new VirtualDatabaseException(e);
+            }
+        } else {
+            vdbMetadata = root.getChild("/META-INF/vdb.ddl"); //$NON-NLS-1$
+            DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
+            metadata = store.getVDBMetadata(ObjectConverterUtil.convertToString(vdbMetadata.openStream()));
+        }
+        return metadata;
     }
 
     @Bean(name = "teiid")
