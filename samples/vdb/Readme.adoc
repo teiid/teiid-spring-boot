@@ -1,0 +1,137 @@
+=== Existing VDB Based Example
+
+This guide walks you through the process of building an application that uses Teiid Spring Boot and existing Dynamic VDB you may have defined and would like query based on it.
+
+=== What you’ll build
+
+You’ll build an application that loads the VDB supplied and provides a JDBC interface on it using Teiid technologies.
+
+=== What you’ll need
+
+* About 10 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+----
+
+[source,xml]
+.*teiid-spring-boot-starter*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+----
+
+Since we are going to connect H2 database, add the JDBC driver dependency. You can replace this with database driver of your choosing.
+[source,xml]
+.*h2*
+----
+<dependency>
+	<groupId>com.h2database</groupId>
+	<artifactId>h2</artifactId>
+	<scope>runtime</scope>
+</dependency>
+----
+
+=== Define the Data Sources
+In this example, first we need to define all the data sources that in play. To capture data source information, create the following Java class.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+    
+    @ConfigurationProperties(prefix = "spring.datasource.mydb")
+    @Bean
+    public DataSource mydb() {
+        return DataSourceBuilder.create().build();
+    }    
+}
+----
+
+NOTE: Keep the data source property name and method name exactly SAME. From above example "mydb" in property and mydb() method, keep the names same, as additional properties will not be discovered otherwise.
+
+We need to provide the corresponding configuration for this data source. In "application.properties" file, define *your* configuration similar to
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.datasource.mydb.url=jdbc:h2:mem:mydb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
+spring.datasource.mydb.username=sa
+spring.datasource.mydb.password=sa
+spring.datasource.mydb.driver-class-name=org.h2.Driver
+spring.datasource.mydb.platform=mydb
+
+# these Teiid specific source import properties
+#spring.datasource.accountsDS.importer.SchemaPattern=<schema-name>
+----
+
+Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for Translator "importer" properties.
+
+=== Copy the VDB file
+Copy your -vdb.xml file into "src/main/resources" directory, and add below property in `application.properties` this tells the application which VDB file to load.
+
+----
+teiid.vdb-file=customer-vdb.xml
+----
+  
+Let’s wire this up and see what it looks like!
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args).close();
+	}
+	
+    @Override
+    public void run(String... args) throws Exception {
+        jdbcTemplate.query(<your-query>);
+    }
+}
+----
+
+Now when you execute this application, you should see results for your query.
+
+If you want to expose this VDB through OData, add following dependecy to your `pom.xml` file.
+
+----
+<dependency>
+    <groupId>org.teiid</groupId>
+    <artifactId>spring-odata</artifactId>
+</dependency> 
+----

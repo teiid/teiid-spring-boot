@@ -113,9 +113,9 @@ and create pom.xml file of your choosing and add following maven dependencies
 </dependency>
 ----
 
-Since we are going to connect Postgres database, add the JDBC driver dependency. You can replace this with database driver of your choosing.
+Since we are going to connect H2 database, add the JDBC driver dependency. You can replace this with database driver of your choosing.
 [source,xml]
-.*postgresql*
+.*h2*
 ----
 <dependency>
 	<groupId>com.h2database</groupId>
@@ -150,10 +150,11 @@ We need to provide the corresponding configuration for this data source. In "app
 [source,text]
 .*src/main/resources/application.properties*
 ----
-spring.datasource.accountsDS.url=jdbc:postgresql://localhost/test
-spring.datasource.accountsDS.username=<username>
-spring.datasource.accountsDS.password=<password>
-spring.datasource.accountsDS.driver-class-name=org.postgresql.Driver
+spring.datasource.accountsDS.url=jdbc:h2:mem:accounts;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
+spring.datasource.accountsDS.username=sa
+spring.datasource.accountsDS.password=sa
+spring.datasource.accountsDS.driver-class-name=org.h2.Driver
+spring.datasource.accountsDS.platform=accounts
 
 # these Teiid specific source import properties
 #spring.datasource.accountsDS.importer.SchemaPattern=<schema-name>
