@@ -42,15 +42,15 @@ import org.springframework.util.StringUtils;
 
 /**
  * Convenience class for building a {@link XADataSource} with common implementations and
- * properties. 
+ * properties.
  */
 @ConfigurationProperties(prefix = "spring.xa.datasource")
 public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAware, InitializingBean, XADataSource {
 
 	private ClassLoader classLoader;
-	
+
 	private Environment environment;
-	
+
     /**
      * XA datasource fully qualified name.
      */
@@ -60,7 +60,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
      * Properties to pass to the XA data source.
      */
     private Map<String, String> properties = new LinkedHashMap<String, String>();
-    
+
     /**
      * Fully qualified name of the JDBC driver. Auto-detected based on the URL by default.
      */
@@ -80,7 +80,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
      * Login password of the database.
      */
     private String password;
-    
+
     /**
      * Populate the database using 'data.sql'.
      */
@@ -126,7 +126,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
      * Do not stop if an error occurs while initializing the database.
      */
     private boolean continueOnError = false;
-    
+
     private XADataSource delegate;
 
     @Override
@@ -142,8 +142,8 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
     @Override
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
-    } 	
-	
+    }
+
     public XADataSourceBuilder() {
         this(null);
     }
@@ -151,15 +151,15 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 	public XADataSourceBuilder(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
-    
+
     public XADataSource build() throws Exception {
         return this;
-    }    
+    }
 
     public static XADataSourceBuilder create() throws Exception {
         return new XADataSourceBuilder();
-    }    
-    
+    }
+
     protected XADataSource createXaDataSource() {
         String className = getDataSourceClassName();
         if (!StringUtils.hasLength(className)) {
@@ -198,12 +198,11 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
             .withAlias("server", "serverName")
             .withAlias("database", "databaseName")
             .bind(values);
-    }	
-    
+    }
+
     /**
      * Return the configured driver or {@code null} if none was configured.
      * @return the configured driver
-     * @see #determineDriverClassName()
      */
     public String getDriverClassName() {
         return this.driverClassName;
@@ -211,8 +210,8 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 
     public void setDriverClassName(String driverClassName) {
         this.driverClassName = driverClassName;
-    }    
-    
+    }
+
     public String getDataSourceClassName() {
         return this.dataSourceClassName;
     }
@@ -227,12 +226,11 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
-    }    
-    
+    }
+
     /**
      * Return the configured username or {@code null} if none was configured.
      * @return the configured username
-     * @see #determineUsername()
      */
     public String getUsername() {
         return this.username;
@@ -241,11 +239,10 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
     public void setUsername(String username) {
         this.username = username;
     }
-    
+
     /**
      * Return the configured password or {@code null} if none was configured.
      * @return the configured password
-     * @see #determinePassword()
      */
     public String getPassword() {
         return this.password;
@@ -254,11 +251,10 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
     /**
      * Return the configured url or {@code null} if none was configured.
      * @return the configured url
-     * @see #determineUrl()
      */
     public String getUrl() {
         return this.url;
