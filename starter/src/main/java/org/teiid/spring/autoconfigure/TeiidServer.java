@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.Entity;
 import javax.sql.DataSource;
@@ -77,6 +78,8 @@ import org.teiid.core.TeiidRuntimeException;
 import org.teiid.core.util.ReflectionHelper;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dialect.TeiidDialect;
+import org.teiid.dqp.internal.datamgr.ConnectorManager;
+import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Schema;
@@ -99,6 +102,7 @@ import org.teiid.spring.views.TextTableView;
 import org.teiid.spring.views.UDFProcessor;
 import org.teiid.spring.views.ViewBuilder;
 import org.teiid.spring.xa.XADataSourceBuilder;
+import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -108,6 +112,12 @@ public class TeiidServer extends EmbeddedServer {
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
     private MetadataSources metadataSources = new MetadataSources();
     private PlatformTransactionManagerAdapter platformTransactionManagerAdapter = new PlatformTransactionManagerAdapter();
+    private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders
+        = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
+
+    public TeiidServer() {
+        this.cmr = new SBConnectorManagerRepository();
+    }
 
 	public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
 		// only when user did not define a explicit VDB then build one.
@@ -166,7 +176,8 @@ public class TeiidServer extends EmbeddedServer {
 			for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
 				for (SourceMappingMetadata smm : model.getSourceMappings()) {
 			        addTranslator(smm.getTranslatorName());
-					if (smm.getConnectionJndiName().equalsIgnoreCase(sourceBeanName)) {
+                    if (smm.getConnectionJndiName() != null
+                            && smm.getConnectionJndiName().equalsIgnoreCase(sourceBeanName)) {
 						addConnectionFactory(smm.getName(), source);
 					}
 				}
@@ -587,4 +598,42 @@ public class TeiidServer extends EmbeddedServer {
 	public PlatformTransactionManagerAdapter getPlatformTransactionManagerAdapter() {
 		return platformTransactionManagerAdapter;
 	}
+
+    protected class SBConnectorManagerRepository extends ConnectorManagerRepository {
+        public SBConnectorManagerRepository() {
+            super(true);
+        }
+        @Override
+        protected ConnectorManager createConnectorManager(
+                String translatorName, String connectionName, ExecutionFactory<Object, Object> ef) throws ConnectorManagerException {
+            return new ConnectorManager(translatorName, connectionName, ef) {
+                @Override
+                public Object getConnectionFactory() throws TranslatorException {
+                    if (getConnectionName() == null) {
+                        return null;
+                    }
+                    ConnectionFactoryProvider<?> connectionFactoryProvider = connectionFactoryProviders.get(getConnectionName());
+                    if (connectionFactoryProvider != null) {
+                        return connectionFactoryProvider.getConnectionFactory();
+                    }
+                    return super.getConnectionFactory();
+                }
+            };
+        }
+    }
+
+    @Override
+    public void addConnectionFactoryProvider(String name,
+            ConnectionFactoryProvider<?> connectionFactoryProvider) {
+        this.connectionFactoryProviders.put(name, connectionFactoryProvider);
+    }
+
+    @Override
+    public void addConnectionFactory(String name, Object connectionFactory) {
+        this.connectionFactoryProviders.put(name, new SimpleConnectionFactoryProvider<Object>(connectionFactory));
+    }
+
+    public ConnectionFactoryProvider<?> removeConnectionFactoryProvider(String name) {
+        return this.connectionFactoryProviders.remove(name);
+    }
 }
