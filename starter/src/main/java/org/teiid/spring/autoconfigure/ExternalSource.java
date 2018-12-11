@@ -25,30 +25,31 @@ import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
 
 public enum ExternalSource {
-    DB2("DB2", new String[] {"com.ibm.db2.jcc.DB2Driver"}, new String[] {"com.ibm.db2.jcc.DB2XADataSource"}, "db2", "org.hibernate.dialect.DB2Dialect"), 
-    DERBY("Derby", new String[] {"org.apache.derby.jdbc.ClientDriver"}, new String[] {}, "derby", "org.hibernate.dialect.DerbyTenSevenDialect"), 
-    H2("H2", new String[] {"org.h2.Driver"}, new String[] {"org.h2.jdbcx.JdbcDataSource"}, "h2", "org.hibernate.dialect.H2Dialect"), 
-    HANA("Hana", new String[] {"com.sap.db.jdbc.Driver"}, new String[] {}, "hana", "org.hibernate.dialect.HANARowStoreDialect"), 
-    HIVE("Hive", new String[] {"org.apache.hive.jdbc.HiveDriver"}, new String[] {}, "hive", null), 
+    DB2("DB2", new String[] {"com.ibm.db2.jcc.DB2Driver"}, new String[] {"com.ibm.db2.jcc.DB2XADataSource"}, "db2", "org.hibernate.dialect.DB2Dialect"),
+    DERBY("Derby", new String[] {"org.apache.derby.jdbc.ClientDriver"}, new String[] {}, "derby", "org.hibernate.dialect.DerbyTenSevenDialect"),
+    H2("H2", new String[] {"org.h2.Driver"}, new String[] {"org.h2.jdbcx.JdbcDataSource"}, "h2", "org.hibernate.dialect.H2Dialect"),
+    HANA("Hana", new String[] {"com.sap.db.jdbc.Driver"}, new String[] {}, "hana", "org.hibernate.dialect.HANARowStoreDialect"),
+    HIVE("Hive", new String[] {"org.apache.hive.jdbc.HiveDriver"}, new String[] {}, "hive", null),
+    HSQL("HSQL", new String[] {"org.hsqldb.jdbc.JDBCDriver"}, new String[] {"org.hsqldb.jdbc.pool.JDBCXADataSource"}, "hsql", "org.hibernate.dialect.HSQLDialect"),
     IMPALA("Impala", new String[] {"org.apache.hadoop.hive.jdbc.HiveDriver"}, new String[] {}, "impala", null), // TODO: Fix me
-    HSQL("HSQL", new String[] {"org.hsqldb.jdbc.JDBCDriver"}, new String[] {"org.hsqldb.jdbc.pool.JDBCXADataSource"}, "hsql", "org.hibernate.dialect.HSQLDialect"), 
-    INFORMIX("Informix", new String[] {"com.informix.jdbc.IfxDriver"}, new String[] {}, "informix", "org.hibernate.dialect.InformixDialect"), 
-    INGRES("Ingres", new String[] {"com.ingres.jdbc.IngresDriver"}, new String[] {}, "ingres", "org.hibernate.dialect.Ingres10Dialect"), 
-    MYSQL("MySQL", new String[] {"com.mysql.jdbc.Driver"}, new String[] {"com.mysql.jdbc.jdbc2.optional.MysqlXADataSource"}, "mysql5", "org.hibernate.dialect.MySQL5InnoDBDialect"), 
-    ORACLE("Oracle", new String[] {"oracle.jdbc.OracleDriver"}, new String[] {"oracle.jdbc.xa.client.OracleXADataSource"}, "oracle", "org.hibernate.dialect.Oracle12cDialect"), 
-    OSISOFTPI("OSISOFT PI", new String[] {"com.osisoft.jdbc.Driver"}, new String[] {}, "osisoft-pi", null), 
-    PHOENIX("Phoenix", new String[] {"org.apache.phoenix.jdbc.PhoenixDriver"}, new String[] {}, "phoenix", null), 
-    POSTGRESQL("PostgreSQL",new String[] {"org.postgresql.Driver"}, new String[] {"org.postgresql.xa.PGXADataSource"}, "postgresql", "org.hibernate.dialect.PostgreSQL9Dialect"), 
-    PRESTODB("PrestoDB", new String[] {"com.facebook.presto.jdbc.PrestoDriver"}, new String[] {}, "prestodb", null), 
-    SQLSERVER("MS-SQL Server", new String[] {"com.microsoft.sqlserver.jdbc.SQLServerDriver"}, new String[] {"com.microsoft.sqlserver.jdbc.SQLServerXADataSource"}, "sqlserver", "org.hibernate.dialect.SQLServer2012Dialect"), 
-    JTDS("MS-SQL Server", new String[] {"net.sourceforge.jtds.jdbc.Driver"}, new String[] {}, "sqlserver",  "org.hibernate.dialect.SQLServer2012Dialect"), 
-    SYBASE("Sybase", new String[] {"com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver"}, new String[] {}, "sybase", "org.hibernate.dialect.SybaseDialect"), 
-    TEIID("Teiid", new String[] {"org.teiid.jdbc.TeiidDriver"}, new String[] {}, "teiid", "org.teiid.dialect.TeiidDialect"), 
-    VERTICA("Vertica", new String[] {"com.vertica.jdbc.Driver"}, new String[] {}, "vertica", null), 
-    NETEZZA("Netezza",new String[] {"org.netezza.Driver "},new String[] {}, "netezza", null), 
+    INFORMIX("Informix", new String[] {"com.informix.jdbc.IfxDriver"}, new String[] {}, "informix", "org.hibernate.dialect.InformixDialect"),
+    INGRES("Ingres", new String[] {"com.ingres.jdbc.IngresDriver"}, new String[] {}, "ingres", "org.hibernate.dialect.Ingres10Dialect"),
+    MYSQL("MySQL", new String[] {"com.mysql.jdbc.Driver"}, new String[] {"com.mysql.jdbc.jdbc2.optional.MysqlXADataSource"}, "mysql5", "org.hibernate.dialect.MySQL5InnoDBDialect"),
+    ORACLE("Oracle", new String[] {"oracle.jdbc.OracleDriver"}, new String[] {"oracle.jdbc.xa.client.OracleXADataSource"}, "oracle", "org.hibernate.dialect.Oracle12cDialect"),
+    OSISOFTPI("OSISOFT PI", new String[] {"com.osisoft.jdbc.Driver"}, new String[] {}, "osisoft-pi", null),
+    PHOENIX("Phoenix", new String[] {"org.apache.phoenix.jdbc.PhoenixDriver"}, new String[] {}, "phoenix", null),
+    POSTGRESQL("PostgreSQL",new String[] {"org.postgresql.Driver"}, new String[] {"org.postgresql.xa.PGXADataSource"}, "postgresql", "org.hibernate.dialect.PostgreSQL9Dialect"),
+    PRESTODB("PrestoDB", new String[] {"com.facebook.presto.jdbc.PrestoDriver"}, new String[] {}, "prestodb", null),
+    SQLSERVER("MS-SQL Server", new String[] {"com.microsoft.sqlserver.jdbc.SQLServerDriver"}, new String[] {"com.microsoft.sqlserver.jdbc.SQLServerXADataSource"}, "sqlserver", "org.hibernate.dialect.SQLServer2012Dialect"),
+    JTDS("MS-SQL Server", new String[] {"net.sourceforge.jtds.jdbc.Driver"}, new String[] {}, "sqlserver",  "org.hibernate.dialect.SQLServer2012Dialect"),
+    SYBASE("Sybase", new String[] {"com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver"}, new String[] {}, "sybase", "org.hibernate.dialect.SybaseDialect"),
+    TEIID("Teiid", new String[] {"org.teiid.jdbc.TeiidDriver"}, new String[] {}, "teiid", "org.teiid.dialect.TeiidDialect"),
+    VERTICA("Vertica", new String[] {"com.vertica.jdbc.Driver"}, new String[] {}, "vertica", null),
+    NETEZZA("Netezza",new String[] {"org.netezza.Driver "},new String[] {}, "netezza", null),
     TERADATA("Teradata",new String[] {"com.teradata.jdbc.TeraDriver" }, new String[] {}, "teradata", "org.hibernate.dialect.Teradata14Dialect"),
 
     FILE("file", new String[] { FileConnectionFactory.class.getName() }, new String[] {},"file", null),
+    LOOPBACK("loopback", new String[] {}, new String[] {}, "loopback", null),
     REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {},"ws", null),
 	EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {},"excel", null);
 
@@ -83,7 +84,7 @@ public enum ExternalSource {
     public String getDialect() {
         return dialect;
     }
-    
+
     public static String findTransaltorNameFromDriverName(String driverName) {
         for (ExternalSource source : ExternalSource.values()) {
             for (String driver : source.driverNames) {
@@ -95,11 +96,11 @@ public enum ExternalSource {
                 if (driver.equals(driverName)) {
                     return source.getTranslatorName();
                 }
-            }            
+            }
         }
         return "loopback";
     }
-    
+
     public static String findDialectFromDriverName(String driverName) {
         for (ExternalSource source : ExternalSource.values()) {
             for (String driver : source.driverNames) {
@@ -111,10 +112,10 @@ public enum ExternalSource {
                 if (driver.equals(driverName)) {
                     return source.getDialect();
                 }
-            }            
+            }
         }
         return null;
-    }    
+    }
 
     public static Class<? extends ExecutionFactory<?, ?>> translatorClass(String translatorName) {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
