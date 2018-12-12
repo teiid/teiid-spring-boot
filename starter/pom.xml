@@ -1,99 +1,111 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<!--
+   Copyright (C) 2016 Red Hat, Inc.
 
-	<parent>
-		<groupId>org.teiid</groupId>
-		<artifactId>teiid-spring-boot-starter-parent</artifactId>
-		<version>1.0.2-SNAPSHOT</version>
-	</parent>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-	<artifactId>teiid-spring-boot-starter</artifactId>
+       http://www.apache.org/licenses/LICENSE-2.0
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
-<!--    		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jta-narayana</artifactId>
-		</dependency> -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework.data</groupId>
-		    <artifactId>spring-data-commons</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-tx</artifactId>
-		</dependency>			
-        <dependency>
-           <groupId>org.hibernate</groupId>
-           <artifactId>hibernate-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-tools</artifactId>
-        </dependency>              	
-		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-common-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-runtime</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-hibernate-dialect</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid</groupId>
-			<artifactId>teiid-admin</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.teiid.connectors</groupId>
-			<artifactId>translator-jdbc</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.teiid.connectors</groupId>
-            <artifactId>translator-loopback</artifactId>
-        </dependency>		
-	    <dependency>
-	        <groupId>xml-apis</groupId>
-	        <artifactId>xml-apis</artifactId>
-	        <scope>runtime</scope>
-	    </dependency>
-		<dependency>
-			<groupId>org.teiid.connectors</groupId>
-			<artifactId>translator-file</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>junit</groupId>
-		    <artifactId>junit</artifactId>
-		    <scope>test</scope>
-		</dependency>
-		<dependency>
-		    <groupId>org.mockito</groupId>
-		    <artifactId>mockito-all</artifactId>
-		    <scope>test</scope>
-		</dependency>
-			
-	</dependencies>	
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.teiid</groupId>
+    <artifactId>teiid-spring-boot-starter-parent</artifactId>
+    <version>1.0.2-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>teiid-spring-boot-starter</artifactId>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-orm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-tx</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-tools</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-common-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-hibernate-dialect</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-admin</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.connectors</groupId>
+      <artifactId>translator-jdbc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.connectors</groupId>
+      <artifactId>translator-loopback</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.connectors</groupId>
+      <artifactId>translator-file</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
 </project>

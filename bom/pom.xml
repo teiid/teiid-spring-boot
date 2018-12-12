@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
    Copyright (C) 2016 Red Hat, Inc.
 
@@ -22,25 +22,38 @@
     <groupId>org.teiid</groupId>
     <artifactId>teiid-spring-boot-starter-parent</artifactId>
     <version>1.0.2-SNAPSHOT</version>
+    <relativePath>../</relativePath>
   </parent>
 
-  <artifactId>samples</artifactId>
-  <packaging>pom</packaging>
-  <name>Teiid Spring Boot Samples</name>
-  <description>Teiid Spring Boot Samples</description>
+  <artifactId>spring-boot-bom</artifactId>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>${version.deploy.plugin}</version>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <name>BOM</name>
+  <description>BOM</description>
+
+  <packaging>pom</packaging>
+  <url>http://teiid.io/</url>
+
+  <developers>
+    <developer>
+      <id>teiid.io</id>
+      <name>Teiid Community</name>
+      <organization>Teiid Thorntail</organization>
+      <organizationUrl>http://teiid.io/</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:teiid/teiid-spring-boot.git</connection>
+    <developerConnection>scm:git:git@github.com:teiid/teiid-spring-boot.git</developerConnection>
+    <url>https://github.com/teiid/teiid-thorntail</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <licenses>
+    <license>
+      <name>AL2</name>
+    </license>
+  </licenses>
 
   <dependencyManagement>
     <dependencies>
@@ -49,19 +62,22 @@
         <artifactId>teiid-spring-boot-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-odata</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-rest</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-excel</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <modules>
-    <module>rdbms</module>
-    <module>udf</module>
-    <module>rdbms-file</module>
-    <module>json</module>
-    <module>rest</module>
-    <module>excel</module>
-    <module>odata</module>
-    <module>redirection</module>
-    <module>vdb</module>
-  </modules>
 
 </project>
