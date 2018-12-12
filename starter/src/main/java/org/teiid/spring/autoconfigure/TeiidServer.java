@@ -177,8 +177,8 @@ public class TeiidServer extends EmbeddedServer {
 				for (SourceMappingMetadata smm : model.getSourceMappings()) {
 			        addTranslator(smm.getTranslatorName());
                     if (smm.getConnectionJndiName() != null
-                            && smm.getConnectionJndiName().equalsIgnoreCase(sourceBeanName)) {
-						addConnectionFactory(smm.getName(), source);
+                            && smm.getName().equalsIgnoreCase(sourceBeanName)) {
+						addConnectionFactory(smm.getConnectionJndiName(), source);
 					}
 				}
 			}
@@ -623,17 +623,17 @@ public class TeiidServer extends EmbeddedServer {
     }
 
     @Override
-    public void addConnectionFactoryProvider(String name,
+    public void addConnectionFactoryProvider(String jndiName,
             ConnectionFactoryProvider<?> connectionFactoryProvider) {
-        this.connectionFactoryProviders.put(name, connectionFactoryProvider);
+        this.connectionFactoryProviders.put(jndiName, connectionFactoryProvider);
     }
 
     @Override
-    public void addConnectionFactory(String name, Object connectionFactory) {
-        this.connectionFactoryProviders.put(name, new SimpleConnectionFactoryProvider<Object>(connectionFactory));
+    public void addConnectionFactory(String jndiName, Object connectionFactory) {
+        this.connectionFactoryProviders.put(jndiName, new SimpleConnectionFactoryProvider<Object>(connectionFactory));
     }
 
-    public ConnectionFactoryProvider<?> removeConnectionFactoryProvider(String name) {
-        return this.connectionFactoryProviders.remove(name);
+    public ConnectionFactoryProvider<?> removeConnectionFactoryProvider(String jndiName) {
+        return this.connectionFactoryProviders.remove(jndiName);
     }
 }

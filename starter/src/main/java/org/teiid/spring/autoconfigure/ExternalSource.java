@@ -145,4 +145,13 @@ public enum ExternalSource {
 		}
 		return null;
 	}
+
+    public static String[] findDriverNameFromAlias(String sourceName) {
+        for (ExternalSource source : ExternalSource.values()) {
+            if (source.name.equalsIgnoreCase(sourceName)) {
+                return source.getDriverName();
+            }
+        }
+        return null;
+    }
 }

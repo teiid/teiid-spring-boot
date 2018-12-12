@@ -70,6 +70,7 @@
 
 		<spring-boot.version>1.5.13.RELEASE</spring-boot.version> <!-- Matching with OpenShift SB -->
 		<teiid.version>11.2.0</teiid.version>
+		<version.xml-apis>1.4.01</version.xml-apis>
 		<javax.resource.version>1.0.0.Final</javax.resource.version>
 		<ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
         <hibernate.version>5.1.10.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
@@ -121,7 +122,13 @@
 			    <groupId>org.hibernate</groupId>
 			    <artifactId>hibernate-tools</artifactId>
 			    <version>${hibernate.tools.version}</version>
-			</dependency>            
+			</dependency> 
+			<dependency>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+				<version>${version.xml-apis}</version>
+			</dependency>
+			          
 			<!--Project dependencies -->
 			<dependency>
 				<groupId>org.teiid</groupId>
