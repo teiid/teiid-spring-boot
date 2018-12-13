@@ -33,4 +33,18 @@ public class TestExample {
 
     }
 
+    @Test
+    public void testWithModelName() throws Exception{
+        ResponseEntity<String> response
+          = web.getForEntity("http://localhost:"+port+"/accounts/CUSTOMER", String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+    }
+
+    @Test
+    public void testWithVDBandModelName() throws Exception{
+        ResponseEntity<String> response
+          = web.getForEntity("http://localhost:"+port+"/spring.1.0.0/accounts/CUSTOMER", String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+    }
+
 }

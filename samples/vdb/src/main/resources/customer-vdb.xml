@@ -3,14 +3,8 @@
 
     <description>Customer VDB</description>
 
-    <model name="customer">
+    <model name="mydb">
         <property name="importer.useFullSchemaName" value="false"/>
-        
-        
-        <property name="connection.url" value="${foo.env}"/>
-        <property name="connection.username" value="${bar.env}"/>
-        <property name="connection.password" value="false"/>
-        
         <source name="mydb" translator-name="h2" connection-jndi-name="mydb"/>
     </model>
 

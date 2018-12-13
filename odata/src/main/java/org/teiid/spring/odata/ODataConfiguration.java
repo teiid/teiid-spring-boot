@@ -26,6 +26,7 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.olingo.web.CorsFilter;
 import org.teiid.olingo.web.ODataServlet;
 import org.teiid.olingo.web.StaticContentServlet;
@@ -38,18 +39,21 @@ import org.teiid.spring.autoconfigure.TeiidServer;
 public class ODataConfiguration {
     private static String URL_MAPPING = "/*";
     private static String URL_MAPPING_STATIC = "/static/*";
-    
+
     private static String BATCH_SIZE = "batch-size";
     private static String BATCH_SIZE_VALUE = "256";
     private static String SKIPTOKEN_CACHE_TIME = "skiptoken-cache-time";
     private static String SKIPTOKEN_CACHE_TIME_VALUE = "300000";
-    
+
     @Autowired
     ApplicationContext context;
-    
+
     @Autowired
     TeiidServer server;
-    
+
+    @Autowired
+    VDBMetaData vdb;
+
     @Bean
     public FilterRegistrationBean odataFilters() {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
@@ -58,28 +62,28 @@ public class ODataConfiguration {
 
         CorsFilter corsFilter = new CorsFilter();
         GzipFilter gzipFilter = new GzipFilter();
-        SpringODataFilter odataFilter = new SpringODataFilter(server);
-        
+        SpringODataFilter odataFilter = new SpringODataFilter(server, vdb);
+
         registrationBean.setFilter(corsFilter);
         registrationBean.setFilter(gzipFilter);
         registrationBean.setFilter(odataFilter);
-        
+
         ArrayList<String> match = new ArrayList<>();
         match.add(URL_MAPPING);
         registrationBean.setUrlPatterns(match);
         return registrationBean;
     }
-    
+
     private void addProperty(FilterRegistrationBean bean, String key, String defalt) {
     	String value = context.getEnvironment().getProperty("spring.teiid.odata."+key, defalt);
     	bean.addInitParameter(key, value);
     }
-    
+
     @Bean
     public ServletRegistrationBean odataServlet() {
         return new ServletRegistrationBean(new ODataServlet(), URL_MAPPING);
     }
-    
+
     @Bean
     public ServletRegistrationBean staticContentServlet() {
         return new ServletRegistrationBean(new StaticContentServlet(), URL_MAPPING_STATIC);

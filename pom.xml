@@ -24,6 +24,7 @@
     <version>25</version>
   </parent>
   
+  <groupId>org.teiid</groupId>
   <artifactId>teiid-spring-boot-starter-parent</artifactId>
   <version>1.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
