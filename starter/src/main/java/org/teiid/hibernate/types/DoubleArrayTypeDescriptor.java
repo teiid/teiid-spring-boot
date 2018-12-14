@@ -15,17 +15,16 @@
  */
 package org.teiid.hibernate.types;
 
-public class DoubleArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<double[]> {
-	private static final long serialVersionUID = 427355435852672428L;
-	public static final DoubleArrayTypeDescriptor INSTANCE = new DoubleArrayTypeDescriptor();
+public class DoubleArrayTypeDescriptor extends AbstractArrayTypeDescriptor<double[]> {
+    private static final long serialVersionUID = 427355435852672428L;
+    public static final DoubleArrayTypeDescriptor INSTANCE = new DoubleArrayTypeDescriptor();
 
-	public DoubleArrayTypeDescriptor() {
-		super( double[].class );
-	}
+    public DoubleArrayTypeDescriptor() {
+        super(double[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "double";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "double";
+    }
 }

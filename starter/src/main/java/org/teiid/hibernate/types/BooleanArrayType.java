@@ -23,26 +23,26 @@ import org.hibernate.usertype.DynamicParameterizedType;
 /**
  * @author Vlad MIhalcea
  */
-public class BooleanArrayType
-		extends AbstractSingleColumnStandardBasicType<boolean[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = -5035095774860290721L;
+public class BooleanArrayType extends AbstractSingleColumnStandardBasicType<boolean[]>
+        implements DynamicParameterizedType {
+    private static final long serialVersionUID = -5035095774860290721L;
 
-	public BooleanArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, BooleanArrayTypeDescriptor.INSTANCE );
-	}
+    public BooleanArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, BooleanArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "boolean-array";
-	}
+    @Override
+    public String getName() {
+        return "boolean-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((BooleanArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((BooleanArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.teiid.spring.example;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -19,8 +34,8 @@ import org.springframework.web.client.RestTemplate;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { Application.class, TestConfiguration.class, RestTemplate.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
 public class TestExample {
-	@Autowired
-	TestRestTemplate web;
+  @Autowired
+  TestRestTemplate web;
 
     @LocalServerPort
     private int port;
@@ -28,8 +43,8 @@ public class TestExample {
     @Test
     public void test() throws Exception{
         ResponseEntity<String> response
-    	  = web.getForEntity("http://localhost:"+port+"/CUSTOMER", String.class);
-    	assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        = web.getForEntity("http://localhost:"+port+"/CUSTOMER", String.class);
+      assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
     }
 

@@ -21,9 +21,9 @@ import javax.persistence.Id;
 import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.RestConfiguration;
 
-@JsonTable(endpoint="http://gturnquist-quoters.cfapps.io/api/random", source="rest", root="/value")
+@JsonTable(endpoint = "http://gturnquist-quoters.cfapps.io/api/random", source = "rest", root = "/value")
 @Entity
-@RestConfiguration(headersBean="customHeaders")
+@RestConfiguration(headersBean = "customHeaders")
 public class Quote {
 
     @Id
@@ -37,7 +37,7 @@ public class Quote {
         this.id = id;
         this.quote = quote;
     }
-    
+
     public Integer getId() {
         return this.id;
     }
@@ -56,9 +56,6 @@ public class Quote {
 
     @Override
     public String toString() {
-        return "Value{" +
-                "id=" + id +
-                ", quote='" + quote + '\'' +
-                '}';
+        return "Value{" + "id=" + id + ", quote='" + quote + '\'' + '}';
     }
 }

@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 public class DelegatingPlatformTransactionManager implements PlatformTransactionManager {
     private List<PlatformTransactionManager> tms;
     private ChainedTransactionManager delegate;
-    
+
     @Override
     public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
         check();
@@ -46,11 +46,12 @@ public class DelegatingPlatformTransactionManager implements PlatformTransaction
         this.delegate.rollback(status);
     }
 
-    // do not make copy, use same reference as the PlatformTransactionManagerAdapter can keep adding the data sources.
+    // do not make copy, use same reference as the PlatformTransactionManagerAdapter
+    // can keep adding the data sources.
     void setTransactionManagers(List<PlatformTransactionManager> tms) {
         this.tms = tms;
     }
-    
+
     void check() throws TransactionException {
         if (this.delegate == null) {
             Assert.notNull(tms, "No registered data sources found");
@@ -59,3 +60,4 @@ public class DelegatingPlatformTransactionManager implements PlatformTransaction
         }
     }
 }
+

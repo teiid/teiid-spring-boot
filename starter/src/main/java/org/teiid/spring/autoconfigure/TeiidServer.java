@@ -108,82 +108,79 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class TeiidServer extends EmbeddedServer {
-	static final String DIALECT = "dialect";
+    static final String DIALECT = "dialect";
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
     private MetadataSources metadataSources = new MetadataSources();
     private PlatformTransactionManagerAdapter platformTransactionManagerAdapter = new PlatformTransactionManagerAdapter();
-    private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders
-        = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
+    private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
 
     public TeiidServer() {
         this.cmr = new SBConnectorManagerRepository();
     }
 
-	public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
-		// only when user did not define a explicit VDB then build one.
-		if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
-		    boolean redirectUpdates = isRedirectUpdatesEnabled(context);
-		    String redirectedDSName = getRedirectedDataSource(context);
+    public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
+        // only when user did not define a explicit VDB then build one.
+        if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
+            boolean redirectUpdates = isRedirectUpdatesEnabled(context);
+            String redirectedDSName = getRedirectedDataSource(context);
 
-		    addConnectionFactoryProvider(sourceBeanName, new SBConnectionFactoryProvider(source));
+            addConnectionFactoryProvider(sourceBeanName, new SBConnectionFactoryProvider(source));
 
-			ModelMetaData model = null;
+            ModelMetaData model = null;
 
-			if (source instanceof DataSource) {
-			    String driverName = getDriverName(source);
-			    if (driverName == null) {
-                    throw new IllegalStateException(
-                            "Failed to determine the type of source defined with bean name " + sourceBeanName +
-                            "On Tomcat based DataSource and XA DataSources are supported");
-			    }
-				try {
-					model = buildModelFromDataSource(sourceBeanName, driverName,
-							context, redirectUpdates && sourceBeanName.equals(redirectedDSName));
-				} catch (AdminException e) {
-					throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
-				}
-			} else if (source instanceof BaseConnectionFactory) {
-				model = buildModelFromConnectionFactory(sourceBeanName, (BaseConnectionFactory) source, context);
-			} else {
-				throw new IllegalStateException("Unknown source type is being added");
-			}
+            if (source instanceof DataSource) {
+                String driverName = getDriverName(source);
+                if (driverName == null) {
+                    throw new IllegalStateException("Failed to determine the type of source defined with bean name "
+                            + sourceBeanName + "On Tomcat based DataSource and XA DataSources are supported");
+                }
+                try {
+                    model = buildModelFromDataSource(sourceBeanName, driverName, context,
+                            redirectUpdates && sourceBeanName.equals(redirectedDSName));
+                } catch (AdminException e) {
+                    throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
+                }
+            } else if (source instanceof BaseConnectionFactory) {
+                model = buildModelFromConnectionFactory(sourceBeanName, (BaseConnectionFactory) source, context);
+            } else {
+                throw new IllegalStateException("Unknown source type is being added");
+            }
 
-			if (model != null) {
-				model.setVisible(false);
-				vdb.addModel(model);
-				logger.info("Added " + sourceBeanName + " to the Teiid Database");
-			}
+            if (model != null) {
+                model.setVisible(false);
+                vdb.addModel(model);
+                logger.info("Added " + sourceBeanName + " to the Teiid Database");
+            }
 
-			// since each time a data source is added the vdb is reloaded
-			// this is a cheap way not to do the reload of the metadata from source. a.k.a
-			// metadata caching
-			try {
-				final Admin admin = getAdmin();
-				VDBMetaData previous = (VDBMetaData) admin.getVDB(VDBNAME, VDBVERSION);
-				for (Map.Entry<String, ModelMetaData> entry : previous.getModelMetaDatas().entrySet()) {
-					String metadata = admin.getSchema(VDBNAME, VDBVERSION, entry.getKey(), null, null);
-					if (vdb.getModel(entry.getKey()).getSourceMetadataType().isEmpty()) {
-						vdb.getModel(entry.getKey()).addSourceMetadata("DDL", metadata);
-					}
-				}
-			} catch (AdminException e) {
-				// no-op. if failed redo
-			}
+            // since each time a data source is added the vdb is reloaded
+            // this is a cheap way not to do the reload of the metadata from source. a.k.a
+            // metadata caching
+            try {
+                final Admin admin = getAdmin();
+                VDBMetaData previous = (VDBMetaData) admin.getVDB(VDBNAME, VDBVERSION);
+                for (Map.Entry<String, ModelMetaData> entry : previous.getModelMetaDatas().entrySet()) {
+                    String metadata = admin.getSchema(VDBNAME, VDBVERSION, entry.getKey(), null, null);
+                    if (vdb.getModel(entry.getKey()).getSourceMetadataType().isEmpty()) {
+                        vdb.getModel(entry.getKey()).addSourceMetadata("DDL", metadata);
+                    }
+                }
+            } catch (AdminException e) {
+                // no-op. if failed redo
+            }
 
-			undeployVDB(VDBNAME, VDBVERSION);
-			deployVDB(vdb, false);
-		} else {
-			for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
-				for (SourceMappingMetadata smm : model.getSourceMappings()) {
-			        addTranslator(smm.getTranslatorName());
-                    if (smm.getConnectionJndiName() != null
-                            && smm.getName().equalsIgnoreCase(sourceBeanName)) {
-						addConnectionFactory(smm.getConnectionJndiName(), source);
-					}
-				}
-			}
-		}
-	}
+            undeployVDB(VDBNAME, VDBVERSION);
+            deployVDB(vdb, false);
+        } else {
+            for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+                for (SourceMappingMetadata smm : model.getSourceMappings()) {
+                    addTranslator(smm.getTranslatorName());
+                    if (smm.getConnectionJndiName() != null && smm.getName().equalsIgnoreCase(sourceBeanName)) {
+                        addConnectionFactory(smm.getConnectionJndiName(), source);
+                    }
+                }
+            }
+        }
+    }
 
     void addTranslator(String translatorname) {
         try {
@@ -195,11 +192,13 @@ public class TeiidServer extends EmbeddedServer {
         }
     }
 
-	static class SBConnectionFactoryProvider implements ConnectionFactoryProvider<Object> {
-	    private Object bean;
-	    public SBConnectionFactoryProvider(Object bean) {
-	        this.bean = bean;
-	    }
+    static class SBConnectionFactoryProvider implements ConnectionFactoryProvider<Object> {
+        private Object bean;
+
+        SBConnectionFactoryProvider(Object bean) {
+            this.bean = bean;
+        }
+
         @Override
         public Object getConnectionFactory() throws TranslatorException {
             if (this.bean instanceof DataSource) {
@@ -207,10 +206,11 @@ public class TeiidServer extends EmbeddedServer {
             }
             return bean;
         }
+
         public Object getBean() {
             return bean;
         }
-	}
+    }
 
     String getDriverName(Object source) {
         String driverName = null;
@@ -219,10 +219,10 @@ public class TeiidServer extends EmbeddedServer {
         } else {
             if (source instanceof DataSource) {
                 try {
-                    XADataSource xads = ((DataSource)source).unwrap(XADataSource.class);
+                    XADataSource xads = ((DataSource) source).unwrap(XADataSource.class);
                     if (xads != null) {
                         if (xads instanceof XADataSourceBuilder) {
-                            driverName = ((XADataSourceBuilder)xads).getDataSourceClassName();
+                            driverName = ((XADataSourceBuilder) xads).getDataSourceClassName();
                         } else {
                             driverName = xads.getClass().getName();
                         }
@@ -235,33 +235,33 @@ public class TeiidServer extends EmbeddedServer {
         return driverName;
     }
 
-	void deployVDB(VDBMetaData vdb, boolean last) {
-		try {
+    void deployVDB(VDBMetaData vdb, boolean last) {
+        try {
             // if there is no view model, then keep all the other models as visible.
             if (vdb.getModel("teiid") == null) {
-            	for (ModelMetaData model:vdb.getModelMetaDatas().values()) {
-            		model.setVisible(true);
-            	}
+                for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+                    model.setVisible(true);
+                }
             } else {
-            	for (ModelMetaData model:vdb.getModelMetaDatas().values()) {
-            		if (!model.getName().equals("teiid")) {
-            			model.setVisible(false);
-            		}
-            	}
+                for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+                    if (!model.getName().equals("teiid")) {
+                        model.setVisible(false);
+                    }
+                }
             }
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			VDBMetadataParser.marshell(vdb, out);
-			if (last) {
-			    logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
-			}
-			deployVDB(new ByteArrayInputStream(out.toByteArray()));
-		} catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
-				| IOException e) {
-			throw new IllegalStateException("Failed to deploy the VDB file", e);
-		}
-	}
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            VDBMetadataParser.marshell(vdb, out);
+            if (last) {
+                logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
+            }
+            deployVDB(new ByteArrayInputStream(out.toByteArray()));
+        } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
+                | IOException e) {
+            throw new IllegalStateException("Failed to deploy the VDB file", e);
+        }
+    }
 
-    private static String prettyFormat(String xml){
+    private static String prettyFormat(String xml) {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -279,124 +279,125 @@ public class TeiidServer extends EmbeddedServer {
         }
     }
 
-	private ModelMetaData buildModelFromDataSource(String dsBeanName, String driverName,
-			ApplicationContext context, boolean createInitTable) throws AdminException {
+    private ModelMetaData buildModelFromDataSource(String dsBeanName, String driverName, ApplicationContext context,
+            boolean createInitTable) throws AdminException {
 
-		ModelMetaData model = new ModelMetaData();
-		model.setName(dsBeanName);
-		model.setModelType(Model.Type.PHYSICAL);
+        ModelMetaData model = new ModelMetaData();
+        model.setName(dsBeanName);
+        model.setModelType(Model.Type.PHYSICAL);
 
-		// note these can be overridden by specific ones in the configuration
-		// TODO: need come up most sensible properties for this.
-		model.addProperty("importer.useQualifiedName", "false");
-		model.addProperty("importer.tableTypes", "TABLE,VIEW");
+        // note these can be overridden by specific ones in the configuration
+        // TODO: need come up most sensible properties for this.
+        model.addProperty("importer.useQualifiedName", "false");
+        model.addProperty("importer.tableTypes", "TABLE,VIEW");
 
-		SourceMappingMetadata source = new SourceMappingMetadata();
-		source.setName(dsBeanName);
-		source.setConnectionJndiName(dsBeanName);
+        SourceMappingMetadata source = new SourceMappingMetadata();
+        source.setName(dsBeanName);
+        source.setConnectionJndiName(dsBeanName);
 
-		String translatorName = ExternalSource.findTransaltorNameFromDriverName(driverName);
-		source.setTranslatorName(translatorName);
-		String dialect = ExternalSource.findDialectFromDriverName(driverName);
-		if (dialect != null) {
-		    model.addProperty(DIALECT, dialect);
-		}
+        String translatorName = ExternalSource.findTransaltorNameFromDriverName(driverName);
+        source.setTranslatorName(translatorName);
+        String dialect = ExternalSource.findDialectFromDriverName(driverName);
+        if (dialect != null) {
+            model.addProperty(DIALECT, dialect);
+        }
 
-		// load the translator class
-		addTranslator(translatorName);
+        // load the translator class
+        addTranslator(translatorName);
 
-		// add the importer properties from the configuration
-		// note that above defaults can be overridden with this too.
-		Collection<? extends PropertyDefinition> importProperties = getAdmin()
-				.getTranslatorPropertyDefinitions(source.getTranslatorName(), TranlatorPropertyType.IMPORT);
-		importProperties.forEach(prop -> {
-			String key = prop.getName();
-			String value = context.getEnvironment().getProperty("spring.datasource." + dsBeanName + "." + key);
-			if (value == null) {
-			    value = context.getEnvironment().getProperty("spring.xa.datasource." + dsBeanName + "." + key);
-			}
-			if (value != null) {
-				model.addProperty(key, value);
-			}
-		});
+        // add the importer properties from the configuration
+        // note that above defaults can be overridden with this too.
+        Collection<? extends PropertyDefinition> importProperties = getAdmin()
+                .getTranslatorPropertyDefinitions(source.getTranslatorName(), TranlatorPropertyType.IMPORT);
+        importProperties.forEach(prop -> {
+            String key = prop.getName();
+            String value = context.getEnvironment().getProperty("spring.datasource." + dsBeanName + "." + key);
+            if (value == null) {
+                value = context.getEnvironment().getProperty("spring.xa.datasource." + dsBeanName + "." + key);
+            }
+            if (value != null) {
+                model.addProperty(key, value);
+            }
+        });
 
-		model.addSourceMapping(source);
+        model.addSourceMapping(source);
 
-		// This is to avoid failing on empty schema
-		if (createInitTable) {
-		    model.addSourceMetadata("NATIVE", "");
-		    model.addSourceMetadata("DDL", "create foreign table dual(id integer);");
-		}
-		return model;
-	}
+        // This is to avoid failing on empty schema
+        if (createInitTable) {
+            model.addSourceMetadata("NATIVE", "");
+            model.addSourceMetadata("DDL", "create foreign table dual(id integer);");
+        }
+        return model;
+    }
 
-	private ModelMetaData buildModelFromConnectionFactory(String sourceBeanName, BaseConnectionFactory factory,
-			ApplicationContext context) {
-		ModelMetaData model = new ModelMetaData();
-		model.setName(sourceBeanName);
-		model.setModelType(Model.Type.PHYSICAL);
+    private ModelMetaData buildModelFromConnectionFactory(String sourceBeanName, BaseConnectionFactory factory,
+            ApplicationContext context) {
+        ModelMetaData model = new ModelMetaData();
+        model.setName(sourceBeanName);
+        model.setModelType(Model.Type.PHYSICAL);
 
-		SourceMappingMetadata source = new SourceMappingMetadata();
-		source.setName(sourceBeanName);
-		source.setConnectionJndiName(sourceBeanName);
+        SourceMappingMetadata source = new SourceMappingMetadata();
+        source.setName(sourceBeanName);
+        source.setConnectionJndiName(sourceBeanName);
 
-		String translatorName = ExternalSource.findTransaltorNameFromAlias(factory.getTranslatorName());
-		source.setTranslatorName(translatorName);
-		try {
-			if (this.getExecutionFactory(translatorName) == null) {
-				addTranslator(ExternalSource.translatorClass(translatorName));
-			}
-		} catch (ConnectorManagerException | TranslatorException e) {
-			throw new IllegalStateException("Failed to load translator " + translatorName, e);
-		}
+        String translatorName = ExternalSource.findTransaltorNameFromAlias(factory.getTranslatorName());
+        source.setTranslatorName(translatorName);
+        try {
+            if (this.getExecutionFactory(translatorName) == null) {
+                addTranslator(ExternalSource.translatorClass(translatorName));
+            }
+        } catch (ConnectorManagerException | TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator " + translatorName, e);
+        }
 
-		model.addSourceMapping(source);
-		return model;
-	}
+        model.addSourceMapping(source);
+        return model;
+    }
 
-	boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context, PhysicalNamingStrategy namingStrategy) {
-		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-		provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
-		provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Embeddable.class));
-		provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
-		provider.addIncludeFilter(new AnnotationTypeFilter(UserDefinedFunctions.class));
+    boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context, PhysicalNamingStrategy namingStrategy) {
+        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+        provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Entity.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Embeddable.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(UserDefinedFunctions.class));
 
-		String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
-		if (basePackage == null) {
-			logger.warn("***************************************************************");
-			logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
-					+ "\" is NOT set, scanning entire classpath for @Entity classes.");
-			logger.warn("consider setting this property to avoid time consuming scanning");
-			logger.warn("***************************************************************");
-			basePackage = "*";
-		}
+        String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
+        if (basePackage == null) {
+            logger.warn("***************************************************************");
+            logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
+                    + "\" is NOT set, scanning entire classpath for @Entity classes.");
+            logger.warn("consider setting this property to avoid time consuming scanning");
+            logger.warn("***************************************************************");
+            basePackage = "*";
+        }
 
-		// check to add any source models first based on the annotations
-		boolean load = false;
-		Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);
-		for (BeanDefinition c : components) {
-			try {
-				Class<?> clazz = Class.forName(c.getBeanClassName());
-				ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
+        // check to add any source models first based on the annotations
+        boolean load = false;
+        Set<BeanDefinition> components = provider.findCandidateComponents(basePackage);
+        for (BeanDefinition c : components) {
+            try {
+                Class<?> clazz = Class.forName(c.getBeanClassName());
+                ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
 
-				if (excelAnnotation != null) {
-					addExcelModel(vdb, clazz, excelAnnotation);
-					load = true;
-				}
-			} catch (ClassNotFoundException e) {
-				logger.warn("Error loading entity classes");
-			}
-		}
+                if (excelAnnotation != null) {
+                    addExcelModel(vdb, clazz, excelAnnotation);
+                    load = true;
+                }
+            } catch (ClassNotFoundException e) {
+                logger.warn("Error loading entity classes");
+            }
+        }
 
-		ModelMetaData model = new ModelMetaData();
-		model.setName(EXPOSED_VIEW);
-		model.setModelType(Model.Type.VIRTUAL);
-		MetadataFactory mf = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
-				model);
+        ModelMetaData model = new ModelMetaData();
+        model.setName(EXPOSED_VIEW);
+        model.setModelType(Model.Type.VIRTUAL);
+        MetadataFactory mf = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
+                model);
 
         if (components.isEmpty()) {
             if (isRedirectUpdatesEnabled(context)) {
-                // when no @entity classes are defined then this is service based, sniff the metadata
+                // when no @entity classes are defined then this is service based, sniff the
+                // metadata
                 // from Teiid models that are defined and build Hibernate metadata from it.
                 buildVirtualBaseLayer(vdb, context, mf);
             } else {
@@ -404,112 +405,115 @@ public class TeiidServer extends EmbeddedServer {
             }
         }
 
-		Metadata metadata = getMetadata(components, namingStrategy, mf);
-		UDFProcessor udfProcessor = new UDFProcessor(metadata, vdb);
-		for (BeanDefinition c : components) {
-			try {
-				Class<?> clazz = Class.forName(c.getBeanClassName());
-				Entity entityAnnotation = clazz.getAnnotation(Entity.class);
-				SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
-				TextTable textAnnotation = clazz.getAnnotation(TextTable.class);
-				JsonTable jsonAnnotation = clazz.getAnnotation(JsonTable.class);
-				ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
-				UserDefinedFunctions udfAnnotation = clazz.getAnnotation(UserDefinedFunctions.class);
+        Metadata metadata = getMetadata(components, namingStrategy, mf);
+        UDFProcessor udfProcessor = new UDFProcessor(metadata, vdb);
+        for (BeanDefinition c : components) {
+            try {
+                Class<?> clazz = Class.forName(c.getBeanClassName());
+                Entity entityAnnotation = clazz.getAnnotation(Entity.class);
+                SelectQuery selectAnnotation = clazz.getAnnotation(SelectQuery.class);
+                TextTable textAnnotation = clazz.getAnnotation(TextTable.class);
+                JsonTable jsonAnnotation = clazz.getAnnotation(JsonTable.class);
+                ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
+                UserDefinedFunctions udfAnnotation = clazz.getAnnotation(UserDefinedFunctions.class);
 
-				if (textAnnotation != null && entityAnnotation != null) {
-					new TextTableView(metadata).buildView(clazz, mf, textAnnotation);
-				} else if (jsonAnnotation != null && entityAnnotation != null) {
-					new JsonTableView(metadata).buildView(clazz, mf, jsonAnnotation);
-				} else if (selectAnnotation != null && entityAnnotation != null) {
-					new SimpleView(metadata).buildView(clazz, mf, selectAnnotation);
-				} else if (excelAnnotation != null && entityAnnotation != null) {
-					new ExcelTableView(metadata).buildView(clazz, mf, excelAnnotation);
-				}  else if (udfAnnotation != null) {
-					udfProcessor.buildFunctions(clazz, mf, udfAnnotation);
-				} else if (selectAnnotation == null && entityAnnotation != null) {
+                if (textAnnotation != null && entityAnnotation != null) {
+                    new TextTableView(metadata).buildView(clazz, mf, textAnnotation);
+                } else if (jsonAnnotation != null && entityAnnotation != null) {
+                    new JsonTableView(metadata).buildView(clazz, mf, jsonAnnotation);
+                } else if (selectAnnotation != null && entityAnnotation != null) {
+                    new SimpleView(metadata).buildView(clazz, mf, selectAnnotation);
+                } else if (excelAnnotation != null && entityAnnotation != null) {
+                    new ExcelTableView(metadata).buildView(clazz, mf, excelAnnotation);
+                } else if (udfAnnotation != null) {
+                    udfProcessor.buildFunctions(clazz, mf, udfAnnotation);
+                } else if (selectAnnotation == null && entityAnnotation != null) {
                     new EntityBaseView(metadata, vdb, this).buildView(clazz, mf, entityAnnotation);
                 }
 
-				// check for sequence
-				if (entityAnnotation != null) {
-					udfProcessor.buildSequence(clazz, mf, entityAnnotation);
-				}
-			} catch (ClassNotFoundException e) {
-				logger.warn("Error loading entity classes");
-			}
+                // check for sequence
+                if (entityAnnotation != null) {
+                    udfProcessor.buildSequence(clazz, mf, entityAnnotation);
+                }
+            } catch (ClassNotFoundException e) {
+                logger.warn("Error loading entity classes");
+            }
         }
-		udfProcessor.finishProcessing();
+        udfProcessor.finishProcessing();
 
-		// check if the redirection is in play
-		if (isRedirectUpdatesEnabled(context)) {
-	        String redirectedDSName = getRedirectedDataSource(context);
-	        try {
-	            // rename current view model to something else
-	            model.setName("internal");
-	            model.setVisible(false);
+        // check if the redirection is in play
+        if (isRedirectUpdatesEnabled(context)) {
+            String redirectedDSName = getRedirectedDataSource(context);
+            try {
+                // rename current view model to something else
+                model.setName("internal");
+                model.setVisible(false);
 
                 DataSource redirectedDS = (DataSource) ((SBConnectionFactoryProvider) getConnectionFactoryProviders()
                         .get(redirectedDSName)).getBean();
-	            String driverName = getDriverName(redirectedDS);
-	            if (driverName == null) {
+                String driverName = getDriverName(redirectedDS);
+                if (driverName == null) {
                     throw new IllegalStateException("Redirection of updates enabled, however datasource"
                             + " configured for redirection is not recognized.");
-	            }
+                }
 
-	            RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(context, redirectedDSName);
-	            // if none of the annotations defined, create layer with tables from all data sources
-	            if (mf.getSchema().getTables().isEmpty()) {
-	                throw new IllegalStateException("Redirection of updates enabled, however there are no "
-	                        + "@Entity found. There must be atleast one @Entity for this feature to work.");
-	            }
+                RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(context, redirectedDSName);
+                // if none of the annotations defined, create layer with tables from all data
+                // sources
+                if (mf.getSchema().getTables().isEmpty()) {
+                    throw new IllegalStateException("Redirection of updates enabled, however there are no "
+                            + "@Entity found. There must be atleast one @Entity for this feature to work.");
+                }
 
-	            // now add the modified model that does the redirection
-	            ModelMetaData exposedModel = mg.buildRedirectionLayer(mf, EXPOSED_VIEW);
-	            vdb.addModel(exposedModel);
+                // now add the modified model that does the redirection
+                ModelMetaData exposedModel = mg.buildRedirectionLayer(mf, EXPOSED_VIEW);
+                vdb.addModel(exposedModel);
 
-	            // we need to create the schema in the redirected data source to store the ephemeral data, will use
-	            // hibernate metadata for schema generation techniques.
-	            ModelMetaData redirectedModel = vdb.getModel(redirectedDSName);
-	            assert(redirectedModel != null);
-	            String dialect = redirectedModel.getPropertyValue(DIALECT);
-	            if (dialect == null) {
+                // we need to create the schema in the redirected data source to store the
+                // ephemeral data, will use
+                // hibernate metadata for schema generation techniques.
+                ModelMetaData redirectedModel = vdb.getModel(redirectedDSName);
+                assert (redirectedModel != null);
+                String dialect = redirectedModel.getPropertyValue(DIALECT);
+                if (dialect == null) {
                     throw new IllegalStateException(
                             "Redirection is enabled, however data source named \"" + redirectedDSName
                                     + "\" cannot be used with schema initialization, choose a different data source"
                                     + "as there are no schema generation facilities for this data source.");
-	            }
+                }
                 new RedirectionSchemaInitializer(redirectedDS, redirectedDSName, getDialect(dialect), metadata,
                         this.metadataSources.getServiceRegistry(), mf.getSchema(), context).init();
 
-	            // reload the redirection model as it has new entries now after schema generation.
-	            try {
+                // reload the redirection model as it has new entries now after schema
+                // generation.
+                try {
                     vdb.addModel(buildModelFromDataSource(redirectedDSName, driverName, context, false));
                 } catch (AdminException e) {
                     throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
                 }
-	            load = true;
-	        } catch (BeansException e) {
-                throw new IllegalStateException("Redirection is enabled, however data source named \""+redirectedDSName
-                        +"\" is not configured. Please configure a data source.");
-	        }
-		}
+                load = true;
+            } catch (BeansException e) {
+                throw new IllegalStateException("Redirection is enabled, however data source named \""
+                        + redirectedDSName + "\" is not configured. Please configure a data source.");
+            }
+        }
         if (!mf.getSchema().getTables().isEmpty()) {
             load = true;
             String ddl = DDLStringVisitor.getDDLString(mf.getSchema(), null, null);
             model.addSourceMetadata("DDL", ddl);
             vdb.addModel(model);
         }
-		return load;
-	}
+        return load;
+    }
 
     boolean isRedirectUpdatesEnabled(ApplicationContext context) {
         return Boolean.parseBoolean(context.getEnvironment().getProperty(REDIRECTED));
     }
 
-	private void buildVirtualBaseLayer(VDBMetaData vdb, ApplicationContext context, MetadataFactory target) {
-	    // Build Virtual Base Layer first
-	    String redirectedDSName = getRedirectedDataSource(context);
-	    SchemaBuilderUtility builder = new SchemaBuilderUtility();
+    private void buildVirtualBaseLayer(VDBMetaData vdb, ApplicationContext context, MetadataFactory target) {
+        // Build Virtual Base Layer first
+        String redirectedDSName = getRedirectedDataSource(context);
+        SchemaBuilderUtility builder = new SchemaBuilderUtility();
         for (ModelMetaData m : vdb.getModelMetaDatas().values()) {
             if (ViewBuilder.isBuiltInModel(m.getName()) || m.getModelType() != Model.Type.PHYSICAL
                     || m.getName().equals(redirectedDSName)) {
@@ -526,8 +530,8 @@ public class TeiidServer extends EmbeddedServer {
     }
 
     public String getRedirectedDataSource(ApplicationContext context) {
-	    return context.getEnvironment().getProperty(TeiidConstants.REDIRECTED+".datasource", "redirected");
-	}
+        return context.getEnvironment().getProperty(TeiidConstants.REDIRECTED + ".datasource", "redirected");
+    }
 
     private Metadata getMetadata(Set<BeanDefinition> components, PhysicalNamingStrategy namingStrategy,
             MetadataFactory mf) {
@@ -536,83 +540,85 @@ public class TeiidServer extends EmbeddedServer {
                 (BootstrapServiceRegistry) registry).applySetting(AvailableSettings.DIALECT, TeiidDialect.class)
                         .build();
         // Generate Hibernate model based on @Entity definitions
-		for (BeanDefinition c : components) {
-			try {
-				Class<?> clazz = Class.forName(c.getBeanClassName());
-				metadataSources.addAnnotatedClass(clazz);
-			} catch (ClassNotFoundException e) {
-			}
-		}
+        for (BeanDefinition c : components) {
+            try {
+                Class<?> clazz = Class.forName(c.getBeanClassName());
+                metadataSources.addAnnotatedClass(clazz);
+            } catch (ClassNotFoundException e) {
+            }
+        }
         return metadataSources.getMetadataBuilder(serviceRegistry).applyPhysicalNamingStrategy(namingStrategy).build();
-	}
+    }
 
-	private void addExcelModel(VDBMetaData vdb, Class<?> clazz, ExcelTable excelAnnotation) {
-		ModelMetaData model = new ModelMetaData();
-		model.setName(clazz.getSimpleName().toLowerCase());
-		model.setModelType(Model.Type.PHYSICAL);
-		model.addProperty("importer.DataRowNumber", String.valueOf(excelAnnotation.dataRowStartsAt()));
-		model.addProperty("importer.ExcelFileName", excelAnnotation.file());
-		model.addProperty("importer.IgnoreEmptyHeaderCells", String.valueOf(excelAnnotation.ignoreEmptyCells()));
-		if (excelAnnotation.headerRow() != -1) {
-			model.addProperty("importer.HeaderRowNumber", String.valueOf(excelAnnotation.headerRow()));
-		}
+    private void addExcelModel(VDBMetaData vdb, Class<?> clazz, ExcelTable excelAnnotation) {
+        ModelMetaData model = new ModelMetaData();
+        model.setName(clazz.getSimpleName().toLowerCase());
+        model.setModelType(Model.Type.PHYSICAL);
+        model.addProperty("importer.DataRowNumber", String.valueOf(excelAnnotation.dataRowStartsAt()));
+        model.addProperty("importer.ExcelFileName", excelAnnotation.file());
+        model.addProperty("importer.IgnoreEmptyHeaderCells", String.valueOf(excelAnnotation.ignoreEmptyCells()));
+        if (excelAnnotation.headerRow() != -1) {
+            model.addProperty("importer.HeaderRowNumber", String.valueOf(excelAnnotation.headerRow()));
+        }
 
-		SourceMappingMetadata source = new SourceMappingMetadata();
-		source.setName(clazz.getSimpleName().toLowerCase());
-		source.setConnectionJndiName("file");
-		source.setTranslatorName(ExternalSource.EXCEL.getTranslatorName());
-		try {
-			if (this.getExecutionFactory(ExternalSource.EXCEL.getTranslatorName()) == null) {
-				addTranslator(ExternalSource.translatorClass(ExternalSource.EXCEL.getTranslatorName()));
-			}
-		} catch (ConnectorManagerException | TranslatorException e) {
-			throw new IllegalStateException("Failed to load translator " + ExternalSource.EXCEL.getTranslatorName(), e);
-		}
-		model.addSourceMapping(source);
+        SourceMappingMetadata source = new SourceMappingMetadata();
+        source.setName(clazz.getSimpleName().toLowerCase());
+        source.setConnectionJndiName("file");
+        source.setTranslatorName(ExternalSource.EXCEL.getTranslatorName());
+        try {
+            if (this.getExecutionFactory(ExternalSource.EXCEL.getTranslatorName()) == null) {
+                addTranslator(ExternalSource.translatorClass(ExternalSource.EXCEL.getTranslatorName()));
+            }
+        } catch (ConnectorManagerException | TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator " + ExternalSource.EXCEL.getTranslatorName(), e);
+        }
+        model.addSourceMapping(source);
 
-		vdb.addModel(model);
-	}
+        vdb.addModel(model);
+    }
 
-	public Schema getSchema(String modelName) {
-		VDBMetaData vdb = getVDBRepository().getVDB(VDBNAME, VDBVERSION); //$NON-NLS-1$
-		if (vdb == null) {
-			return null;
-		}
-		TransformationMetadata metadata = vdb.getAttachment(TransformationMetadata.class);
-		if (metadata == null) {
-			return null;
-		}
-		Schema schema = metadata.getMetadataStore().getSchema(modelName);
-		return schema;
-	}
+    public Schema getSchema(String modelName) {
+        VDBMetaData vdb = getVDBRepository().getVDB(VDBNAME, VDBVERSION); // $NON-NLS-1$
+        if (vdb == null) {
+            return null;
+        }
+        TransformationMetadata metadata = vdb.getAttachment(TransformationMetadata.class);
+        if (metadata == null) {
+            return null;
+        }
+        Schema schema = metadata.getMetadataStore().getSchema(modelName);
+        return schema;
+    }
 
-	private Dialect getDialect(String className) {
+    private Dialect getDialect(String className) {
         try {
             return Dialect.class.cast(ReflectionHelper.create(className, null, this.getClass().getClassLoader()));
         } catch (TeiidException e) {
-            throw new TeiidRuntimeException(className + " could not be loaded. Add the dependecy required "
-                    + "dependency to your classpath"); //$NON-NLS-1$
+            throw new TeiidRuntimeException(
+                    className + " could not be loaded. Add the dependecy required " + "dependency to your classpath"); //$NON-NLS-2$
         }
     }
 
-	public PlatformTransactionManagerAdapter getPlatformTransactionManagerAdapter() {
-		return platformTransactionManagerAdapter;
-	}
+    public PlatformTransactionManagerAdapter getPlatformTransactionManagerAdapter() {
+        return platformTransactionManagerAdapter;
+    }
 
     protected class SBConnectorManagerRepository extends ConnectorManagerRepository {
         public SBConnectorManagerRepository() {
             super(true);
         }
+
         @Override
-        protected ConnectorManager createConnectorManager(
-                String translatorName, String connectionName, ExecutionFactory<Object, Object> ef) throws ConnectorManagerException {
+        protected ConnectorManager createConnectorManager(String translatorName, String connectionName,
+                ExecutionFactory<Object, Object> ef) throws ConnectorManagerException {
             return new ConnectorManager(translatorName, connectionName, ef) {
                 @Override
                 public Object getConnectionFactory() throws TranslatorException {
                     if (getConnectionName() == null) {
                         return null;
                     }
-                    ConnectionFactoryProvider<?> connectionFactoryProvider = connectionFactoryProviders.get(getConnectionName());
+                    ConnectionFactoryProvider<?> connectionFactoryProvider = connectionFactoryProviders
+                            .get(getConnectionName());
                     if (connectionFactoryProvider != null) {
                         return connectionFactoryProvider.getConnectionFactory();
                     }
@@ -623,8 +629,7 @@ public class TeiidServer extends EmbeddedServer {
     }
 
     @Override
-    public void addConnectionFactoryProvider(String jndiName,
-            ConnectionFactoryProvider<?> connectionFactoryProvider) {
+    public void addConnectionFactoryProvider(String jndiName, ConnectionFactoryProvider<?> connectionFactoryProvider) {
         this.connectionFactoryProviders.put(jndiName, connectionFactoryProvider);
     }
 

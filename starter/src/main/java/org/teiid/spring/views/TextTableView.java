@@ -26,20 +26,20 @@ import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.TextTable;
 
 public class TextTableView extends ViewBuilder<TextTable> {
-	private static final Log logger = LogFactory.getLog(TextTableView.class);
+    private static final Log logger = LogFactory.getLog(TextTableView.class);
 
     private StringBuilder columndef = new StringBuilder();
     private StringBuilder columns = new StringBuilder();
 
     public TextTableView(Metadata metadata) {
-		super(metadata);
-	}
-    
+        super(metadata);
+    }
+
     @Override
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, TextTable annotation) {
         String source = annotation.source();
         String file = annotation.file();
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
@@ -47,26 +47,26 @@ public class TextTableView extends ViewBuilder<TextTable> {
         if (annotation.source().equalsIgnoreCase("file")) {
             sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
         } else if (annotation.source().equalsIgnoreCase("rest")) {
-        	JsonTableView.generateRestProcedure(entityClazz, source, file, sb);
+            JsonTableView.generateRestProcedure(entityClazz, source, file, sb);
         } else {
-			throw new IllegalStateException("Source type '" + annotation.source() + " not supported on TextTable "
-					+ view.getName() + ". Only \"file\" and \"rest\" are supported");
+            throw new IllegalStateException("Source type '" + annotation.source() + " not supported on TextTable "
+                    + view.getName() + ". Only \"file\" and \"rest\" are supported");
         }
         sb.append(") AS f, ").append("\n");
-        
-        if(annotation.source().equals("file")) {
+
+        if (annotation.source().equals("file")) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
         } else {
             sb.append("TEXTTABLE(f.result COLUMNS ").append(columndef.toString());
         }
-        
+
         if (!annotation.delimiter().equals(",")) {
             sb.append(" ");
             if (annotation.header() == 1) {
                 sb.append("DELIMETER ").append(annotation.delimiter());
             }
         }
-        
+
         if (annotation.quote() != '"') {
             sb.append(" ");
             sb.append("QUOTE ").append(annotation.quote());
@@ -91,31 +91,31 @@ public class TextTableView extends ViewBuilder<TextTable> {
             sb.append(" ");
             sb.append("SKIP").append(annotation.skip());
         }
-        
+
         if (!annotation.notrim()) {
             sb.append(" NO TRIM");
         }
         sb.append(") AS tt;");
-        
-        logger.debug("Generated View's Transformation: "+sb.toString());
+
+        logger.debug("Generated View's Transformation: " + sb.toString());
         view.setSelectTransformation(sb.toString());
     }
-    
+
     @Override
     void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,
             TextTable annotation) {
-        
+
         TextTable colAnnotation = field.getAnnotation(TextTable.class);
-        
+
         this.columns.append("tt.").append(column.getName());
-        if(!last) {
+        if (!last) {
             this.columns.append(", ");
         } else {
             this.columns.append(" ");
         }
-        
+
         this.columndef.append(column.getName());
-        
+
         if (colAnnotation != null && colAnnotation.ordinal()) {
             columndef.append(" FOR ORDINALITY");
         } else {
@@ -125,11 +125,11 @@ public class TextTableView extends ViewBuilder<TextTable> {
         if (colAnnotation != null && colAnnotation.width() > 0) {
             columndef.append(" WIDTH ").append(colAnnotation.width());
         }
-        
-        if(!last) {
+
+        if (!last) {
             this.columndef.append(", ");
         } else {
             this.columndef.append(" ");
         }
-    }    
+    }
 }

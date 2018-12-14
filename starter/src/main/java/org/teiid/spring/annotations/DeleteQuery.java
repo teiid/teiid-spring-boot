@@ -22,10 +22,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Defines the Teiid View's Transformation Delete query. This is optional annotation,
- * that can be defined only when you want support Delete on the view.<br>
- * 
- * 
+ * Defines the Teiid View's Transformation Delete query. This is optional
+ * annotation, that can be defined only when you want support Delete on the
+ * view.<br>
+ *
+ *
  * <pre>
  * <code>
  * &#64;DeleteQuery(
@@ -33,7 +34,7 @@ import java.lang.annotation.Target;
  *   "BEGIN ATOMIC \n" +
  *       "DELETE FROM customerDS.person WHERE id = OLD.id;\n"+
  *   "END"
- *   )            
+ *   )
  * </code>
  * </pre>
  *

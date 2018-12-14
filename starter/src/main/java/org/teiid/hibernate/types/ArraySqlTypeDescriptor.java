@@ -33,8 +33,8 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
  * @author Vlad Mihalcea
  */
 public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
-	private static final long serialVersionUID = -8192469082066622891L;
-	public static final ArraySqlTypeDescriptor INSTANCE = new ArraySqlTypeDescriptor();
+    private static final long serialVersionUID = -8192469082066622891L;
+    public static final ArraySqlTypeDescriptor INSTANCE = new ArraySqlTypeDescriptor();
 
     @Override
     public int getSqlType() {
@@ -48,21 +48,20 @@ public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
 
     @Override
     public <X> ValueBinder<X> getBinder(JavaTypeDescriptor<X> javaTypeDescriptor) {
-        return new BasicBinder<X>( javaTypeDescriptor, this) {
+        return new BasicBinder<X>(javaTypeDescriptor, this) {
             @SuppressWarnings("unchecked")
-			@Override
-            protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options) throws SQLException {
+            @Override
+            protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options)
+                    throws SQLException {
                 AbstractArrayTypeDescriptor<Object> abstractArrayTypeDescriptor = (AbstractArrayTypeDescriptor<Object>) javaTypeDescriptor;
-                st.setArray( index, st.getConnection().createArrayOf(
-                    abstractArrayTypeDescriptor.getSqlArrayType(),
-                    abstractArrayTypeDescriptor.unwrap( value, Object[].class, options )
-                ));
+                st.setArray(index, st.getConnection().createArrayOf(abstractArrayTypeDescriptor.getSqlArrayType(),
+                        abstractArrayTypeDescriptor.unwrap(value, Object[].class, options)));
             }
 
             @Override
             protected void doBind(CallableStatement st, X value, String name, WrapperOptions options)
                     throws SQLException {
-                throw new UnsupportedOperationException( "Binding by name is not supported!" );
+                throw new UnsupportedOperationException("Binding by name is not supported!");
             }
         };
     }
@@ -81,10 +80,11 @@ public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
             }
 
             @Override
-            protected X doExtract(CallableStatement statement, String name, WrapperOptions options) throws SQLException {
+            protected X doExtract(CallableStatement statement, String name, WrapperOptions options)
+                    throws SQLException {
                 return javaTypeDescriptor.wrap(statement.getArray(name), options);
             }
         };
     }
-
 }
+

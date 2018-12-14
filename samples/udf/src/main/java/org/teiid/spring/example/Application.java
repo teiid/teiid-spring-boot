@@ -27,18 +27,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args).close();
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
 
-	@Override
-	public void run(String... args) throws Exception {
-		List<Customer> result = jdbcTemplate.query("SELECT id, name, repeat(ssn, 2) as ssn FROM Customer",
-				(rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("name"), 
-						rs.getString("ssn")));
-		System.out.println(result);
-	}
+    @Override
+    public void run(String... args) throws Exception {
+        List<Customer> result = jdbcTemplate.query("SELECT id, name, repeat(ssn, 2) as ssn FROM Customer",
+                (rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("name"), rs.getString("ssn")));
+        System.out.println(result);
+    }
 }

@@ -24,26 +24,25 @@ import org.hibernate.usertype.DynamicParameterizedType;
 /**
  * @author Vlad MIhalcea
  */
-public class DateArrayType
-		extends AbstractSingleColumnStandardBasicType<Date[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = -4935534679191612249L;
+public class DateArrayType extends AbstractSingleColumnStandardBasicType<Date[]> implements DynamicParameterizedType {
+    private static final long serialVersionUID = -4935534679191612249L;
 
-	public DateArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, DateArrayTypeDescriptor.INSTANCE );
-	}
+    public DateArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, DateArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "date-array";
-	}
+    @Override
+    public String getName() {
+        return "date-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((DateArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((DateArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

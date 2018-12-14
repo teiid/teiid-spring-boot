@@ -43,15 +43,15 @@ import org.teiid.vdb.runtime.VDBKey;
 
 public class SpringODataFilter extends ODataFilter {
 
-	private TeiidServer server;
-	private VDB vdb;
+  private TeiidServer server;
+  private VDB vdb;
 
-	public SpringODataFilter(TeiidServer server, VDB vdb) {
-		this.server = server;
-		this.vdb = vdb;
-	}
+  public SpringODataFilter(TeiidServer server, VDB vdb) {
+    this.server = server;
+    this.vdb = vdb;
+  }
 
-	@Override
+  @Override
     public void internalDoFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException, TeiidProcessingException {
 
@@ -149,27 +149,27 @@ public class SpringODataFilter extends ODataFilter {
         }
     }
 
-	public String modelName(String contextPath, VDB vdb) {
-		Schema schema = server.getSchema("teiid");
+  public String modelName(String contextPath, VDB vdb) {
+    Schema schema = server.getSchema("teiid");
         if (contextPath.isEmpty() && schema != null && !schema.getTables().isEmpty()) {
-			return "teiid";
-		}
+      return "teiid";
+    }
 
-		String modelName = null;
-		for (Model m : vdb.getModels()) {
-			if (m.getName().equals("file") || m.getName().equals("rest") || m.getName().equals("teiid")) {
-				continue;
-			}
-			if (contextPath.isEmpty()) {
-			    modelName = m.getName();
-			    break;
-			} else if (contextPath.equalsIgnoreCase(m.getName())) {
+    String modelName = null;
+    for (Model m : vdb.getModels()) {
+      if (m.getName().equals("file") || m.getName().equals("rest") || m.getName().equals("teiid")) {
+        continue;
+      }
+      if (contextPath.isEmpty()) {
+          modelName = m.getName();
+          break;
+      } else if (contextPath.equalsIgnoreCase(m.getName())) {
                 modelName = m.getName();
                 break;
-			}
-		}
-		return modelName;
-	}
+      }
+    }
+    return modelName;
+  }
 
     @Override
     public Client buildClient(String vdbName, String version, Properties props) {

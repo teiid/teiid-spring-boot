@@ -30,10 +30,10 @@ import org.teiid.core.util.EquivalenceUtil;
 public abstract class BaseConnectionFactory implements javax.resource.cci.ConnectionFactory {
 
     private String translatorName;
-    
+
     @Override
     public void setReference(Reference reference) {
-        
+
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class BaseConnectionFactory implements javax.resource.cci.Connec
     public ResourceAdapterMetaData getMetaData() throws ResourceException {
         return null;
     }
-    
+
     protected static boolean checkEquals(Object left, Object right) {
         return EquivalenceUtil.areEqual(left, right);
     }
@@ -71,5 +71,5 @@ public abstract class BaseConnectionFactory implements javax.resource.cci.Connec
 
     public void setTranslatorName(String name) {
         this.translatorName = name;
-    }    
+    }
 }

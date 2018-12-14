@@ -264,7 +264,7 @@ public class TeiidAutoConfiguration implements Ordered {
         if (embeddedConfiguration.getTransactionManager() == null) {
             PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
             ptma.setJTATransactionManager(this.transactionManager);
-        	embeddedConfiguration.setTransactionManager(ptma);
+          embeddedConfiguration.setTransactionManager(ptma);
         }
 
         server.start(embeddedConfiguration);
@@ -283,7 +283,7 @@ public class TeiidAutoConfiguration implements Ordered {
         private static final long serialVersionUID = -7894312381042966398L;
         private String name;
 
-        public LocalCache(String cacheName, int maxSize) {
+        LocalCache(String cacheName, int maxSize) {
             super(maxSize < 0 ? Integer.MAX_VALUE : maxSize);
             this.name = cacheName;
         }

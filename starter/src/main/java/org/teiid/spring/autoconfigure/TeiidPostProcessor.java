@@ -44,50 +44,48 @@ import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.spring.data.BaseConnectionFactory;
 
 /**
- * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should only
- * be registered via the inner {@link Registrar} class.
+ * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should
+ * only be registered via the inner {@link Registrar} class.
  *
  * Code as template taken from {@link DataSourceInitializerPostProcessor}
  */
-class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListener<ContextRefreshedEvent>{
+class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListener<ContextRefreshedEvent> {
     private static final Log logger = LogFactory.getLog(TeiidPostProcessor.class);
-    
-	@Override
-	public int getOrder() {
-		return Ordered.HIGHEST_PRECEDENCE;
-	}
-	
-	@Autowired
-	private BeanFactory beanFactory;
-	
-	@Autowired
-	private ApplicationContext context;
-	
-	@Autowired
-	private PhysicalNamingStrategy namingStrategy;
-	
-    @Autowired(required=false)
-    private XADataSourceWrapper xaWrapper;
-	
-	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName)
-			throws BeansException {
-	    if (bean instanceof DataSource) {
-	        this.beanFactory.getBean("teiid", TeiidServer.class);
-	    }
-		return bean;
-	}
 
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName)
-			throws BeansException {
-		if (bean instanceof TeiidServer) {
-			// force initialization of this bean as soon as we see a TeiidServer
-			this.beanFactory.getBean(TeiidInitializer.class);
-		} else if ((bean instanceof DataSource || bean instanceof XADataSource) && !beanName.equals("dataSource")) {
-            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);           
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
+    }
+
+    @Autowired
+    private BeanFactory beanFactory;
+
+    @Autowired
+    private ApplicationContext context;
+
+    @Autowired
+    private PhysicalNamingStrategy namingStrategy;
+
+    @Autowired(required = false)
+    private XADataSourceWrapper xaWrapper;
+
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof DataSource) {
+            this.beanFactory.getBean("teiid", TeiidServer.class);
+        }
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof TeiidServer) {
+            // force initialization of this bean as soon as we see a TeiidServer
+            this.beanFactory.getBean(TeiidInitializer.class);
+        } else if ((bean instanceof DataSource || bean instanceof XADataSource) && !beanName.equals("dataSource")) {
+            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
-		    
+
             DataSource ds = null;
             if (bean instanceof XADataSource) {
                 try {
@@ -95,33 +93,35 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
                         throw new IllegalStateException("XA data source is configured, however no JTA "
                                 + "transaction manager is defined in the pom.xml as dependency to this project");
                     }
-                    ds = xaWrapper.wrapDataSource((XADataSource)bean);
+                    ds = xaWrapper.wrapDataSource((XADataSource) bean);
                 } catch (Exception e) {
                     throw new IllegalStateException(e);
                 }
             } else {
-                // only add the data source to transaction adapter when source is non-xa, in xa case the sources
+                // only add the data source to transaction adapter when source is non-xa, in xa
+                // case the sources
                 // should auto enlist themselves.
-                ds = (DataSource)bean;
+                ds = (DataSource) bean;
                 server.getPlatformTransactionManagerAdapter().addDataSource(ds);
             }
-            
-		    // initialize databases if any
-		    new MultiDataSourceInitializer(ds, beanName, context).init();
-		    server.addDataSource(vdb, beanName, ds, context);
-		    logger.info("Datasource added to Teiid = " + beanName);
-		} else if (bean instanceof BaseConnectionFactory) {
-            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);           
+
+            // initialize databases if any
+            new MultiDataSourceInitializer(ds, beanName, context).init();
+            server.addDataSource(vdb, beanName, ds, context);
+            logger.info("Datasource added to Teiid = " + beanName);
+        } else if (bean instanceof BaseConnectionFactory) {
+            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
-            server.addDataSource(vdb, beanName, (BaseConnectionFactory)bean, context);                     
+            server.addDataSource(vdb, beanName, bean, context);
             logger.info("Non JDBC Datasource added to Teiid = " + beanName);
-            server.getPlatformTransactionManagerAdapter().addDataSource((BaseConnectionFactory)bean);
-		} else if (bean instanceof PlatformTransactionManager) {
-			TeiidServer server = this.beanFactory.getBean(TeiidServer.class);		    
-		    server.getPlatformTransactionManagerAdapter().setPlatformTransactionManager((PlatformTransactionManager)bean);
-		}
-		return bean;
-	}
+            server.getPlatformTransactionManagerAdapter().addDataSource((BaseConnectionFactory) bean);
+        } else if (bean instanceof PlatformTransactionManager) {
+            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
+            server.getPlatformTransactionManagerAdapter()
+                    .setPlatformTransactionManager((PlatformTransactionManager) bean);
+        }
+        return bean;
+    }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -137,30 +137,29 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
             server.undeployVDB(VDBNAME, VDBVERSION);
             server.deployVDB(vdb, true);
         }
-    }	
-          
+    }
+
     /**
-	 * {@link ImportBeanDefinitionRegistrar} to register the
-	 * {@link TeiidPostProcessor} without causing early bean instantiation
-	 * issues.
-	 */
-	static class Registrar implements ImportBeanDefinitionRegistrar {
+     * {@link ImportBeanDefinitionRegistrar} to register the
+     * {@link TeiidPostProcessor} without causing early bean instantiation issues.
+     */
+    static class Registrar implements ImportBeanDefinitionRegistrar {
 
-		private static final String BEAN_NAME = "teiidInitializerPostProcessor";
+        private static final String BEAN_NAME = "teiidInitializerPostProcessor";
 
-		@Override
-		public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
-				BeanDefinitionRegistry registry) {
-			if (!registry.containsBeanDefinition(BEAN_NAME)) {
-				GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
-				beanDefinition.setBeanClass(TeiidPostProcessor.class);
-				beanDefinition.setRole(BeanDefinition.ROLE_APPLICATION);
-				// We don't need this one to be post processed otherwise it can cause a
-				// cascade of bean instantiation that we would rather avoid.
-				beanDefinition.setSynthetic(true);
-				registry.registerBeanDefinition(BEAN_NAME, beanDefinition);
-			}
-		}
-	}
-
+        @Override
+        public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
+                BeanDefinitionRegistry registry) {
+            if (!registry.containsBeanDefinition(BEAN_NAME)) {
+                GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                beanDefinition.setBeanClass(TeiidPostProcessor.class);
+                beanDefinition.setRole(BeanDefinition.ROLE_APPLICATION);
+                // We don't need this one to be post processed otherwise it can cause a
+                // cascade of bean instantiation that we would rather avoid.
+                beanDefinition.setSynthetic(true);
+                registry.registerBeanDefinition(BEAN_NAME, beanDefinition);
+            }
+        }
+    }
 }
+

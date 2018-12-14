@@ -25,13 +25,6 @@
   </parent>
 
   <artifactId>teiid-spring-boot-starter</artifactId>
-
-  <properties>
-    <basepom.check.skip-dependency>true</basepom.check.skip-dependency>
-    <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>
-    <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
-    <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
-  </properties>
   
   <dependencies>
     <dependency>

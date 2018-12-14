@@ -26,11 +26,11 @@ public class Application implements CommandLineRunner {
 
     @Autowired
     private EmployeeRepository employeeRepository;
-    
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args).close();
-	}
-	
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
     @Override
     public void run(String... args) throws Exception {
         employeeRepository.findAll().forEach(c -> System.out.println(c));

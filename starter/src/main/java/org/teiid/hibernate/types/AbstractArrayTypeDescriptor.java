@@ -29,38 +29,38 @@ import org.hibernate.usertype.DynamicParameterizedType;
 /**
  * @author Vlad Mihalcea
  */
-public abstract class AbstractArrayTypeDescriptor<T>
-        extends AbstractTypeDescriptor<T> implements DynamicParameterizedType {
-	private static final long serialVersionUID = 7698345570957205617L;
-	private Class<T> arrayObjectClass;
+public abstract class AbstractArrayTypeDescriptor<T> extends AbstractTypeDescriptor<T>
+        implements DynamicParameterizedType {
+    private static final long serialVersionUID = 7698345570957205617L;
+    private Class<T> arrayObjectClass;
 
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public void setParameterValues(Properties parameters) {
-        arrayObjectClass = ( (ParameterType) parameters.get( PARAMETER_TYPE ) ).getReturnedClass();
+        arrayObjectClass = ((ParameterType) parameters.get(PARAMETER_TYPE)).getReturnedClass();
 
     }
 
     @SuppressWarnings({ "unchecked", "serial" })
-	public AbstractArrayTypeDescriptor(Class<T> arrayObjectClass) {
-        super( arrayObjectClass, (MutabilityPlan<T>) new MutableMutabilityPlan<Object>() {
+    public AbstractArrayTypeDescriptor(Class<T> arrayObjectClass) {
+        super(arrayObjectClass, (MutabilityPlan<T>) new MutableMutabilityPlan<Object>() {
             @Override
             protected T deepCopyNotNull(Object value) {
-            return ArrayUtil.deepCopy( value );
+                return ArrayUtil.deepCopy(value);
             }
-        } );
+        });
         this.arrayObjectClass = arrayObjectClass;
     }
 
     @Override
     public boolean areEqual(Object one, Object another) {
-        if ( one == another ) {
+        if (one == another) {
             return true;
         }
-        if ( one == null || another == null ) {
+        if (one == null || another == null) {
             return false;
         }
-        return ArrayUtil.isEquals( one, another );
+        return ArrayUtil.isEquals(one, another);
     }
 
     @Override
@@ -76,23 +76,22 @@ public abstract class AbstractArrayTypeDescriptor<T>
     @SuppressWarnings({ "unchecked" })
     @Override
     public <X> X unwrap(T value, Class<X> type, WrapperOptions options) {
-        return (X) ArrayUtil.wrapArray( value );
+        return (X) ArrayUtil.wrapArray(value);
     }
 
     @Override
     public <X> T wrap(X value, WrapperOptions options) {
-        if( value instanceof Array ) {
+        if (value instanceof Array) {
             Array array = (Array) value;
             try {
-                return ArrayUtil.unwrapArray( (Object[]) array.getArray(), arrayObjectClass );
-            }
-            catch (SQLException e) {
-                throw new IllegalArgumentException( e );
+                return ArrayUtil.unwrapArray((Object[]) array.getArray(), arrayObjectClass);
+            } catch (SQLException e) {
+                throw new IllegalArgumentException(e);
             }
         }
         return (T) value;
     }
 
     protected abstract String getSqlArrayType();
-
 }
+

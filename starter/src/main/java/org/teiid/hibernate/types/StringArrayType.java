@@ -23,26 +23,26 @@ import org.hibernate.usertype.DynamicParameterizedType;
 /**
  * @author Vlad MIhalcea
  */
-public class StringArrayType
-		extends AbstractSingleColumnStandardBasicType<String[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = -4628210384160877497L;
+public class StringArrayType extends AbstractSingleColumnStandardBasicType<String[]>
+        implements DynamicParameterizedType {
+    private static final long serialVersionUID = -4628210384160877497L;
 
-	public StringArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, StringArrayTypeDescriptor.INSTANCE );
-	}
+    public StringArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, StringArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "string-array";
-	}
+    @Override
+    public String getName() {
+        return "string-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((StringArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((StringArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

@@ -33,23 +33,23 @@ import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.UpdateQuery;
 
 public class SimpleView extends ViewBuilder<SelectQuery> {
-	
-    public SimpleView(Metadata metadata) {
-		super(metadata);
-	}
 
-	@Override
+    public SimpleView(Metadata metadata) {
+        super(metadata);
+    }
+
+    @Override
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, SelectQuery annotation) {
-		String select = annotation.value();
-		validateOrderingOfColumns(select, view, entityClazz);
+        String select = annotation.value();
+        validateOrderingOfColumns(select, view, entityClazz);
         view.setSelectTransformation(annotation.value());
-        
+
         InsertQuery insertAnnotation = entityClazz.getAnnotation(InsertQuery.class);
         if (insertAnnotation != null) {
             view.setInsertPlan(insertAnnotation.value());
             view.setSupportsUpdate(true);
         }
-        
+
         UpdateQuery updateAnnotation = entityClazz.getAnnotation(UpdateQuery.class);
         if (updateAnnotation != null) {
             view.setUpdatePlan(updateAnnotation.value());
@@ -60,45 +60,45 @@ public class SimpleView extends ViewBuilder<SelectQuery> {
         if (deleteAnnotation != null) {
             view.setDeletePlan(deleteAnnotation.value());
             view.setSupportsUpdate(true);
-        }        
+        }
     }
 
-	private void validateOrderingOfColumns(String select, Table view, Class<?> entityClazz) {
-		try {
-			QueryParser parser = QueryParser.getQueryParser();
-			QueryCommand cmd = (QueryCommand)parser.parseCommand(select);
-			List<Expression> expressions = cmd.getProjectedSymbols();
-			List<Column> columns = view.getColumns();
-			
-			if (expressions.size() != columns.size()) {
-				String msg = "On enity "+entityClazz.getName() + " in @SelectQuery annotation defined wrong number "
-						+ "of projected columns than what are defined as entity attributes.";
-				throw new IllegalStateException(msg);
-			}
-			
-			for (int i = 0; i < columns.size(); i++) {
-				Expression es = expressions.get(i);
-				Column column = columns.get(i);
-				
-				if (es instanceof AliasSymbol) {
-					if (!((AliasSymbol)es).getName().equals(column.getName())) {
-						String msg = "On enity "+entityClazz.getName() + " in @SelectQuery annotation "
-								+ "column "+ ((DerivedColumn)es).getAlias()+ "defined at wrong position. "
-								+ "Please note View's columns order is "+columns;
-						throw new IllegalStateException(msg);						
-					}
-				} else {
-					/*if (!es.getType().equals(column.getJavaType())) {
-						String msg = "On enity "+ entityClazz.getName() + " in @SelectQuery annotation "
-								+ "column "+ es + " defined did not match in data type with Column "
-								+ column.getName()+";"
-								+ "Please note View's columns order is "+columns;
-						throw new IllegalStateException(msg);												
-					}*/
-				}
-			}
-		} catch (QueryParserException e) {
-			// no-op; the validation at later state will fail
-		}
-	}
+    private void validateOrderingOfColumns(String select, Table view, Class<?> entityClazz) {
+        try {
+            QueryParser parser = QueryParser.getQueryParser();
+            QueryCommand cmd = (QueryCommand) parser.parseCommand(select);
+            List<Expression> expressions = cmd.getProjectedSymbols();
+            List<Column> columns = view.getColumns();
+
+            if (expressions.size() != columns.size()) {
+                String msg = "On enity " + entityClazz.getName() + " in @SelectQuery annotation defined wrong number "
+                        + "of projected columns than what are defined as entity attributes.";
+                throw new IllegalStateException(msg);
+            }
+
+            for (int i = 0; i < columns.size(); i++) {
+                Expression es = expressions.get(i);
+                Column column = columns.get(i);
+
+                if (es instanceof AliasSymbol) {
+                    if (!((AliasSymbol) es).getName().equals(column.getName())) {
+                        String msg = "On enity " + entityClazz.getName() + " in @SelectQuery annotation " + "column "
+                                + ((DerivedColumn) es).getAlias() + "defined at wrong position. "
+                                + "Please note View's columns order is " + columns;
+                        throw new IllegalStateException(msg);
+                    }
+                } else {
+                    /*
+                     * if (!es.getType().equals(column.getJavaType())) { String msg = "On enity "+
+                     * entityClazz.getName() + " in @SelectQuery annotation " + "column "+ es +
+                     * " defined did not match in data type with Column " + column.getName()+";" +
+                     * "Please note View's columns order is "+columns; throw new
+                     * IllegalStateException(msg); }
+                     */
+                }
+            }
+        } catch (QueryParserException e) {
+            // no-op; the validation at later state will fail
+        }
+    }
 }

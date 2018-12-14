@@ -25,44 +25,44 @@ import javax.resource.ResourceException;
 import org.teiid.resource.spi.BasicConnection;
 import org.teiid.translator.FileConnection;
 
-
 public class FileConnectionImpl extends BasicConnection implements FileConnection {
-	    
-	private File parentDirectory;
-	private Map<String, String> fileMapping;
-	private boolean allowParentPaths;
-	private static final Pattern parentRef = Pattern.compile("(^\\.\\.(\\\\{2}|/)?.*)|((\\\\{2}|/)\\.\\.)"); //$NON-NLS-1$
-	
-	public FileConnectionImpl(String parentDirectory, Map<String, String> fileMapping, boolean allowParentPaths) {
-		this.parentDirectory = new File(parentDirectory);
-		if (fileMapping == null) {
-			fileMapping = Collections.emptyMap();
-		}
-		this.fileMapping = fileMapping;
-		this.allowParentPaths = allowParentPaths;
-	}
-	
-	@Override
-	public File getFile(String path) throws ResourceException {
-    	if (path == null) {
-    		return this.parentDirectory;
+
+    private File parentDirectory;
+    private Map<String, String> fileMapping;
+    private boolean allowParentPaths;
+    private static final Pattern parentRef = Pattern.compile("(^\\.\\.(\\\\{2}|/)?.*)|((\\\\{2}|/)\\.\\.)"); //$NON-NLS-1$
+
+    public FileConnectionImpl(String parentDirectory, Map<String, String> fileMapping, boolean allowParentPaths) {
+        this.parentDirectory = new File(parentDirectory);
+        if (fileMapping == null) {
+            fileMapping = Collections.emptyMap();
         }
-		String altPath = fileMapping.get(path);
-		if (altPath != null) {
-			path = altPath;
-		}
-    	if (!allowParentPaths && parentRef.matcher(path).matches()) {	
-			throw new ResourceException("Parent path .. not allowed in file path " + path); //$NON-NLS-1$
-		}
-    	
-    	if (new File(path).isAbsolute()) {
-    		return new File(path);
-    	}
-		return new File(parentDirectory, path);	
+        this.fileMapping = fileMapping;
+        this.allowParentPaths = allowParentPaths;
     }
 
-	@Override
-	public void close() throws ResourceException {
-		
-	}
+    @Override
+    public File getFile(String path) throws ResourceException {
+        if (path == null) {
+            return this.parentDirectory;
+        }
+        String altPath = fileMapping.get(path);
+        if (altPath != null) {
+            path = altPath;
+        }
+        if (!allowParentPaths && parentRef.matcher(path).matches()) {
+            throw new ResourceException("Parent path .. not allowed in file path " + path); //$NON-NLS-1$
+        }
+
+        if (new File(path).isAbsolute()) {
+            return new File(path);
+        }
+        return new File(parentDirectory, path);
+    }
+
+    @Override
+    public void close() throws ResourceException {
+
+    }
 }
+

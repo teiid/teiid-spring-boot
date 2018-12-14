@@ -47,18 +47,21 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.teiid.spring.data.BaseConnectionFactory;
 
 /**
- * Provides a light JTA TransactionManager based upon the {@link PlatformTransactionManager}
- * This is the transaction manager that Teiid code sees.
+ * Provides a light JTA TransactionManager based upon the
+ * {@link PlatformTransactionManager} This is the transaction manager that Teiid
+ * code sees.
  *
- * Notes:
- * If a third party transaction manager is found, but data sources defined are not XA capable then default Spring
- * behavior continued, which means the data sources are not co-ordinated in a transaction at all. If they are
- * XA sources then JTA transaction semantics will take over.
+ * Notes: If a third party transaction manager is found, but data sources
+ * defined are not XA capable then default Spring behavior continued, which
+ * means the data sources are not co-ordinated in a transaction at all. If they
+ * are XA sources then JTA transaction semantics will take over.
  *
- * If no third party transaction manager found, but there are multiple data sources are defined, then this class
- * will provide lite weight JTA *like* functionality. Here in case of failure it is totally on the user to
- * manually rollback any changes if any datasources failed to commit during the commit run. This transaction manager
- * is best used when we are dealing with 2 sources, especially one of them is readonly.
+ * If no third party transaction manager found, but there are multiple data
+ * sources are defined, then this class will provide lite weight JTA *like*
+ * functionality. Here in case of failure it is totally on the user to manually
+ * rollback any changes if any datasources failed to commit during the commit
+ * run. This transaction manager is best used when we are dealing with 2
+ * sources, especially one of them is readonly.
  */
 public final class PlatformTransactionManagerAdapter implements TransactionManager {
     private List<PlatformTransactionManager> txnManagersForEachDataSource = new ArrayList<>();
@@ -72,7 +75,7 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
 
         private WeakReference<TransactionStatus> transactionStatus;
 
-        public PlatformTransactionAdapter(TransactionStatus status) {
+        PlatformTransactionAdapter(TransactionStatus status) {
             this.transactionStatus = new WeakReference<TransactionStatus>(status);
         }
 
@@ -84,6 +87,7 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
                 public void beforeCompletion() {
                     synch.beforeCompletion();
                 }
+
                 @Override
                 public void afterCompletion(int status) {
                     switch (status) {
@@ -156,7 +160,8 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
         }
     }
 
-    // When a third party JTA transaction manager is registered, this method will be called.
+    // When a third party JTA transaction manager is registered, this method will be
+    // called.
     public void setJTATransactionManager(TransactionManager txnManager) {
         this.jtaTransactionManager = txnManager;
     }
@@ -177,7 +182,8 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
             } catch (NoTransactionException e) {
                 return null;
             }
-            //status = platformTransactionManager.getTransaction(DEFAULT_TRANSACTION_DEFINITION);
+            // status =
+            // platformTransactionManager.getTransaction(DEFAULT_TRANSACTION_DEFINITION);
             synchronized (transactions) {
                 PlatformTransactionAdapter adapter = transactions.get(status);
                 if (adapter == null) {
@@ -274,3 +280,4 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
         return (this.jtaTransactionManager != null);// && (this.txnManagersForEachDataSource.isEmpty());
     }
 }
+

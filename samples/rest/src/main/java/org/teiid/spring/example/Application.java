@@ -28,20 +28,20 @@ public class Application implements CommandLineRunner {
 
     @Autowired
     private QuoteRepository quoteRepository;
-    
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args).close();
-	}
-	
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
     @Override
     public void run(String... args) throws Exception {
-        quoteRepository.findAll().forEach(c -> System.out.println("***"+c));
+        quoteRepository.findAll().forEach(c -> System.out.println("***" + c));
     }
-    
-    @Bean(name="customHeaders")
+
+    @Bean(name = "customHeaders")
     public HttpHeaders customHeaders() {
-    	HttpHeaders headers = new HttpHeaders();
-    	headers.add("Authorization", "foo:bar");
-    	return headers;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "foo:bar");
+        return headers;
     }
 }

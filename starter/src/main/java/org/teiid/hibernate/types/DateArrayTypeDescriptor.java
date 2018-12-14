@@ -20,17 +20,16 @@ import java.sql.Date;
 /**
  * @author Vlad Mihalcea
  */
-public class DateArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<Date[]> {
-	private static final long serialVersionUID = 4797066454123284002L;
-	public static final DateArrayTypeDescriptor INSTANCE = new DateArrayTypeDescriptor();
+public class DateArrayTypeDescriptor extends AbstractArrayTypeDescriptor<Date[]> {
+    private static final long serialVersionUID = 4797066454123284002L;
+    public static final DateArrayTypeDescriptor INSTANCE = new DateArrayTypeDescriptor();
 
-	public DateArrayTypeDescriptor() {
-		super( Date[].class );
-	}
+    public DateArrayTypeDescriptor() {
+        super(Date[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "date";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "date";
+    }
 }

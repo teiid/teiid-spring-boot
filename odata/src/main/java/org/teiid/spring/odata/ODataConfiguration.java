@@ -75,8 +75,8 @@ public class ODataConfiguration {
     }
 
     private void addProperty(FilterRegistrationBean bean, String key, String defalt) {
-    	String value = context.getEnvironment().getProperty("spring.teiid.odata."+key, defalt);
-    	bean.addInitParameter(key, value);
+      String value = context.getEnvironment().getProperty("spring.teiid.odata."+key, defalt);
+      bean.addInitParameter(key, value);
     }
 
     @Bean

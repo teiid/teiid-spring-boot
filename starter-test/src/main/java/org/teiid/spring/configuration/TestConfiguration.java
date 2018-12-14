@@ -25,8 +25,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TestConfiguration {
 
-	@Bean
-	public TransactionManager transactionManager() {
-		return Mockito.mock(TransactionManager.class);
-	}
+  @Bean
+  public TransactionManager transactionManager() {
+    return Mockito.mock(TransactionManager.class);
+  }
 }

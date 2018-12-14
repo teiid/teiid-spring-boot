@@ -86,11 +86,11 @@ public class SchemaBuilderUtility {
             metadataSources.addFile(f);
         }
     }
-    
+
     public void generateVBLSchema(MetadataFactory source, MetadataFactory target) {
-        
+
         for (Table srcTable : source.getSchema().getTables().values()) {
-            Table table = target.addTable(srcTable.getName());            
+            Table table = target.addTable(srcTable.getName());
             for (Column srcColumn : srcTable.getColumns()) {
                 Column c = target.addColumn(srcColumn.getName(), srcColumn.getRuntimeType(), table);
                 c.setUpdatable(true);
@@ -103,7 +103,7 @@ public class SchemaBuilderUtility {
                 c.setNullType(srcColumn.getNullType());
                 c.setDefaultValue(srcColumn.getDefaultValue());
             }
-            
+
             table.setVirtual(true);
             table.setSupportsUpdate(true);
 
@@ -132,11 +132,11 @@ public class SchemaBuilderUtility {
                             table);
                 }
             }
-            
+
             table.setSelectTransformation(EntityBaseView.buildSelectPlan(table, source.getSchema().getName()));
         }
     }
-    
+
     // this is not used currently
     public static Metadata generateHbmModel(ConnectionProvider provider, Dialect dialect) throws SQLException {
         MetadataSources metadataSources = new MetadataSources();
@@ -145,66 +145,80 @@ public class SchemaBuilderUtility {
                 (BootstrapServiceRegistry) registry).applySetting(AvailableSettings.DIALECT, TeiidDialect.class)
                 .addService(ConnectionProvider.class, provider)
                 .addService(JdbcEnvironment.class, new JdbcEnvironmentImpl(provider.getConnection().getMetaData(), dialect))
-                        .build();       
-        
+                        .build();
+
         ReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
         MetadataBuildingOptions options = new MetadataBuildingOptionsImpl(serviceRegistry);
         BasicTypeRegistry basicTypeRegistry = new BasicTypeRegistry();
         TypeResolver typeResolver = new TypeResolver(basicTypeRegistry, new TypeFactory());
         InFlightMetadataCollectorImpl metadataCollector =  new InFlightMetadataCollectorImpl(options, typeResolver);
         MetadataBuildingContext buildingContext = new MetadataBuildingContextRootImpl(options, null, metadataCollector);
-        
+
         JDBCBinder binder = new JDBCBinder(serviceRegistry, new Properties(), buildingContext, strategy, false);
         Metadata metadata = metadataCollector.buildMetadataInstance(buildingContext);
         binder.readFromDatabase(null, null, buildMapping(metadata));
         HibernateMappingExporter exporter = new HibernateMappingExporter() {
+            @Override
             protected Metadata getMetadata() {
                 return metadata;
             }
         };
         exporter.start();
         return metadata;
-    }    
-    
-    static private Mapping buildMapping(final Metadata metadata) {
+    }
+
+    private static Mapping buildMapping(final Metadata metadata) {
         return new Mapping() {
             /**
              * Returns the identifier type of a mapped class
              */
+            @Override
             public Type getIdentifierType(String persistentClass) throws MappingException {
                 final PersistentClass pc = metadata.getEntityBinding(persistentClass);
-                if (pc==null) throw new MappingException("persistent class not known: " + persistentClass);
+                if (pc == null) {
+                    throw new MappingException("persistent class not known: " + persistentClass);
+                }
                 return pc.getIdentifier().getType();
             }
 
+            @Override
             public String getIdentifierPropertyName(String persistentClass) throws MappingException {
                 final PersistentClass pc = metadata.getEntityBinding(persistentClass);
-                if (pc==null) throw new MappingException("persistent class not known: " + persistentClass);
-                if ( !pc.hasIdentifierProperty() ) return null;
+                if (pc == null) {
+                    throw new MappingException("persistent class not known: " + persistentClass);
+                }
+                if (!pc.hasIdentifierProperty()) {
+                    return null;
+                }
                 return pc.getIdentifierProperty().getName();
             }
 
-            public Type getReferencedPropertyType(String persistentClass, String propertyName) throws MappingException
-            {
+            @Override
+            public Type getReferencedPropertyType(String persistentClass, String propertyName) throws MappingException {
                 final PersistentClass pc = metadata.getEntityBinding(persistentClass);
-                if (pc==null) throw new MappingException("persistent class not known: " + persistentClass);
+                if (pc == null) {
+                    throw new MappingException("persistent class not known: " + persistentClass);
+                }
                 Property prop = pc.getProperty(propertyName);
-                if (prop==null)  throw new MappingException("property not known: " + persistentClass + '.' + propertyName);
+                if (prop == null) {
+                    throw new MappingException("property not known: " + persistentClass + '.' + propertyName);
+                }
                 return prop.getType();
             }
 
+            @Override
             public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
                 return null;
             }
         };
-    }    
-    
+    }
+
     static class TeiidJDBCBinder extends JDBCBinder {
         private InFlightMetadataCollectorImpl metadataCollector;
         private MetadataFactory source;
         private ReverseEngineeringStrategy strategy;
-        
-        public TeiidJDBCBinder(ServiceRegistry serviceRegistry, Properties properties, MetadataBuildingContext mdbc,
+
+        TeiidJDBCBinder(ServiceRegistry serviceRegistry, Properties properties, MetadataBuildingContext mdbc,
                 ReverseEngineeringStrategy revengStrategy, boolean preferBasicCompositeIds, InFlightMetadataCollectorImpl metadataCollector, MetadataFactory source) {
             super(serviceRegistry, properties, mdbc, revengStrategy, preferBasicCompositeIds);
             this.metadataCollector = metadataCollector;
@@ -215,13 +229,13 @@ public class SchemaBuilderUtility {
         @Override
         public DatabaseCollector readDatabaseSchema(String catalog, String schema) throws SQLException {
             DatabaseCollector dbs = new MappingsDatabaseCollector(metadataCollector, new JDBCMetaDataDialect());
-            
+
             Map<String, org.hibernate.mapping.Table> foundTables = new java.util.HashMap<>();
             for (Table table : source.getSchema().getTables().values()) {
                 org.hibernate.mapping.Table ht = metadataCollector.addTable(null,
                         null, table.getName(), null, false);
                 dbs.addTable(null, null, table.getName());
-                
+
                 // Add columns
                 for (Column column : table.getColumns()) {
                     org.hibernate.mapping.Column hc = new org.hibernate.mapping.Column();
@@ -233,7 +247,7 @@ public class SchemaBuilderUtility {
                     hc.setNullable(column.getNullType() == NullType.Nullable);
                     ht.addColumn(hc);
                 }
-                
+
                 // Add primary key
                 KeyRecord pk = table.getPrimaryKey();
                 if (pk != null) {
@@ -244,7 +258,7 @@ public class SchemaBuilderUtility {
                     }
                     ht.setPrimaryKey(hpk);
                 }
-                
+
                 // add unique keys, indexes etc.
                 if (!table.getUniqueKeys().isEmpty()) {
                     for (KeyRecord key : table.getUniqueKeys()) {
@@ -257,7 +271,7 @@ public class SchemaBuilderUtility {
                         }
                     }
                 }
-                
+
                 if (!table.getIndexes().isEmpty()) {
                     for (KeyRecord key : table.getIndexes()) {
                         Index idx = new Index();
@@ -269,17 +283,17 @@ public class SchemaBuilderUtility {
                         }
                     }
                 }
-                
+
                 foundTables.put(table.getName(), ht);
             }
-            
+
             // Add foreign keys
             Map<String, List<org.hibernate.mapping.ForeignKey>> oneToManyCandidates = new HashMap<String, List<org.hibernate.mapping.ForeignKey>>();
             for (Table table : source.getSchema().getTables().values()) {
                 org.hibernate.mapping.Table ht = foundTables.get(table.getName());
-                
+
                 for (ForeignKey fk : table.getForeignKeys()) {
-                    org.hibernate.mapping.Table refht = foundTables.get(fk.getReferenceTableName());    
+                    org.hibernate.mapping.Table refht = foundTables.get(fk.getReferenceTableName());
                     List<org.hibernate.mapping.Column> columns = new ArrayList<>();
                     List<org.hibernate.mapping.Column> refColumns = new ArrayList<>();
                     for (Column column : fk.getColumns()) {
@@ -289,22 +303,22 @@ public class SchemaBuilderUtility {
                         refColumns.add(refht.getColumn(new org.hibernate.mapping.Column(column)));
                     }
                     String className = strategy.tableToClassName(TableIdentifier.create(ht));
-                    org.hibernate.mapping.ForeignKey key = ht.createForeignKey(fk.getName(), columns, className, null, refColumns);            
-                    key.setReferencedTable(refht);   
+                    org.hibernate.mapping.ForeignKey key = ht.createForeignKey(fk.getName(), columns, className, null, refColumns);
+                    key.setReferencedTable(refht);
                     List<org.hibernate.mapping.ForeignKey> existing = oneToManyCandidates.get(className);
                     if(existing == null) {
                         existing = new ArrayList<org.hibernate.mapping.ForeignKey>();
                         oneToManyCandidates.put(className, existing);
                     }
-                    existing.add(key);                    
+                    existing.add(key);
                 }
-            }            
+            }
             dbs.setOneToManyCandidates(oneToManyCandidates);
             strategy.configure(ReverseEngineeringRuntimeInfo.createInstance(null, null, dbs));
             return dbs;
         }
     }
-    
+
     public static ArtifactCollector generateHibernateModel(MetadataFactory source, StandardServiceRegistry serviceRegistry) {
         ReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
         MetadataBuildingOptions options = new MetadataBuildingOptionsImpl(serviceRegistry);
@@ -312,13 +326,14 @@ public class SchemaBuilderUtility {
         TypeResolver typeResolver = new TypeResolver(basicTypeRegistry, new TypeFactory());
         InFlightMetadataCollectorImpl metadataCollector =  new InFlightMetadataCollectorImpl(options, typeResolver);
         MetadataBuildingContext buildingContext = new MetadataBuildingContextRootImpl(options, null, metadataCollector);
-        
+
         TeiidJDBCBinder binder = new TeiidJDBCBinder(serviceRegistry, new Properties(), buildingContext, strategy,
                 false, metadataCollector, source);
         Metadata metadata = metadataCollector.buildMetadataInstance(buildingContext);
         binder.readFromDatabase(null, null, buildMapping(metadata));
-        
+
         HibernateMappingExporter exporter = new HibernateMappingExporter() {
+            @Override
             protected Metadata getMetadata() {
                 return metadata;
             }

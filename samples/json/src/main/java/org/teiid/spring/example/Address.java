@@ -28,51 +28,65 @@ public class Address {
     public String getStreet() {
         return street;
     }
+
     public void setStreet(String street) {
         this.street = street;
     }
+
     public String getCity() {
         return city;
     }
+
     public void setCity(String city) {
         this.city = city;
     }
+
     public int getZipCode() {
         return zipCode;
     }
+
     public void setZipcode(int zipcode) {
         this.zipCode = zipcode;
     }
 
     @Override
-    public String toString(){
-        return getStreet() + ", "+getCity()+", "+getZipCode();
+    public String toString() {
+        return getStreet() + ", " + getCity() + ", " + getZipCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Address other = (Address) obj;
         if (city == null) {
-            if (other.city != null)
+            if (other.city != null) {
                 return false;
-        } else if (!city.equals(other.city))
+            }
+        } else if (!city.equals(other.city)) {
             return false;
+        }
         if (street == null) {
-            if (other.street != null)
+            if (other.street != null) {
                 return false;
-        } else if (!street.equals(other.street))
+            }
+        } else if (!street.equals(other.street)) {
             return false;
+        }
         if (zipCode == null) {
-            if (other.zipCode != null)
+            if (other.zipCode != null) {
                 return false;
-        } else if (!zipCode.equals(other.zipCode))
+            }
+        } else if (!zipCode.equals(other.zipCode)) {
             return false;
+        }
         return true;
     }
 }

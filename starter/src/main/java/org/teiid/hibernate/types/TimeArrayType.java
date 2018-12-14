@@ -24,26 +24,25 @@ import org.hibernate.usertype.DynamicParameterizedType;
 /**
  * @author Vlad MIhalcea
  */
-public class TimeArrayType
-		extends AbstractSingleColumnStandardBasicType<Time[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = -4680091910330272528L;
+public class TimeArrayType extends AbstractSingleColumnStandardBasicType<Time[]> implements DynamicParameterizedType {
+    private static final long serialVersionUID = -4680091910330272528L;
 
-	public TimeArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, TimeArrayTypeDescriptor.INSTANCE );
-	}
+    public TimeArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, TimeArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "time-array";
-	}
+    @Override
+    public String getName() {
+        return "time-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((TimeArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((TimeArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

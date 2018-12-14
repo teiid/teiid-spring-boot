@@ -32,30 +32,30 @@ import org.teiid.spring.autoconfigure.TeiidServer;
  * This view generates a base layer view for any source table.
  */
 public class EntityBaseView extends ViewBuilder<Entity> {
-	private VDBMetaData vdb;
-	private TeiidServer server;
-	
-    public EntityBaseView(Metadata metadata, VDBMetaData vdb, TeiidServer server) {        
-		super(metadata);
-		this.vdb = vdb;
-		this.server = server;
-	}
+    private VDBMetaData vdb;
+    private TeiidServer server;
 
-	@Override
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, Entity annotation) {
-	    String sourceName = findSourceWhereEntityExists(view.getName());
-		if (sourceName == null) {
-		    throw new IllegalStateException(view.getName() + " not found in any datasource configured. "
-		            + "Failed to create view.");
-		}
-		
-        view.setSelectTransformation(buildSelectPlan(view, sourceName));
-        //view.setInsertPlan(buildInsertPlan(view, sourceName));
-        //view.setUpdatePlan(buildUpdatePlan(view, sourceName));
-        //view.setDeletePlan(buildDeletePlan(view, sourceName));
+    public EntityBaseView(Metadata metadata, VDBMetaData vdb, TeiidServer server) {
+        super(metadata);
+        this.vdb = vdb;
+        this.server = server;
     }
 
-	public static String buildDeletePlan(Table view, String sourceName) {
+    @Override
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, Entity annotation) {
+        String sourceName = findSourceWhereEntityExists(view.getName());
+        if (sourceName == null) {
+            throw new IllegalStateException(
+                    view.getName() + " not found in any datasource configured. " + "Failed to create view.");
+        }
+
+        view.setSelectTransformation(buildSelectPlan(view, sourceName));
+        // view.setInsertPlan(buildInsertPlan(view, sourceName));
+        // view.setUpdatePlan(buildUpdatePlan(view, sourceName));
+        // view.setDeletePlan(buildDeletePlan(view, sourceName));
+    }
+
+    public static String buildDeletePlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("FOR EACH ROW\n");
         sb.append("BEGIN ATOMIC\n");
@@ -70,16 +70,16 @@ public class EntityBaseView extends ViewBuilder<Entity> {
             sb.append(c.getName()).append(" = ").append("OLD.").append(c.getName());
         }
         sb.append(";\n");
-        sb.append("END");        
+        sb.append("END");
         return sb.toString();
     }
 
-	public static String buildUpdatePlan(Table view, String sourceName) {
+    public static String buildUpdatePlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("FOR EACH ROW\n");
         sb.append("BEGIN ATOMIC\n");
         sb.append("UPDATE ").append(sourceName).append(".").append(view.getName()).append(" SET ");
-        
+
         for (int i = 0; i < view.getColumns().size(); i++) {
             Column c = view.getColumns().get(i);
             if (i > 0) {
@@ -87,7 +87,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
             }
             sb.append(c.getName()).append(" = ").append("NEW.").append(c.getName());
         }
-        
+
         KeyRecord pk = RedirectionSchemaBuilder.getPK(view);
         sb.append(" WHERE ");
         for (int i = 0; i < pk.getColumns().size(); i++) {
@@ -98,11 +98,11 @@ public class EntityBaseView extends ViewBuilder<Entity> {
             sb.append(c.getName()).append(" = ").append("OLD.").append(c.getName());
         }
         sb.append(";\n");
-        sb.append("END");        
+        sb.append("END");
         return sb.toString();
     }
 
-	public static String buildInsertPlan(Table view, String sourceName) {
+    public static String buildInsertPlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("FOR EACH ROW\n");
         sb.append("BEGIN ATOMIC\n");
@@ -111,11 +111,11 @@ public class EntityBaseView extends ViewBuilder<Entity> {
         sb.append(") VALUES ( ");
         appendColumnNames(view, sb, "NEW");
         sb.append(");\n");
-        sb.append("END");        
+        sb.append("END");
         return sb.toString();
     }
 
-	public static String buildSelectPlan(Table view, String sourceName) {
+    public static String buildSelectPlan(Table view, String sourceName) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
         appendColumnNames(view, sb, null);
@@ -124,22 +124,22 @@ public class EntityBaseView extends ViewBuilder<Entity> {
     }
 
     private String findSourceWhereEntityExists(String tableName) {
-	    String foundIn = null;
-	    boolean found = false;
-	    for (Model model : vdb.getModels()) {
-	        Schema s = this.server.getSchema(model.getName());
-	        Table table = s.getTable(tableName);
-	        if (table != null) {
-	            if (!found) {
-	                foundIn = model.getName();
-	                found = true;
-	            } else {
-	                throw new IllegalStateException(tableName + " table found in more than single data source, failed "
-	                        + "to create view due to ambiguity. You can define @SelectQuery on the Entity class "
-	                        + "with transformation to fix the issue.");
-	            }
-	        }
-	    }
+        String foundIn = null;
+        boolean found = false;
+        for (Model model : vdb.getModels()) {
+            Schema s = this.server.getSchema(model.getName());
+            Table table = s.getTable(tableName);
+            if (table != null) {
+                if (!found) {
+                    foundIn = model.getName();
+                    found = true;
+                } else {
+                    throw new IllegalStateException(tableName + " table found in more than single data source, failed "
+                            + "to create view due to ambiguity. You can define @SelectQuery on the Entity class "
+                            + "with transformation to fix the issue.");
+                }
+            }
+        }
         return foundIn;
     }
 

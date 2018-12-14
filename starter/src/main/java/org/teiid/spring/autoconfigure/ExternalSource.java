@@ -51,7 +51,7 @@ public enum ExternalSource {
     FILE("file", new String[] { FileConnectionFactory.class.getName() }, new String[] {},"file", null),
     LOOPBACK("loopback", new String[] {}, new String[] {}, "loopback", null),
     REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {},"ws", null),
-	EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {},"excel", null);
+    EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {},"excel", null);
 
 
     private String name;
@@ -60,7 +60,7 @@ public enum ExternalSource {
     private String translatorName;
     private String dialect;
 
-    private ExternalSource(String name, String[] driverNames, String[] datasourceNames, String translatorName,
+    ExternalSource(String name, String[] driverNames, String[] datasourceNames, String translatorName,
             String dialect) {
         this.name = name;
         this.driverNames = driverNames;
@@ -137,14 +137,14 @@ public enum ExternalSource {
         return null;
     }
 
-	public static String findTransaltorNameFromAlias(String sourceName) {
-		for (ExternalSource source : ExternalSource.values()) {
-			if (source.name.equalsIgnoreCase(sourceName)) {
-				return source.getTranslatorName();
-			}
-		}
-		return null;
-	}
+  public static String findTransaltorNameFromAlias(String sourceName) {
+    for (ExternalSource source : ExternalSource.values()) {
+      if (source.name.equalsIgnoreCase(sourceName)) {
+        return source.getTranslatorName();
+      }
+    }
+    return null;
+  }
 
     public static String[] findDriverNameFromAlias(String sourceName) {
         for (ExternalSource source : ExternalSource.values()) {

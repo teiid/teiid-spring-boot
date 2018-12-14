@@ -20,17 +20,16 @@ import java.sql.Timestamp;
 /**
  * @author Vlad Mihalcea
  */
-public class TimeStampArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<Timestamp[]> {
-	private static final long serialVersionUID = 8043802635708370044L;
-	public static final TimeStampArrayTypeDescriptor INSTANCE = new TimeStampArrayTypeDescriptor();
+public class TimeStampArrayTypeDescriptor extends AbstractArrayTypeDescriptor<Timestamp[]> {
+    private static final long serialVersionUID = 8043802635708370044L;
+    public static final TimeStampArrayTypeDescriptor INSTANCE = new TimeStampArrayTypeDescriptor();
 
-	public TimeStampArrayTypeDescriptor() {
-		super( Timestamp[].class );
-	}
+    public TimeStampArrayTypeDescriptor() {
+        super(Timestamp[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "timestamp";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "timestamp";
+    }
 }

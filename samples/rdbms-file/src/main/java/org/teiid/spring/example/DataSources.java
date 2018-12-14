@@ -25,10 +25,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DataSources {
-    
+
     @ConfigurationProperties(prefix = "spring.datasource.accountsDS")
     @Bean
     public DataSource accountsDS() {
         return DataSourceBuilder.create().build();
-    }    
+    }
 }

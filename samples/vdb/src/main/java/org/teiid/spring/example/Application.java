@@ -28,18 +28,18 @@ public class Application implements CommandLineRunner {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
     @Override
     public void run(String... args) throws Exception {
 
         System.out.println("\n\nFrom JDBC Template");
 
-        jdbcTemplate.query(
-                "SELECT id, ssn, name FROM customer",
-                (rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("name"), rs.getString("ssn"))
-        ).forEach(customer -> System.out.println(customer));
+        jdbcTemplate
+                .query("SELECT id, ssn, name FROM customer",
+                        (rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("name"), rs.getString("ssn")))
+                .forEach(customer -> System.out.println(customer));
     }
 }

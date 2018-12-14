@@ -50,25 +50,25 @@ import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 
 public class ViewBuilder<T> {
-	public static final TeiidDialect dialect = new TeiidDialect();
-	protected Metadata metadata;
-	
-	public ViewBuilder(Metadata metadata) {
-		this.metadata = metadata;	
-	}
-    
-	@SuppressWarnings("unchecked")
+    public static final TeiidDialect dialect = new TeiidDialect();
+    protected Metadata metadata;
+
+    public ViewBuilder(Metadata metadata) {
+        this.metadata = metadata;
+    }
+
+    @SuppressWarnings("unchecked")
     public void buildView(Class<?> entityClazz, MetadataFactory mf, T annotation) {
-    	
-		PersistentClass hibernateClass = this.metadata.getEntityBinding(entityClazz.getName());
-    	org.hibernate.mapping.Table ormTable = hibernateClass.getTable();
+
+        PersistentClass hibernateClass = this.metadata.getEntityBinding(entityClazz.getName());
+        org.hibernate.mapping.Table ormTable = hibernateClass.getTable();
         String tableName = ormTable.getQuotedName();
         javax.persistence.Entity entityAnnotation = entityClazz.getAnnotation(javax.persistence.Entity.class);
         if (entityAnnotation != null && !entityAnnotation.name().isEmpty()) {
             tableName = entityAnnotation.name();
         }
-        
-        javax.persistence.Table tableAnnotation = entityClazz.getAnnotation(javax.persistence.Table.class);                
+
+        javax.persistence.Table tableAnnotation = entityClazz.getAnnotation(javax.persistence.Table.class);
         if (tableAnnotation != null && !tableAnnotation.name().isEmpty()) {
             tableName = tableAnnotation.name();
         }
@@ -78,20 +78,19 @@ public class ViewBuilder<T> {
 
         onTableCreate(view, mf, entityClazz, annotation);
 
-		Iterator<org.hibernate.mapping.Column> it = ormTable.getColumnIterator();
-        while(it.hasNext()) {
-        	org.hibernate.mapping.Column ormColumn = it.next();
-        	FieldInfo attribute = getAttributeField(entityClazz, hibernateClass, ormColumn.getName(), new FieldInfo());
-        	// .. parent is used in the graph like structures, for now in json table.
-			addColumn(ormTable, ormColumn, attribute.path, attribute.field, view, mf, !it.hasNext(),
-					annotation);
+        Iterator<org.hibernate.mapping.Column> it = ormTable.getColumnIterator();
+        while (it.hasNext()) {
+            org.hibernate.mapping.Column ormColumn = it.next();
+            FieldInfo attribute = getAttributeField(entityClazz, hibernateClass, ormColumn.getName(), new FieldInfo());
+            // .. parent is used in the graph like structures, for now in json table.
+            addColumn(ormTable, ormColumn, attribute.path, attribute.field, view, mf, !it.hasNext(), annotation);
         }
         addPrimaryKey(ormTable, view, mf);
         addForeignKeys(ormTable, view, mf);
         addIndexKeys(ormTable, view, mf);
         onFinish(view, mf, entityClazz, annotation);
     }
-    
+
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, T annotation) {
     }
 
@@ -102,7 +101,7 @@ public class ViewBuilder<T> {
     void onTableCreate(Table view, MetadataFactory mf, Class<?> entityClazz, T annotation) {
     }
 
-    protected Class<?> normalizeType(Class<?> clazz){
+    protected Class<?> normalizeType(Class<?> clazz) {
         if (clazz.isAssignableFrom(int.class)) {
             return Integer.class;
         } else if (clazz.isAssignableFrom(byte.class)) {
@@ -115,7 +114,7 @@ public class ViewBuilder<T> {
             return Double.class;
         } else if (clazz.isAssignableFrom(long.class)) {
             return Long.class;
-        }else if (clazz.isAssignableFrom(int[].class)) {
+        } else if (clazz.isAssignableFrom(int[].class)) {
             return Integer[].class;
         } else if (clazz.isAssignableFrom(byte[].class)) {
             return Byte[].class;
@@ -130,17 +129,17 @@ public class ViewBuilder<T> {
         }
         return clazz;
     }
-    
+
     protected boolean isArray(Class<?> clazz) {
         return clazz.isArray();
     }
-    
-	private void addPrimaryKey(org.hibernate.mapping.Table ormTable, Table view, MetadataFactory mf) {
-        PrimaryKey pk = ormTable.getPrimaryKey();  
+
+    private void addPrimaryKey(org.hibernate.mapping.Table ormTable, Table view, MetadataFactory mf) {
+        PrimaryKey pk = ormTable.getPrimaryKey();
         List<String> pkColumns = new ArrayList<>();
         if (pk != null) {
             Iterator<org.hibernate.mapping.Column> it = pk.getColumnIterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 org.hibernate.mapping.Column c = it.next();
                 Column col = view.getColumnByName(c.getName());
                 if (pk.isGenerated(dialect)) {
@@ -150,9 +149,9 @@ public class ViewBuilder<T> {
             }
             mf.addPrimaryKey("PK", pkColumns, view);
         }
-	    
-	}
-	
+
+    }
+
     private void addIndexKeys(org.hibernate.mapping.Table ormTable, Table view, MetadataFactory mf) {
         Iterator<UniqueKey> keys = ormTable.getUniqueKeyIterator();
         while (keys.hasNext()) {
@@ -163,173 +162,174 @@ public class ViewBuilder<T> {
             }
             mf.addIndex(uk.getName(), false, columns, view);
         }
-        
+
         Iterator<Index> iit = ormTable.getIndexIterator();
         while (iit.hasNext()) {
             Index idx = iit.next();
             List<String> columns = new ArrayList<>();
-            Iterator<org.hibernate.mapping.Column> it = idx.getColumnIterator(); 
-            while(it.hasNext()) {
+            Iterator<org.hibernate.mapping.Column> it = idx.getColumnIterator();
+            while (it.hasNext()) {
                 org.hibernate.mapping.Column c = it.next();
                 columns.add(c.getName());
             }
             mf.addIndex(idx.getName(), true, columns, view);
-        }        
+        }
     }
-    
+
     @SuppressWarnings("unchecked")
     private void addForeignKeys(org.hibernate.mapping.Table ormTable, Table view, MetadataFactory mf) {
-        Collection<ForeignKey> fks = ormTable.getForeignKeys().values(); 
+        Collection<ForeignKey> fks = ormTable.getForeignKeys().values();
         for (ForeignKey fk : fks) {
             List<String> fkColumns = new ArrayList<>();
             List<String> refColumns = new ArrayList<>();
             Iterator<org.hibernate.mapping.Column> it = fk.getColumnIterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 org.hibernate.mapping.Column c = it.next();
                 fkColumns.add(c.getName());
             }
-            
+
             if (fk.isReferenceToPrimaryKey()) {
-                List<org.hibernate.mapping.Column> columns = fk.getReferencedTable().getPrimaryKey().getColumns();       
+                List<org.hibernate.mapping.Column> columns = fk.getReferencedTable().getPrimaryKey().getColumns();
                 for (org.hibernate.mapping.Column c : columns) {
                     refColumns.add(c.getName());
                 }
-                
+
             } else {
-                List<org.hibernate.mapping.Column> columns = fk.getReferencedColumns();           
+                List<org.hibernate.mapping.Column> columns = fk.getReferencedColumns();
                 for (org.hibernate.mapping.Column c : columns) {
                     refColumns.add(c.getName());
                 }
             }
             mf.addForeignKey(fk.getName(), fkColumns, refColumns, fk.getReferencedTable().getName(), view);
         }
-    }	
-	
-	private void addColumn(org.hibernate.mapping.Table ormTable, org.hibernate.mapping.Column ormColumn, String parent,
-			Field attributeField, Table view, MetadataFactory mf, boolean last, T annotation) {
-        
+    }
+
+    private void addColumn(org.hibernate.mapping.Table ormTable, org.hibernate.mapping.Column ormColumn, String parent,
+            Field attributeField, Table view, MetadataFactory mf, boolean last, T annotation) {
+
         String columnName = ormColumn.getName();
         String type = JDBCSQLTypeInfo.getTypeName(ormColumn.getSqlTypeCode(metadata));
         if (type.equals("ARRAY")) {
-        	type = getArrayType(ormColumn);
+            type = getArrayType(ormColumn);
         }
         Column column = mf.addColumn(columnName, type, view);
         column.setUpdatable(true);
         column.setLength(ormColumn.getLength());
         column.setScale(ormColumn.getScale());
         column.setPrecision(ormColumn.getPrecision());
-        column.setNullType(ormColumn.isNullable()?NullType.Nullable:NullType.No_Nulls);
+        column.setNullType(ormColumn.isNullable() ? NullType.Nullable : NullType.No_Nulls);
         column.setDefaultValue(ormColumn.getDefaultValue());
-        onColumnCreate(view, column,  mf, attributeField, parent, last, annotation);        
-    }	
-	
-	private String getArrayType(org.hibernate.mapping.Column ormColumn) {
-		if (ormColumn.getValue().getType() instanceof StringArrayType) {
-			return "string[]";
-		} else if (ormColumn.getValue().getType() instanceof ShortArrayType) {
-			return "short[]";
-		} else if (ormColumn.getValue().getType() instanceof LongArrayType) {
-			return "long[]";
-		} else if (ormColumn.getValue().getType() instanceof IntArrayType) {
-			return "integer[]";
-		} else if (ormColumn.getValue().getType() instanceof FloatArrayType) {
-			return "float[]";
-		} else if (ormColumn.getValue().getType() instanceof DoubleArrayType) {
-			return "double[]";
-		} else if (ormColumn.getValue().getType() instanceof BigDecimalArrayType) {
-			return "bigdecimal[]";
-		} else if (ormColumn.getValue().getType() instanceof BooleanArrayType) {
-			return "boolean[]";
-		} else if (ormColumn.getValue().getType() instanceof BigIntegerArrayType) {
-			return "biginteger[]";
-		} else if (ormColumn.getValue().getType() instanceof DateArrayType) {
-			return "date[]";
-		} else if (ormColumn.getValue().getType() instanceof TimeArrayType) {
-			return "time[]";
-		} else if (ormColumn.getValue().getType() instanceof TimestampArrayType) {
-			return "timestamp[]";
-		}
-		return ormColumn.getSqlType();
-	}
+        onColumnCreate(view, column, mf, attributeField, parent, last, annotation);
+    }
 
-	@SuppressWarnings("unchecked")
-	String propertyName(Iterator<org.hibernate.mapping.Property> it, org.hibernate.mapping.Property identifierProperty,
-			String colName) {
-		if (identifierProperty!= null && propertyMatches(identifierProperty, colName)) {
-			return identifierProperty.getName();
-		}
-		while(it.hasNext()) {
-			org.hibernate.mapping.Property property = it.next();
-			if (propertyMatches(property, colName)) {
-				if (property.isComposite()) {
-					Component comp = (Component) property.getValue();
-					Iterator<org.hibernate.mapping.Property> compIt = comp.getPropertyIterator();
-					return propertyName(compIt, null, colName);
-				} else {
-					return property.getName();
-				}
-			}
-		}
-		return null;
-	}	
-	
-	@SuppressWarnings("unchecked")
-	boolean propertyMatches(org.hibernate.mapping.Property property, String colName) {
-		if (property.isComposite()) {
-			Component comp = (Component) property.getValue();
-			Iterator<org.hibernate.mapping.Property> compIt = comp.getPropertyIterator();
-			while (compIt.hasNext()) {
-				property = compIt.next();
-				if (propertyMatches(property, colName)) {
-					return true;
-				}
-			}
-			return false;
-		}		
-	    Iterator<?> columnIterator = property.getColumnIterator();
-	    if (columnIterator.hasNext()) {
-		    org.hibernate.mapping.Column col = (org.hibernate.mapping.Column) columnIterator.next();
-		    assert ! columnIterator.hasNext();
-			if (col.getName().equals(colName)) {
-				return true;
-			}
-	    }
-		return false;
-	}
-	
-	static class FieldInfo {
-		Field field;
-		String path;
-	}
+    private String getArrayType(org.hibernate.mapping.Column ormColumn) {
+        if (ormColumn.getValue().getType() instanceof StringArrayType) {
+            return "string[]";
+        } else if (ormColumn.getValue().getType() instanceof ShortArrayType) {
+            return "short[]";
+        } else if (ormColumn.getValue().getType() instanceof LongArrayType) {
+            return "long[]";
+        } else if (ormColumn.getValue().getType() instanceof IntArrayType) {
+            return "integer[]";
+        } else if (ormColumn.getValue().getType() instanceof FloatArrayType) {
+            return "float[]";
+        } else if (ormColumn.getValue().getType() instanceof DoubleArrayType) {
+            return "double[]";
+        } else if (ormColumn.getValue().getType() instanceof BigDecimalArrayType) {
+            return "bigdecimal[]";
+        } else if (ormColumn.getValue().getType() instanceof BooleanArrayType) {
+            return "boolean[]";
+        } else if (ormColumn.getValue().getType() instanceof BigIntegerArrayType) {
+            return "biginteger[]";
+        } else if (ormColumn.getValue().getType() instanceof DateArrayType) {
+            return "date[]";
+        } else if (ormColumn.getValue().getType() instanceof TimeArrayType) {
+            return "time[]";
+        } else if (ormColumn.getValue().getType() instanceof TimestampArrayType) {
+            return "timestamp[]";
+        }
+        return ormColumn.getSqlType();
+    }
 
-	@SuppressWarnings("unchecked")
-	private FieldInfo getAttributeField(Class<?> entityClazz, PersistentClass hibernateClass, String columnName,
-			FieldInfo fieldInfo) {
-		String propertyName = propertyName(hibernateClass.getPropertyIterator(), hibernateClass.getIdentifierProperty(),
-				columnName);
-		FieldInfo attribute = new FieldInfo();
-		if (propertyName != null) {
-			try {
-				attribute.field = entityClazz.getDeclaredField(propertyName);
-			} catch (NoSuchFieldException | SecurityException e) {
-				for (Field field:entityClazz.getDeclaredFields()) {
-					Embedded embedded = field.getAnnotation(Embedded.class);					
-					if (embedded != null) {					
-						attribute = getAttributeField(field.getType(), hibernateClass, columnName, fieldInfo);
-						if (attribute.field != null) {
-							fieldInfo.field = attribute.field;
-							fieldInfo.path = fieldInfo.path == null?field.getName():field.getName()+"/"+fieldInfo.path;
-							attribute = fieldInfo;
-							break;
-						}
-					}
-				}
-			}
-		}
-		return attribute;
-	}
-	
+    @SuppressWarnings("unchecked")
+    String propertyName(Iterator<org.hibernate.mapping.Property> it, org.hibernate.mapping.Property identifierProperty,
+            String colName) {
+        if (identifierProperty != null && propertyMatches(identifierProperty, colName)) {
+            return identifierProperty.getName();
+        }
+        while (it.hasNext()) {
+            org.hibernate.mapping.Property property = it.next();
+            if (propertyMatches(property, colName)) {
+                if (property.isComposite()) {
+                    Component comp = (Component) property.getValue();
+                    Iterator<org.hibernate.mapping.Property> compIt = comp.getPropertyIterator();
+                    return propertyName(compIt, null, colName);
+                } else {
+                    return property.getName();
+                }
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    boolean propertyMatches(org.hibernate.mapping.Property property, String colName) {
+        if (property.isComposite()) {
+            Component comp = (Component) property.getValue();
+            Iterator<org.hibernate.mapping.Property> compIt = comp.getPropertyIterator();
+            while (compIt.hasNext()) {
+                property = compIt.next();
+                if (propertyMatches(property, colName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        Iterator<?> columnIterator = property.getColumnIterator();
+        if (columnIterator.hasNext()) {
+            org.hibernate.mapping.Column col = (org.hibernate.mapping.Column) columnIterator.next();
+            assert !columnIterator.hasNext();
+            if (col.getName().equals(colName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static class FieldInfo {
+        Field field;
+        String path;
+    }
+
+    @SuppressWarnings("unchecked")
+    private FieldInfo getAttributeField(Class<?> entityClazz, PersistentClass hibernateClass, String columnName,
+            FieldInfo fieldInfo) {
+        String propertyName = propertyName(hibernateClass.getPropertyIterator(), hibernateClass.getIdentifierProperty(),
+                columnName);
+        FieldInfo attribute = new FieldInfo();
+        if (propertyName != null) {
+            try {
+                attribute.field = entityClazz.getDeclaredField(propertyName);
+            } catch (NoSuchFieldException | SecurityException e) {
+                for (Field field : entityClazz.getDeclaredFields()) {
+                    Embedded embedded = field.getAnnotation(Embedded.class);
+                    if (embedded != null) {
+                        attribute = getAttributeField(field.getType(), hibernateClass, columnName, fieldInfo);
+                        if (attribute.field != null) {
+                            fieldInfo.field = attribute.field;
+                            fieldInfo.path = fieldInfo.path == null ? field.getName()
+                                    : field.getName() + "/" + fieldInfo.path;
+                            attribute = fieldInfo;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return attribute;
+    }
+
     public static boolean isBuiltInModel(String name) {
         return name.equals("file") || name.equals("rest");
-    }	
+    }
 }

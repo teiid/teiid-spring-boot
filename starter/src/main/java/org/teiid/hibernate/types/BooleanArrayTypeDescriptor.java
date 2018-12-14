@@ -18,17 +18,16 @@ package org.teiid.hibernate.types;
 /**
  * @author Vlad Mihalcea
  */
-public class BooleanArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<boolean[]> {
-	private static final long serialVersionUID = -769980065339132816L;
-	public static final BooleanArrayTypeDescriptor INSTANCE = new BooleanArrayTypeDescriptor();
+public class BooleanArrayTypeDescriptor extends AbstractArrayTypeDescriptor<boolean[]> {
+    private static final long serialVersionUID = -769980065339132816L;
+    public static final BooleanArrayTypeDescriptor INSTANCE = new BooleanArrayTypeDescriptor();
 
-	public BooleanArrayTypeDescriptor() {
-		super( boolean[].class );
-	}
+    public BooleanArrayTypeDescriptor() {
+        super(boolean[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "boolean";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "boolean";
+    }
 }

@@ -32,54 +32,55 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.config.SortedResourcesFactoryBean;
 
 /**
- * Bean to handle {@link TeiidServer} initialization by running {@literal teiid.ddl} on
- * {@link PostConstruct} on a {@link TeiidInitializedEvent}.
+ * Bean to handle {@link TeiidServer} initialization by running
+ * {@literal teiid.ddl} on {@link PostConstruct} on a
+ * {@link TeiidInitializedEvent}.
  *
  * Code borrowed from {@link DataSourceInitializedEvent}
  */
 class TeiidInitializer implements ApplicationListener<TeiidInitializedEvent> {
 
-	private static final Log logger = LogFactory.getLog(TeiidInitializer.class);
+    private static final Log logger = LogFactory.getLog(TeiidInitializer.class);
 
-	private final ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
-	private TeiidServer teiidServer;
+    private TeiidServer teiidServer;
 
-	private boolean initialized = false;
+    private boolean initialized = false;
 
     TeiidInitializer(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-	@PostConstruct
-	public void init() {
+    @PostConstruct
+    public void init() {
         if (this.applicationContext.getBeanNamesForType(TeiidServer.class, false, false).length > 0) {
-			this.teiidServer = this.applicationContext.getBean(TeiidServer.class);
-		}
-		if (this.teiidServer == null) {
-			logger.debug("No DataSource found so not initializing");
-			return;
-		}
-		runSchemaScripts();
-	}
+            this.teiidServer = this.applicationContext.getBean(TeiidServer.class);
+        }
+        if (this.teiidServer == null) {
+            logger.debug("No DataSource found so not initializing");
+            return;
+        }
+        runSchemaScripts();
+    }
 
-	private void runSchemaScripts() {
+    private void runSchemaScripts() {
 
-	}
+    }
 
-	@Override
-	public void onApplicationEvent(TeiidInitializedEvent event) {
-		// NOTE the event can happen more than once and
-		// the event datasource is not used here
-		if (!this.initialized) {
-			runDataScripts();
-			this.initialized = true;
-		}
-	}
+    @Override
+    public void onApplicationEvent(TeiidInitializedEvent event) {
+        // NOTE the event can happen more than once and
+        // the event datasource is not used here
+        if (!this.initialized) {
+            runDataScripts();
+            this.initialized = true;
+        }
+    }
 
-	private void runDataScripts() {
-	    // none right now.
-	}
+    private void runDataScripts() {
+        // none right now.
+    }
 
     static List<Resource> getScripts(String propertyName, String vdb, String fallback, ApplicationContext context) {
         if (vdb == null) {
@@ -116,3 +117,4 @@ class TeiidInitializer implements ApplicationListener<TeiidInitializedEvent> {
         }
     }
 }
+

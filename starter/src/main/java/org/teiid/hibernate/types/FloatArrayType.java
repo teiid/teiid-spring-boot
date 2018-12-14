@@ -20,26 +20,25 @@ import java.util.Properties;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
-public class FloatArrayType
-		extends AbstractSingleColumnStandardBasicType<float[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = 233850294937607019L;
+public class FloatArrayType extends AbstractSingleColumnStandardBasicType<float[]> implements DynamicParameterizedType {
+    private static final long serialVersionUID = 233850294937607019L;
 
-	public FloatArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, FloatArrayTypeDescriptor.INSTANCE );
-	}
+    public FloatArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, FloatArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "float-array";
-	}
+    @Override
+    public String getName() {
+        return "float-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((FloatArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((FloatArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

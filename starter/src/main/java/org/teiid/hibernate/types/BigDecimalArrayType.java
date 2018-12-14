@@ -21,26 +21,26 @@ import java.util.Properties;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
-public class BigDecimalArrayType
-		extends AbstractSingleColumnStandardBasicType<BigDecimal[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = 3666499981934781574L;
+public class BigDecimalArrayType extends AbstractSingleColumnStandardBasicType<BigDecimal[]>
+        implements DynamicParameterizedType {
+    private static final long serialVersionUID = 3666499981934781574L;
 
-	public BigDecimalArrayType() {
-		super(ArraySqlTypeDescriptor.INSTANCE, BigDecimalArrayTypeDescriptor.INSTANCE );
-	}
+    public BigDecimalArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, BigDecimalArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "decimal-array";
-	}
+    @Override
+    public String getName() {
+        return "decimal-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((BigDecimalArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((BigDecimalArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

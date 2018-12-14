@@ -46,13 +46,13 @@ public class TestModelGenerator {
         Mockito.stub(env.getProperty(Mockito.anyString())).toReturn(null);
         Mockito.stub(context.getEnvironment()).toReturn(env);
     }
-    
+
     private ModelMetaData buildSourceTable() {
         ModelMetaData model = new ModelMetaData();
         model.setName("source");
         model.setModelType(Model.Type.PHYSICAL);
-        MetadataFactory target = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
-                model);
+        MetadataFactory target = new MetadataFactory(VDBNAME, VDBVERSION,
+                SystemMetadata.getInstance().getRuntimeTypeMap(), model);
         Table t = target.addTable("Person");
         target.addColumn("id", "integer", t);
         target.addColumn("name", "string", t);
@@ -62,38 +62,38 @@ public class TestModelGenerator {
         model.addSourceMetadata("ddl", ddl);
         return model;
     }
-    
+
     private ModelMetaData buildSourceTableWithPK() {
         ModelMetaData model = new ModelMetaData();
         model.setName("source");
         model.setModelType(Model.Type.PHYSICAL);
-        MetadataFactory target = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
-                model);
+        MetadataFactory target = new MetadataFactory(VDBNAME, VDBVERSION,
+                SystemMetadata.getInstance().getRuntimeTypeMap(), model);
         Table t = target.addTable("Person");
         target.addColumn("id", "integer", t);
         target.addColumn("name", "string", t);
         target.addColumn("dob", "date", t);
         target.addPrimaryKey("PK", Arrays.asList("id"), t);
-        
+
         Table addr = target.addTable("address");
         target.addColumn("id", "integer", addr);
         target.addColumn("street", "string", addr);
         target.addColumn("pid", "integer", addr);
         target.addPrimaryKey("PK", Arrays.asList("id"), addr);
         target.addForeignKey("FK", Arrays.asList("pid"), Arrays.asList("id"), "Person", addr);
-        
+
         String ddl = DDLStringVisitor.getDDLString(target.getSchema(), null, null);
         model.addSourceMetadata("ddl", ddl);
         model.addAttchment(MetadataFactory.class, target);
         return model;
-    }    
-    
+    }
+
     private ModelMetaData buildSourceTableWithCompositePK() {
         ModelMetaData model = new ModelMetaData();
         model.setName("source");
         model.setModelType(Model.Type.PHYSICAL);
-        MetadataFactory target = new MetadataFactory(VDBNAME, VDBVERSION, SystemMetadata.getInstance().getRuntimeTypeMap(),
-                model);
+        MetadataFactory target = new MetadataFactory(VDBNAME, VDBVERSION,
+                SystemMetadata.getInstance().getRuntimeTypeMap(), model);
         Table t = target.addTable("Person");
         target.addColumn("id", "integer", t);
         target.addColumn("name", "string", t);
@@ -104,15 +104,15 @@ public class TestModelGenerator {
         model.addAttchment(MetadataFactory.class, target);
         return model;
     }
-    
-    @Test(expected=IllegalStateException.class)
+
+    @Test(expected = IllegalStateException.class)
     public void testRedirectionLayer_noPK() {
         RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         VDBMetaData vdb = new VDBMetaData();
         vdb.addModel(buildSourceTable());
         mg.buildRedirectionLayer(buildSourceTable().getAttachment(MetadataFactory.class), "base");
     }
-    
+
     @Test
     public void testRedirectionLayerSelectPlan() {
         RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
@@ -121,15 +121,14 @@ public class TestModelGenerator {
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
                 "base");
         String expected = "SELECT o.id, o.name, o.dob FROM internal.Person AS o LEFT OUTER JOIN "
-                + "redirected.Person_REDIRECTED AS m ON (o.id = m.id) WHERE m.ROW__STATUS IS NULL \n" + 
-                " UNION ALL \n" + 
-                "SELECT id, name, dob FROM redirected.Person_REDIRECTED WHERE ROW__STATUS <> 3";
-        
+                + "redirected.Person_REDIRECTED AS m ON (o.id = m.id) WHERE m.ROW__STATUS IS NULL \n" + " UNION ALL \n"
+                + "SELECT id, name, dob FROM redirected.Person_REDIRECTED WHERE ROW__STATUS <> 3";
+
         MetadataFactory mf = model.getAttachment(MetadataFactory.class);
         Table table = mf.getSchema().getTable("Person");
         assertEquals(expected, table.getSelectTransformation());
     }
-    
+
     @Test
     public void testRedirectionLayerInsertPlan() {
         RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
@@ -137,77 +136,55 @@ public class TestModelGenerator {
         vdb.addModel(buildSourceTable());
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
                 "base");
-        String expected = "FOR EACH ROW\n" + 
-                "BEGIN ATOMIC\n" + 
-                "    DECLARE boolean VARIABLES.Person_PK_EXISTS = (SELECT true FROM source.Person WHERE id = NEW.id);\n" + 
-                "    IF (VARIABLES.Person_PK_EXISTS)\n" + 
-                "    BEGIN\n" + 
-                "        RAISE SQLEXCEPTION 'duplicate key';\n" + 
-                "    END\n" + 
-                "    ELSE\n" + 
-                "    BEGIN\n" + 
-                "        INSERT INTO redirected.Person_REDIRECTED (id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 1);\n" + 
-                "    END\n" + 
-                "END";
-        
+        String expected = "FOR EACH ROW\n" + "BEGIN ATOMIC\n"
+                + "    DECLARE boolean VARIABLES.Person_PK_EXISTS = (SELECT true FROM source.Person WHERE id = NEW.id);\n"
+                + "    IF (VARIABLES.Person_PK_EXISTS)\n" + "    BEGIN\n"
+                + "        RAISE SQLEXCEPTION 'duplicate key';\n" + "    END\n" + "    ELSE\n" + "    BEGIN\n"
+                + "        INSERT INTO redirected.Person_REDIRECTED (id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 1);\n"
+                + "    END\n" + "END";
+
         MetadataFactory mf = model.getAttachment(MetadataFactory.class);
         Table table = mf.getSchema().getTable("Person");
         assertEquals(expected, table.getInsertPlan().replace("\t", "    "));
     }
-    
+
     @Test
     public void testRedirectionLayerUpdatePlan() {
         RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
                 "base");
-        String expected = 
-                "FOR EACH ROW\n" + 
-                "BEGIN ATOMIC\n" + 
-                "IF (CHANGING.id)\n" + 
-                "BEGIN\n" + 
-                "    DECLARE boolean VARIABLES.Person_PK_EXISTS = (SELECT true FROM source.Person WHERE id = NEW.id);\n" + 
-                "    IF (VARIABLES.Person_PK_EXISTS)\n" + 
-                "    BEGIN\n" + 
-                "        RAISE SQLEXCEPTION 'duplicate key';\n" + 
-                "    END\n" + 
-                "    ELSE\n" + 
-                "    BEGIN\n" + 
-                "        DECLARE boolean VARIABLES.address_FK_EXISTS = (SELECT COUNT(*) > 0 FROM teiid.address WHERE pid = OLD.id);\n" + 
-                "        IF (VARIABLES.address_FK_EXISTS)\n" + 
-                "        BEGIN\n" + 
-                "            RAISE SQLEXCEPTION 'referential integrity check failed on address table, cascade deletes are not supported';\n" + 
-                "        END\n" + 
-                "        UPSERT INTO redirected.Person_REDIRECTED(id, ROW__STATUS) VALUES (OLD.id, 3);\n" + 
-                "        UPSERT INTO redirected.Person_REDIRECTED(id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 1);\n" + 
-                "    END\n" + 
-                "END\n" + 
-                "ELSE\n" + 
-                "BEGIN\n" + 
-                "    UPSERT INTO redirected.Person_REDIRECTED(id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 2);\n" + 
-                "END\n" + 
-                "END";
-        
+        String expected = "FOR EACH ROW\n" + "BEGIN ATOMIC\n" + "IF (CHANGING.id)\n" + "BEGIN\n"
+                + "    DECLARE boolean VARIABLES.Person_PK_EXISTS = (SELECT true FROM source.Person WHERE id = NEW.id);\n"
+                + "    IF (VARIABLES.Person_PK_EXISTS)\n" + "    BEGIN\n"
+                + "        RAISE SQLEXCEPTION 'duplicate key';\n" + "    END\n" + "    ELSE\n" + "    BEGIN\n"
+                + "        DECLARE boolean VARIABLES.address_FK_EXISTS = (SELECT COUNT(*) > 0 FROM teiid.address WHERE pid = OLD.id);\n"
+                + "        IF (VARIABLES.address_FK_EXISTS)\n" + "        BEGIN\n"
+                + "            RAISE SQLEXCEPTION 'referential integrity check failed on address table, cascade deletes are not supported';\n"
+                + "        END\n"
+                + "        UPSERT INTO redirected.Person_REDIRECTED(id, ROW__STATUS) VALUES (OLD.id, 3);\n"
+                + "        UPSERT INTO redirected.Person_REDIRECTED(id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 1);\n"
+                + "    END\n" + "END\n" + "ELSE\n" + "BEGIN\n"
+                + "    UPSERT INTO redirected.Person_REDIRECTED(id, name, dob, ROW__STATUS) VALUES (NEW.id, NEW.name, NEW.dob, 2);\n"
+                + "END\n" + "END";
+
         MetadataFactory mf = model.getAttachment(MetadataFactory.class);
         Table table = mf.getSchema().getTable("Person");
         assertEquals(expected, table.getUpdatePlan().replace("\t", "    "));
     }
-    
+
     @Test
     public void testRedirectionLayerDeletePlan() {
         RedirectionSchemaBuilder mg = new RedirectionSchemaBuilder(this.context, "redirected");
         ModelMetaData model = mg.buildRedirectionLayer(buildSourceTableWithPK().getAttachment(MetadataFactory.class),
                 "base");
-        String expected = "FOR EACH ROW\n" + 
-                "BEGIN ATOMIC\n" + 
-                "        DECLARE boolean VARIABLES.address_FK_EXISTS = (SELECT COUNT(*) > 0 FROM teiid.address WHERE pid = OLD.id);\n" + 
-                "        IF (VARIABLES.address_FK_EXISTS)\n" + 
-                "        BEGIN\n" + 
-                "            RAISE SQLEXCEPTION 'referential integrity check failed on address table, cascade deletes are not supported';\n" + 
-                "        END\n" + 
-                "        UPSERT INTO redirected.Person_REDIRECTED(id, ROW__STATUS) VALUES (OLD.id, 3);\n" + 
-                "END";
+        String expected = "FOR EACH ROW\n" + "BEGIN ATOMIC\n"
+                + "        DECLARE boolean VARIABLES.address_FK_EXISTS = (SELECT COUNT(*) > 0 FROM teiid.address WHERE pid = OLD.id);\n"
+                + "        IF (VARIABLES.address_FK_EXISTS)\n" + "        BEGIN\n"
+                + "            RAISE SQLEXCEPTION 'referential integrity check failed on address table, cascade deletes are not supported';\n"
+                + "        END\n"
+                + "        UPSERT INTO redirected.Person_REDIRECTED(id, ROW__STATUS) VALUES (OLD.id, 3);\n" + "END";
         MetadataFactory mf = model.getAttachment(MetadataFactory.class);
         Table table = mf.getSchema().getTable("Person");
         assertEquals(expected, table.getDeletePlan().replace("\t", "    "));
-    }     
+    }
 }

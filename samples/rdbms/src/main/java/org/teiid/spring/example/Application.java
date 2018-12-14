@@ -28,17 +28,17 @@ public class Application implements CommandLineRunner {
 
     @Autowired
     private CustomerRepository customerRepository;
-    
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args).close();
-	}
-	
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
     @Override
     public void run(String... args) throws Exception {
 
         System.out.println("\n\nFrom JDBC Template");
         customerRepository.findAll().forEach(x -> System.out.println(x));
-        
+
         Customer c = new Customer();
         c.setName("John Doe");
         c.setSsn("111-11-1111");
@@ -47,11 +47,11 @@ public class Application implements CommandLineRunner {
         a.setStreet("230 Market St.");
         a.setZip("12345");
         c.setAddress(Arrays.asList(a));
-        
+
         customerRepository.save(c);
-        
+
         System.out.println("\n\nFrom JDBC Template");
         customerRepository.findAll().forEach(x -> System.out.println(x));
-        
+
     }
 }

@@ -26,40 +26,39 @@ import javax.transaction.xa.XAResource;
 
 public abstract class BaseConnection implements Connection {
 
-	@Override
-	public Interaction createInteraction() throws ResourceException {
-		throw new ResourceException("This operation not supported"); //$NON-NLS-1$
-	}
+    @Override
+    public Interaction createInteraction() throws ResourceException {
+        throw new ResourceException("This operation not supported"); //$NON-NLS-1$
+    }
 
-	@Override
-	public LocalTransaction getLocalTransaction() throws ResourceException {
-		return null;
-	}
+    @Override
+    public LocalTransaction getLocalTransaction() throws ResourceException {
+        return null;
+    }
 
-	@Override
-	public ConnectionMetaData getMetaData() throws ResourceException {
-		throw new ResourceException("This operation not supported"); //$NON-NLS-1$
-	}
+    @Override
+    public ConnectionMetaData getMetaData() throws ResourceException {
+        throw new ResourceException("This operation not supported"); //$NON-NLS-1$
+    }
 
-	@Override
-	public ResultSetInfo getResultSetInfo() throws ResourceException {
-		throw new ResourceException("This operation not supported"); //$NON-NLS-1$
-	}
-	
-	public XAResource getXAResource() throws ResourceException {
-		return null;
-	}
-	
-	public boolean isAlive() {
-		return true;
-	}
-	
-	/**
-	 * Called by the {@link ManagedConnection} to indicate the physical connection
-	 * should be cleaned up for reuse.
-	 */
-	public void cleanUp() {
-		
-	}
+    @Override
+    public ResultSetInfo getResultSetInfo() throws ResourceException {
+        throw new ResourceException("This operation not supported"); //$NON-NLS-1$
+    }
 
+    public XAResource getXAResource() throws ResourceException {
+        return null;
+    }
+
+    public boolean isAlive() {
+        return true;
+    }
+
+    /**
+     * Called by the {@link ManagedConnection} to indicate the physical connection
+     * should be cleaned up for reuse.
+     */
+    public void cleanUp() {
+
+    }
 }

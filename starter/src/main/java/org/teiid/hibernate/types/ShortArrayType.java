@@ -20,26 +20,25 @@ import java.util.Properties;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
-public class ShortArrayType
-		extends AbstractSingleColumnStandardBasicType<short[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = -1618901877045449960L;
+public class ShortArrayType extends AbstractSingleColumnStandardBasicType<short[]> implements DynamicParameterizedType {
+    private static final long serialVersionUID = -1618901877045449960L;
 
-	public ShortArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, ShortArrayTypeDescriptor.INSTANCE );
-	}
+    public ShortArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, ShortArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "short-array";
-	}
+    @Override
+    public String getName() {
+        return "short-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((ShortArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((ShortArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

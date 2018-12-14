@@ -20,10 +20,10 @@ public interface TeiidConstants {
 
     String ENTITY_SCAN_DIR = "spring.teiid.model.package";
     String REDIRECTED = "spring.teiid.redirected";
-    
+
     String REDIRECTED_TABLE_POSTFIX = "_REDIRECTED";
-    
+
     String VDBNAME = "spring";
     String VDBVERSION = "1.0.0";
-    String EXPOSED_VIEW = "teiid";    
+    String EXPOSED_VIEW = "teiid";
 }

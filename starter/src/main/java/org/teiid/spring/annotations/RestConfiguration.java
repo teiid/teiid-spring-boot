@@ -22,11 +22,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Defines RestConfiguration, like verbs and headers etc for REST based connection. If the values of the
- * annotation parameters in configuration are expressions like ${custom.myheader}
- * they will be evaluated at the runtime.
- * 
+ * Defines RestConfiguration, like verbs and headers etc for REST based
+ * connection. If the values of the annotation parameters in configuration are
+ * expressions like ${custom.myheader} they will be evaluated at the runtime.
+ *
  * For example:
+ *
  * <pre>
  * <code>
  * &#64;Entity
@@ -35,67 +36,70 @@ import java.lang.annotation.Target;
  * public class Person {
  *    &#64;Id
  *    private int id;
- *    
+ *
  *    &#64;Column(name="FirstName")
  *    private String firstName;
- *    
+ *
  *    &#64;Column(name="LastName")
  *    private String lastName;
- *    
+ *
  *    &#64;Column(name="Age")
  *    private int age;
  *    ...
  * }
  * </code>
- * </pre> 
+ * </pre>
  */
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface RestConfiguration {
     /**
      * HTTP Verb GET, PUT, PATCH, DELETE
+     *
      * @return String
      */
-	String method() default "GET";
-    
-	/**
-	 * Bean name which defines the HTTP Headers to be sent to the REST invocation.
-	 * For example when you want to handle HTTP Basic Authentication, you can do
-	 * like.
-	 * 
-	 * <pre>
-	 * <code>
-	 * &#64;Configuration
-	 * public class MyConfigClass {<br>
-	 *   &#64;Bean(name="myHeaders")
-	 *   private HttpHeaders createHttpHeaders()
-	 *   {
-	 *     String notEncoded = "user:password";
-	 *     String encodedAuth = Base64.getEncoder().encodeToString(notEncoded.getBytes());
-	 *     HttpHeaders headers = new HttpHeaders();
-	 *     headers.setContentType(MediaType.APPLICATION_JSON);
-	 *     headers.add("Authorization", "Basic " + encodedAuth);
-	 *     return headers;
-	 *   }<br>
-	 *}
-	 * </code>
-	 * </pre>
-	 * 
-	 * @return beanName
-	 */
+    String method() default "GET";
+
+    /**
+     * Bean name which defines the HTTP Headers to be sent to the REST invocation.
+     * For example when you want to handle HTTP Basic Authentication, you can do
+     * like.
+     *
+     * <pre>
+     * <code>
+     * &#64;Configuration
+     * public class MyConfigClass {<br>
+     *   &#64;Bean(name="myHeaders")
+     *   private HttpHeaders createHttpHeaders()
+     *   {
+     *     String notEncoded = "user:password";
+     *     String encodedAuth = Base64.getEncoder().encodeToString(notEncoded.getBytes());
+     *     HttpHeaders headers = new HttpHeaders();
+     *     headers.setContentType(MediaType.APPLICATION_JSON);
+     *     headers.add("Authorization", "Basic " + encodedAuth);
+     *     return headers;
+     *   }<br>
+     *}
+     * </code>
+     * </pre>
+     *
+     * @return beanName
+     */
     String headersBean() default "";
-    
+
     /**
      * use streaming, i.e. the the read data will not copied, can only read once
+     *
      * @return default true
      */
     boolean stream() default true;
-    
+
     /**
-	 * Define the bean name that supplies for the payload for REST based calls. This
-	 * bean MUST be of type {@link org.teiid.core.types.InputStreamFactory}.
-	 * 
-	 * @return body
-	 */
+     * Define the bean name that supplies for the payload for REST based calls. This
+     * bean MUST be of type {@link org.teiid.core.types.InputStreamFactory}.
+     *
+     * @return body
+     */
     String bodyBean() default "";
 }
+
