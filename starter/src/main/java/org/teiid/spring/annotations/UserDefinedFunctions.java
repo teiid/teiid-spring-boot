@@ -22,30 +22,32 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * This is marker annotation to define class of user defined java based functions or data source functions. 
- * 
+ * This is marker annotation to define class of user defined java based
+ * functions or data source functions.
+ *
  * <pre>
  * <code>
  * &#64;UserDefinedFunctions
  * public class MyFunctions {
- * 
+ *
  *     &#64;JavaFunction
  *     public static String myFunc(String msg){
  *         return "Hello " + msg;
  *     }
- *     
+ *
  *     &#64;SourceFunction
  *     public static String myFunc(String msg){
  *         // No code will be called here; this can be empty block.
  *         return msg;
- *     }     
+ *     }
  * }
  * </code>
  * </pre>
  *
  * For more information checkout <a href=
- * "http://teiid.github.io/teiid-documents/master/content/dev/User_Defined_Functions.html">User Defined Functions</a> in Teiid.
- * 
+ * "http://teiid.github.io/teiid-documents/master/content/dev/User_Defined_Functions.html">User
+ * Defined Functions</a> in Teiid.
+ *
  */
 @Target(TYPE)
 @Retention(RUNTIME)

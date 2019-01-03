@@ -19,20 +19,22 @@ package org.teiid.spring.autoconfigure;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * {@link ApplicationEvent} used internally to trigger {@link TeiidServer} initialization.
- * During the initialization {@literal teiid.ddl} file is loaded if available on the classpath 
+ * {@link ApplicationEvent} used internally to trigger {@link TeiidServer}
+ * initialization. During the initialization {@literal teiid.ddl} file is loaded
+ * if available on the classpath
  *
  * @see TeiidInitializer
  */
 @SuppressWarnings("serial")
 public class TeiidInitializedEvent extends ApplicationEvent {
 
-	/**
-	 * Create a new {@link TeiidInitializedEvent}.
-	 * @param source the source {@link TeiidServer}.
-	 */
-	public TeiidInitializedEvent(TeiidServer source) {
-		super(source);
-	}
-
+    /**
+     * Create a new {@link TeiidInitializedEvent}.
+     *
+     * @param source
+     *            the source {@link TeiidServer}.
+     */
+    public TeiidInitializedEvent(TeiidServer source) {
+        super(source);
+    }
 }

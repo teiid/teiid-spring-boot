@@ -26,6 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.olingo.server.api.ODataHttpHandler;
 import org.teiid.adminapi.AdminException;
@@ -37,23 +38,25 @@ import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
 import org.teiid.olingo.web.ContextAwareHttpSerlvetRequest;
 import org.teiid.olingo.web.ODataFilter;
-import org.teiid.spring.autoconfigure.TeiidConstants;
 import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.vdb.runtime.VDBKey;
 
 public class SpringODataFilter extends ODataFilter {
 
-	private TeiidServer server;
+  private TeiidServer server;
+  private VDB vdb;
 
-	public SpringODataFilter(TeiidServer server) {
-		this.server = server;
-	}
+  public SpringODataFilter(TeiidServer server, VDB vdb) {
+    this.server = server;
+    this.vdb = vdb;
+  }
 
-	@Override
+  @Override
     public void internalDoFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException, TeiidProcessingException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String uri = ((HttpServletRequest) request).getRequestURI().toString();
         String fullURL = ((HttpServletRequest) request).getRequestURL().toString();
@@ -62,22 +65,59 @@ public class SpringODataFilter extends ODataFilter {
             return;
         }
 
+        // possible vdb and model names
         String contextPath = httpRequest.getContextPath();
+        String subContext = null;
         if (contextPath.isEmpty()) {
             // if model name is defined in the URL
             if (uri.startsWith("/") && uri.indexOf('/', 1) != -1) {
-                contextPath = uri.substring(1, uri.indexOf('/', 1));
+                int idx = uri.indexOf('/', 1);
+                contextPath = uri.substring(1, idx);
+                if (uri.indexOf('/', idx+1) != -1) {
+                    subContext = uri.substring(idx+1, uri.indexOf('/', idx+1));
+                }
             }
         }
 
-        String baseURI = fullURL.substring(0, fullURL.indexOf(contextPath));
+        // figure out vdbname and model name from paths are assume defaults
+        VDB requestVDB = this.vdb;
+        String vdbName = this.vdb.getName();
+        String vdbVersion = this.vdb.getVersion();
+        String modelName = null;
+        if (contextPath != null && subContext != null) {
+            int idx = contextPath.indexOf('.');
+            if (idx != -1) {
+                vdbName = contextPath.substring(0, idx);
+                vdbVersion = contextPath.substring(idx+1);
+            } else {
+                vdbName = contextPath;
+                vdbVersion = "1.0.0";
+            }
+            if (!requestVDB.getName().equals(vdbName) || !requestVDB.getVersion().equals(vdbVersion)) {
+                try {
+                    requestVDB = this.server.getAdmin().getVDB(vdbName, vdbVersion);
+                } catch (AdminException e) {
+                    httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "Wrong VDB Name or version defined in the URL");
+                    return;
+                }
+            }
+            modelName = subContext;
+        } else {
+            modelName = contextPath;
+        }
 
+        modelName = modelName(modelName, requestVDB);
+        if (modelName == null || modelName.isEmpty()) {
+            httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "Wrong Model/Schema name defined in the URL");
+            return;
+        }
+
+        String baseURI = fullURL.substring(0, fullURL.indexOf(contextPath));
         ContextAwareHttpSerlvetRequest contextAwareRequest = new ContextAwareHttpSerlvetRequest(httpRequest);
-        contextAwareRequest.setContextPath(contextPath);
+        contextAwareRequest.setContextPath(subContext == null ? contextPath : contextPath+"/"+subContext);
         httpRequest = contextAwareRequest;
 
-        VDBKey key = new VDBKey(TeiidConstants.VDBNAME, TeiidConstants.VDBVERSION);
-
+        VDBKey key = new VDBKey(vdbName, vdbVersion);
         SoftReference<OlingoBridge> ref = this.contextMap.get(key);
         OlingoBridge context = null;
         if (ref != null) {
@@ -94,7 +134,7 @@ public class SpringODataFilter extends ODataFilter {
         try {
             Connection connection = client.open();
             registerVDBListener(client, connection);
-            ODataHttpHandler handler = context.getHandler(baseURI, client, modelName(contextPath));
+            ODataHttpHandler handler = context.getHandler(baseURI, client, modelName);
             httpRequest.setAttribute(ODataHttpHandler.class.getName(), handler);
             httpRequest.setAttribute(Client.class.getName(), client);
             chain.doFilter(httpRequest, response);
@@ -109,32 +149,27 @@ public class SpringODataFilter extends ODataFilter {
         }
     }
 
-	public String modelName(String contextPath) {
-		Schema schema = server.getSchema("teiid");
-		if (schema != null && !schema.getTables().isEmpty()) {
-			return "teiid";
-		}
+  public String modelName(String contextPath, VDB vdb) {
+    Schema schema = server.getSchema("teiid");
+        if (contextPath.isEmpty() && schema != null && !schema.getTables().isEmpty()) {
+      return "teiid";
+    }
 
-		String modelName = null;
-		try {
-			VDB vdb = server.getAdmin().getVDB(TeiidConstants.VDBNAME, TeiidConstants.VDBVERSION);
-			for (Model m : vdb.getModels()) {
-				if (m.getName().equals("file") || m.getName().equals("rest") || m.getName().equals("teiid")) {
-					continue;
-				}
-				if (contextPath.isEmpty()) {
-				    modelName = m.getName();
-				    break;
-				} else if (contextPath.equalsIgnoreCase(m.getName())) {
-                    modelName = m.getName();
-                    break;
-				}
-			}
-		} catch (AdminException e) {
-		    //ignore
-		}
-		return modelName;
-	}
+    String modelName = null;
+    for (Model m : vdb.getModels()) {
+      if (m.getName().equals("file") || m.getName().equals("rest") || m.getName().equals("teiid")) {
+        continue;
+      }
+      if (contextPath.isEmpty()) {
+          modelName = m.getName();
+          break;
+      } else if (contextPath.equalsIgnoreCase(m.getName())) {
+                modelName = m.getName();
+                break;
+      }
+    }
+    return modelName;
+  }
 
     @Override
     public Client buildClient(String vdbName, String version, Properties props) {

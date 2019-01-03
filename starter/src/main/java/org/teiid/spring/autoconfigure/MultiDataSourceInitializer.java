@@ -203,5 +203,4 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
         }
         DatabasePopulatorUtils.execute(populator, dataSource);
     }
-
 }

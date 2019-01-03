@@ -30,9 +30,8 @@ public class QuoteRepository {
 
     public List<Quote> findAll() {
 
-        List<Quote> result = jdbcTemplate.query(
-                "SELECT id, quote FROM Quote",
-                (rs, rowNum) -> new Quote(rs.getInt("id"),rs.getString("quote")));
+        List<Quote> result = jdbcTemplate.query("SELECT id, quote FROM Quote",
+                (rs, rowNum) -> new Quote(rs.getInt("id"), rs.getString("quote")));
         return result;
     }
-}   
+}

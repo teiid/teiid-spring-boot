@@ -41,15 +41,15 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Convenience class for building a {@link XADataSource} with common implementations and
- * properties.
+ * Convenience class for building a {@link XADataSource} with common
+ * implementations and properties.
  */
 @ConfigurationProperties(prefix = "spring.xa.datasource")
 public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAware, InitializingBean, XADataSource {
 
-	private ClassLoader classLoader;
+    private ClassLoader classLoader;
 
-	private Environment environment;
+    private Environment environment;
 
     /**
      * XA datasource fully qualified name.
@@ -62,7 +62,8 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
     private Map<String, String> properties = new LinkedHashMap<String, String>();
 
     /**
-     * Fully qualified name of the JDBC driver. Auto-detected based on the URL by default.
+     * Fully qualified name of the JDBC driver. Auto-detected based on the URL by
+     * default.
      */
     private String driverClassName;
 
@@ -148,9 +149,9 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
         this(null);
     }
 
-	public XADataSourceBuilder(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
+    public XADataSourceBuilder(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
     public XADataSource build() throws Exception {
         return this;
@@ -163,11 +164,9 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
     protected XADataSource createXaDataSource() {
         String className = getDataSourceClassName();
         if (!StringUtils.hasLength(className)) {
-            className = DatabaseDriver.fromJdbcUrl(getUrl())
-                    .getXaDataSourceClassName();
+            className = DatabaseDriver.fromJdbcUrl(getUrl()).getXaDataSourceClassName();
         }
-        Assert.state(StringUtils.hasLength(className),
-                "No XA DataSource class name specified");
+        Assert.state(StringUtils.hasLength(className), "No XA DataSource class name specified");
         XADataSource dataSource = createXaDataSourceInstance(className);
         bindXaProperties(dataSource);
         return dataSource;
@@ -179,29 +178,24 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
             Object instance = BeanUtils.instantiate(dataSourceClass);
             Assert.isInstanceOf(XADataSource.class, instance);
             return (XADataSource) instance;
-        }
-        catch (Exception ex) {
-            throw new IllegalStateException(
-                    "Unable to create XADataSource instance from '" + className + "'");
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to create XADataSource instance from '" + className + "'");
         }
     }
 
     private void bindXaProperties(XADataSource target) {
         MutablePropertyValues values = new MutablePropertyValues();
-        values.add("user",getUsername());
+        values.add("user", getUsername());
         values.add("password", getPassword());
         values.add("url", getUrl());
         values.addPropertyValues(getProperties());
-        new RelaxedDataBinder(target)
-            .withAlias("user", "username")
-            .withAlias("port", "portNumber")
-            .withAlias("server", "serverName")
-            .withAlias("database", "databaseName")
-            .bind(values);
+        new RelaxedDataBinder(target).withAlias("user", "username").withAlias("port", "portNumber")
+                .withAlias("server", "serverName").withAlias("database", "databaseName").bind(values);
     }
 
     /**
      * Return the configured driver or {@code null} if none was configured.
+     *
      * @return the configured driver
      */
     public String getDriverClassName() {
@@ -230,6 +224,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 
     /**
      * Return the configured username or {@code null} if none was configured.
+     *
      * @return the configured username
      */
     public String getUsername() {
@@ -242,6 +237,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 
     /**
      * Return the configured password or {@code null} if none was configured.
+     *
      * @return the configured password
      */
     public String getPassword() {
@@ -254,6 +250,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 
     /**
      * Return the configured url or {@code null} if none was configured.
+     *
      * @return the configured url
      */
     public String getUrl() {
@@ -263,6 +260,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
     public void setUrl(String url) {
         this.url = url;
     }
+
     public boolean isInitialize() {
         return this.initialize;
     }
@@ -357,7 +355,7 @@ public class XADataSourceBuilder implements BeanClassLoaderAware, EnvironmentAwa
 
     @Override
     public void setLoginTimeout(int seconds) throws SQLException {
-       this.delegate.setLoginTimeout(seconds);
+        this.delegate.setLoginTimeout(seconds);
     }
 
     @Override

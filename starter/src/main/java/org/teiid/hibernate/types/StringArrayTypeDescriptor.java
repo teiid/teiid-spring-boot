@@ -18,17 +18,16 @@ package org.teiid.hibernate.types;
 /**
  * @author Vlad Mihalcea
  */
-public class StringArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<String[]> {
-	private static final long serialVersionUID = 2779634215463704662L;
-	public static final StringArrayTypeDescriptor INSTANCE = new StringArrayTypeDescriptor();
+public class StringArrayTypeDescriptor extends AbstractArrayTypeDescriptor<String[]> {
+    private static final long serialVersionUID = 2779634215463704662L;
+    public static final StringArrayTypeDescriptor INSTANCE = new StringArrayTypeDescriptor();
 
-	public StringArrayTypeDescriptor() {
-		super( String[].class );
-	}
+    public StringArrayTypeDescriptor() {
+        super(String[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "varchar2";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "varchar2";
+    }
 }

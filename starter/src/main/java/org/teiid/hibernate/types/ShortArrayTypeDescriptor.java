@@ -15,17 +15,16 @@
  */
 package org.teiid.hibernate.types;
 
-public class ShortArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<short[]> {
-	private static final long serialVersionUID = -2634273351592972070L;
-	public static final ShortArrayTypeDescriptor INSTANCE = new ShortArrayTypeDescriptor();
+public class ShortArrayTypeDescriptor extends AbstractArrayTypeDescriptor<short[]> {
+    private static final long serialVersionUID = -2634273351592972070L;
+    public static final ShortArrayTypeDescriptor INSTANCE = new ShortArrayTypeDescriptor();
 
-	public ShortArrayTypeDescriptor() {
-		super(short[].class );
-	}
+    public ShortArrayTypeDescriptor() {
+        super(short[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "short";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "short";
+    }
 }

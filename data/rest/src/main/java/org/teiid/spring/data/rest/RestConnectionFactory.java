@@ -28,17 +28,17 @@ import org.teiid.translator.WSConnection;
 @ConfigurationProperties(prefix="spring.teiid.ws")
 public class RestConnectionFactory extends BaseConnectionFactory {
     private static final long serialVersionUID = 7082082147591076185L;
-    
+
     @Autowired
     RestTemplate template;
-    
+
     @Autowired
-	private BeanFactory beanFactory;
-    
+  private BeanFactory beanFactory;
+
     public RestConnectionFactory() {
         super.setTranslatorName("rest");
     }
-    
+
     @Override
     public WSConnection getConnection() throws ResourceException {
         return new RestConnection(template, beanFactory);

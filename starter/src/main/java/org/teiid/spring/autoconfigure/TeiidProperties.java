@@ -23,6 +23,10 @@ public class TeiidProperties {
 
     private String vdbFile;
     private int metadataLoadWaitTimeInMillis = 30000;
+    private boolean jdbcEnable = false;
+    private int jdbcPort = 31000;
+    private boolean odbcEnable = false;
+    private int odbcPort = 35432;
 
     public String getVdbFile() {
         return vdbFile;
@@ -38,5 +42,37 @@ public class TeiidProperties {
 
     public void setMetadataLoadWaitTimeInMillis(int metadataLoadWaitTimeInMillis) {
         this.metadataLoadWaitTimeInMillis = metadataLoadWaitTimeInMillis;
-    }    
+    }
+
+    public boolean isJdbcEnable() {
+        return jdbcEnable;
+    }
+
+    public void setJdbcEnable(boolean jdbcEnable) {
+        this.jdbcEnable = jdbcEnable;
+    }
+
+    public int getJdbcPort() {
+        return jdbcPort;
+    }
+
+    public void setJdbcPort(int jdbcPort) {
+        this.jdbcPort = jdbcPort;
+    }
+
+    public boolean isOdbcEnable() {
+        return odbcEnable;
+    }
+
+    public void setOdbcEnable(boolean odbcEnable) {
+        this.odbcEnable = odbcEnable;
+    }
+
+    public int getOdbcPort() {
+        return odbcPort;
+    }
+
+    public void setOdbcPort(int odbcPort) {
+        this.odbcPort = odbcPort;
+    }
 }

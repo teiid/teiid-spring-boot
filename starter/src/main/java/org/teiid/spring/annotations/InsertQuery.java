@@ -22,15 +22,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Defines the Teiid View's Transformation Insert query. This is optional annotation,
- * that can be defined only when you want support insert on the view.<br>
- * 
- * 
+ * Defines the Teiid View's Transformation Insert query. This is optional
+ * annotation, that can be defined only when you want support insert on the
+ * view.<br>
+ *
+ *
  * <pre>
  * <code>
  * &#64;InsertQuery("FOR EACH ROW \n"+
              "BEGIN ATOMIC \n" +
-		     "INSERT INTO customerDS.person(id, full_name, dob) values (NEW.id, NEW.full_name, NEW.dob);\n" +
+         "INSERT INTO customerDS.person(id, full_name, dob) values (NEW.id, NEW.full_name, NEW.dob);\n" +
              "END")
  * </code>
  * </pre>
@@ -44,3 +45,4 @@ import java.lang.annotation.Target;
 public @interface InsertQuery {
     String value() default "";
 }
+

@@ -20,26 +20,26 @@ import java.util.Properties;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
-public class DoubleArrayType
-		extends AbstractSingleColumnStandardBasicType<double[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = -5417262193036979576L;
+public class DoubleArrayType extends AbstractSingleColumnStandardBasicType<double[]>
+        implements DynamicParameterizedType {
+    private static final long serialVersionUID = -5417262193036979576L;
 
-	public DoubleArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, DoubleArrayTypeDescriptor.INSTANCE );
-	}
+    public DoubleArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, DoubleArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "double-array";
-	}
+    @Override
+    public String getName() {
+        return "double-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((DoubleArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((DoubleArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

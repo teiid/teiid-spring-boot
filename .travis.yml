@@ -1,0 +1,22 @@
+language: java
+sudo: false
+before_install:
+- cp .travis.settings.xml $HOME/.m2/settings.xml
+install: true
+script: mvn install -Dmaven.javadoc.skip=true -B -V -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn 
+deploy:
+  provider: script
+  script: "mvn -B -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests=true deploy"
+  skip_cleanup: true
+  on: 
+    tags: false 
+cache:
+  directories:
+  - $HOME/.m2  
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/5ada7bbc05b2a99cff40
+    on_success: change
+    on_failure: always
+    on_start: never

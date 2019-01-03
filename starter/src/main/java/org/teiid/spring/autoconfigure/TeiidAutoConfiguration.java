@@ -73,6 +73,8 @@ import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
 import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
+import org.teiid.transport.SocketConfiguration;
+import org.teiid.transport.WireProtocol;
 import org.xml.sax.SAXException;
 
 @Configuration
@@ -115,14 +117,14 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name="dataSource")
     @Primary
     @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource getDataSource(TeiidServer server) {
+    public DataSource getDataSource(TeiidServer server, VDBMetaData vdb) {
         EmbeddedDatabaseFactory edf = new EmbeddedDatabaseFactory();
         edf.setDatabaseConfigurer(new TeiidDatabaseConfigurer(server));
         edf.setDataSourceFactory(new DataSourceFactory() {
             @Override
             public DataSource getDataSource() {
                 String url = context.getEnvironment().getProperty("spring.datasource.teiid.url");
-                return new SimpleDriverDataSource(server.getDriver(), url);
+                return new SimpleDriverDataSource(new TeiidSpringDriver(server.getDriver(), server, vdb), url);
             }
 
             @Override
@@ -189,9 +191,9 @@ public class TeiidAutoConfiguration implements Ordered {
         if (vdb == null) {
             vdb =  new VDBMetaData();
             vdb.addProperty("implicit", "true");
+            vdb.setName(VDBNAME);
+            vdb.setVersion(VDBVERSION);
         }
-        vdb.setName(VDBNAME);
-        vdb.setVersion(VDBVERSION);
         return vdb;
     }
 
@@ -243,12 +245,26 @@ public class TeiidAutoConfiguration implements Ordered {
                 public void destroy() {
                 }
             });
+            // add ability for remote jdbc connections
+            if (this.properties.isJdbcEnable()) {
+                SocketConfiguration sc = new SocketConfiguration();
+                sc.setPortNumber(this.properties.getJdbcPort());
+                sc.setProtocol(WireProtocol.teiid);
+                embeddedConfiguration.addTransport(sc);
+            }
+
+            if (this.properties.isOdbcEnable()) {
+                SocketConfiguration sc = new SocketConfiguration();
+                sc.setPortNumber(this.properties.getOdbcPort());
+                sc.setProtocol(WireProtocol.pg);
+                embeddedConfiguration.addTransport(sc);
+            }
         }
 
         if (embeddedConfiguration.getTransactionManager() == null) {
             PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
             ptma.setJTATransactionManager(this.transactionManager);
-        	embeddedConfiguration.setTransactionManager(ptma);
+          embeddedConfiguration.setTransactionManager(ptma);
         }
 
         server.start(embeddedConfiguration);
@@ -267,7 +283,7 @@ public class TeiidAutoConfiguration implements Ordered {
         private static final long serialVersionUID = -7894312381042966398L;
         private String name;
 
-        public LocalCache(String cacheName, int maxSize) {
+        LocalCache(String cacheName, int maxSize) {
             super(maxSize < 0 ? Integer.MAX_VALUE : maxSize);
             this.name = cacheName;
         }

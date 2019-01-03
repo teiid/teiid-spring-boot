@@ -20,17 +20,16 @@ import java.sql.Time;
 /**
  * @author Vlad Mihalcea
  */
-public class TimeArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<Time[]> {
-	private static final long serialVersionUID = 6580357300467736987L;
-	public static final TimeArrayTypeDescriptor INSTANCE = new TimeArrayTypeDescriptor();
+public class TimeArrayTypeDescriptor extends AbstractArrayTypeDescriptor<Time[]> {
+    private static final long serialVersionUID = 6580357300467736987L;
+    public static final TimeArrayTypeDescriptor INSTANCE = new TimeArrayTypeDescriptor();
 
-	public TimeArrayTypeDescriptor() {
-		super( Time[].class );
-	}
+    public TimeArrayTypeDescriptor() {
+        super(Time[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "time";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "time";
+    }
 }

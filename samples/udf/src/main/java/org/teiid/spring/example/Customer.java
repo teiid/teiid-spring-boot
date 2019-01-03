@@ -25,47 +25,50 @@ import org.teiid.spring.annotations.SelectQuery;
 @Entity
 @SelectQuery("SELECT id, addSalutation(name), ssn FROM mydb.customer")
 public class Customer {
-	@Id
-	Long id;
-    
+    @Id
+    Long id;
+
     @Column
     String name;
-    
+
     @Column
     String ssn;
-    
 
     public Customer() {
     }
-    
+
     public Customer(Long id, String name, String ssn) {
         this.id = id;
         this.name = name;
-        this.ssn= ssn;
+        this.ssn = ssn;
     }
-    
+
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public String getSsn() {
         return ssn;
     }
+
     public void setSsn(String ssn) {
         this.ssn = ssn;
     }
-    
+
     @Override
     public String toString() {
-        return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn  + "]";
+        return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + "]";
     }
 }

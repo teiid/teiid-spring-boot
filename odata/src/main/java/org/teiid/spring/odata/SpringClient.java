@@ -25,19 +25,19 @@ import org.teiid.olingo.service.LocalClient;
 import org.teiid.spring.autoconfigure.TeiidServer;
 
 public class SpringClient extends LocalClient {
-	private String vdbName;
+  private String vdbName;
     private String vdbVersion;
     private ConnectionImpl connection;
     private Properties properties;
     private TeiidServer server;
-    
-	public SpringClient(String vdbName, String vdbVersion, Properties properties, TeiidServer server) {
-		super(vdbName, vdbVersion, properties);
-		this.properties = properties;
-		this.vdbName = vdbName;
-		this.vdbVersion = vdbVersion;
-		this.server = server;
-	}
+
+  public SpringClient(String vdbName, String vdbVersion, Properties properties, TeiidServer server) {
+    super(vdbName, vdbVersion, properties);
+    this.properties = properties;
+    this.vdbName = vdbName;
+    this.vdbVersion = vdbVersion;
+    this.server = server;
+  }
 
     @Override
     public Connection open() throws SQLException, TeiidProcessingException {
@@ -53,9 +53,9 @@ public class SpringClient extends LocalClient {
         if (this.connection != null) {
             this.connection.close();
         }
-    }    
-    
+    }
+
     public ConnectionImpl getConnection() {
         return this.connection;
-    }	
+    }
 }

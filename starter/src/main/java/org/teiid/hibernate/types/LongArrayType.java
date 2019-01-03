@@ -20,26 +20,25 @@ import java.util.Properties;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
-public class LongArrayType
-		extends AbstractSingleColumnStandardBasicType<long[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = 8132500623120251428L;
+public class LongArrayType extends AbstractSingleColumnStandardBasicType<long[]> implements DynamicParameterizedType {
+    private static final long serialVersionUID = 8132500623120251428L;
 
-	public LongArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, LongArrayTypeDescriptor.INSTANCE );
-	}
+    public LongArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, LongArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "long-array";
-	}
+    @Override
+    public String getName() {
+        return "long-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((LongArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((LongArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

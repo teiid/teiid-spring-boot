@@ -22,10 +22,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Defines the Teiid View's Transformation Update query. This is optional annotation,
- * that can be defined only when you want support Update on the view.<br>
- * 
- * 
+ * Defines the Teiid View's Transformation Update query. This is optional
+ * annotation, that can be defined only when you want support Update on the
+ * view.<br>
+ *
+ *
  * <pre>
  * <code>
  * &#64;UpdateQuery(
@@ -33,7 +34,7 @@ import java.lang.annotation.Target;
  *   "BEGIN ATOMIC \n" +
  *       "UPDATE customerDS.person SET full_name=NEW.full_name, dob=NEW.dob WHERE id = OLD.id;\n"+
  *   "END"
- *   )            
+ *   )
  * </code>
  * </pre>
  *
@@ -46,3 +47,4 @@ import java.lang.annotation.Target;
 public @interface UpdateQuery {
     String value() default "";
 }
+

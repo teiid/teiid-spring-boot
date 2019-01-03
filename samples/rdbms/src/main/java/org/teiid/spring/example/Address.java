@@ -27,48 +27,48 @@ import org.teiid.spring.annotations.SelectQuery;
 @SelectQuery("SELECT id, street, zip, customer_id FROM mydb.address")
 public class Address {
 
-//	@TableGenerator(name = "address", 
-//			table = "id_generator", 
-//			pkColumnName = "idkey", 
-//			valueColumnName = "idvalue", 
-//			pkColumnValue = "address", 
-//			allocationSize = 1)	
-//	@GeneratedValue(strategy = GenerationType.TABLE, generator = "address")
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "address_generator")
-	@SequenceGenerator(name="address_generator", sequenceName = "mydb.addr_seq")
-	@Id
-	private Long id;
-	
-	private String street;
-	
-	private String zip;
+    // @TableGenerator(name = "address",
+    // table = "id_generator",
+    // pkColumnName = "idkey",
+    // valueColumnName = "idvalue",
+    // pkColumnValue = "address",
+    // allocationSize = 1)
+    // @GeneratedValue(strategy = GenerationType.TABLE, generator = "address")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "address_generator")
+    @SequenceGenerator(name = "address_generator", sequenceName = "mydb.addr_seq")
+    @Id
+    private Long id;
 
-	public Long getId() {
-		return id;
-	}
+    private String street;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    private String zip;
 
-	public String getStreet() {
-		return street;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setStreet(String street) {
-		this.street = street;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getZip() {
-		return zip;
-	}
+    public String getStreet() {
+        return street;
+    }
 
-	public void setZip(String zip) {
-		this.zip = zip;
-	}
-	
-	@Override
-	public String toString() {
-		return "Address [id=" + id + ", street=" + street + ", zip=" + zip+ "]";
-	}
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public String getZip() {
+        return zip;
+    }
+
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
+
+    @Override
+    public String toString() {
+        return "Address [id=" + id + ", street=" + street + ", zip=" + zip + "]";
+    }
 }

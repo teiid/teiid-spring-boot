@@ -54,7 +54,7 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
     private Schema schema;
     private Metadata metadata;
     private ServiceRegistry registry;
-    
+
     RedirectionSchemaInitializer(DataSource dataSource, String sourceName, Dialect dialect, Metadata metadata,
             ServiceRegistry registry, Schema schema, ApplicationContext applicationContext) {
         super(dataSource, sourceName, applicationContext);
@@ -63,13 +63,14 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
         this.schema = schema;
         this.registry = registry;
     }
-    
+
     @Override
     List<Resource> getScripts(String propertyName, List<String> resources, String fallback) {
         List<Resource> found = super.getScripts(propertyName, resources, fallback);
         String key = "spring.datasource." + sourceName + ".schema";
         if (key.equals(propertyName)) {
-            // if scripts are found do not run them again, as they would have executed first time data source
+            // if scripts are found do not run them again, as they would have executed first
+            // time data source
             // is registered.
             if (!found.isEmpty()) {
                 return Collections.emptyList();
@@ -81,29 +82,31 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
 
     List<Resource> generatedScripts() {
         List<Resource> resources = Collections.emptyList();
-        
-        for (PersistentClass clazz:metadata.getEntityBindings()) {
+
+        for (PersistentClass clazz : metadata.getEntityBindings()) {
             org.hibernate.mapping.Table ormTable = clazz.getTable();
             String tableName = ormTable.getQuotedName();
             if (this.schema.getTable(tableName) != null) {
-                org.hibernate.mapping.Column c = new org.hibernate.mapping.Column(RedirectionSchemaBuilder.ROW_STATUS_COLUMN);
+                org.hibernate.mapping.Column c = new org.hibernate.mapping.Column(
+                        RedirectionSchemaBuilder.ROW_STATUS_COLUMN);
                 c.setSqlTypeCode(TypeFacility.getSQLTypeFromRuntimeType(Integer.class));
                 c.setSqlType(JDBCSQLTypeInfo.getTypeName(TypeFacility.getSQLTypeFromRuntimeType(Integer.class)));
                 ormTable.addColumn(c);
-                ormTable.setName(tableName+TeiidConstants.REDIRECTED_TABLE_POSTFIX);
+                ormTable.setName(tableName + TeiidConstants.REDIRECTED_TABLE_POSTFIX);
             }
         }
-        
+
         List<String> statements = createScript(metadata, dialect, true);
         StringBuilder sb = new StringBuilder();
-        for (String s: statements) {
-            // we have no need for sequences in the redirected scenario, they are fed from other side.
+        for (String s : statements) {
+            // we have no need for sequences in the redirected scenario, they are fed from
+            // other side.
             if (s.startsWith("drop sequence") || s.startsWith("create sequence")) {
                 continue;
             }
             sb.append(s).append(";\n");
         }
-        logger.debug("Redirected Schema:\n"+sb.toString());
+        logger.debug("Redirected Schema:\n" + sb.toString());
         resources = Arrays.asList(new ByteArrayResource(sb.toString().getBytes()));
         return resources;
     }
@@ -116,22 +119,25 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
             public boolean shouldManageNamespaces() {
                 return false;
             }
+
             @Override
             public Map getConfigurationValues() {
                 return Collections.emptyMap();
             }
+
             @Override
             public ExceptionHandler getExceptionHandler() {
                 return ExceptionHandlerHaltImpl.INSTANCE;
             }
         };
         HibernateSchemaManagementTool tool = new HibernateSchemaManagementTool();
-        tool.injectServices((ServiceRegistryImplementor)this.registry);
+        tool.injectServices((ServiceRegistryImplementor) this.registry);
         SourceDescriptor sd = new SourceDescriptor() {
             @Override
             public SourceType getSourceType() {
                 return SourceType.METADATA;
             }
+
             @Override
             public ScriptSourceInput getScriptSourceInput() {
                 return null;
@@ -142,8 +148,8 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
         }
         new SchemaCreatorImpl(tool).doCreation(metadata, d, options, sd, target);
         return target.commands;
-    }    
-    
+    }
+
     private static class JournalingGenerationTarget implements GenerationTarget {
         private final ArrayList<String> commands = new ArrayList<String>();
 
@@ -153,11 +159,11 @@ class RedirectionSchemaInitializer extends MultiDataSourceInitializer {
 
         @Override
         public void accept(String command) {
-            commands.add( command );
+            commands.add(command);
         }
 
         @Override
         public void release() {
         }
-    }          
+    }
 }

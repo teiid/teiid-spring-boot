@@ -49,16 +49,16 @@ import org.teiid.translator.TranslatorException;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = {TeiidAutoConfiguration.class, TestConfiguration.class})
 public class TeiidAutoConfigurationTest {
-    
+
     @Autowired
     TeiidServer teiidServer;
-    
+
     @Autowired
     VDBMetaData vdbMetaData;
-    
+
     @Autowired
     DataSource datasource;
-    
+
     @Test
     public void testAutowired() {
         assertNotNull(teiidServer);
@@ -68,24 +68,24 @@ public class TeiidAutoConfigurationTest {
 
     @Test
     public void testSpringVDB() throws SQLException {
-        
+
         assertEquals(Status.ACTIVE, vdbMetaData.getStatus());
         assertEquals(TeiidConstants.VDBNAME, vdbMetaData.getName());
         assertEquals(TeiidConstants.VDBVERSION, vdbMetaData.getVersion());
-        
+
         Connection conn = teiidServer.getDriver().connect("jdbc:teiid:spring", null);
         testConnection(conn);
     }
-    
+
     @Test
     public void testXmlVDBDeployment() throws VirtualDatabaseException, ConnectorManagerException, TranslatorException, IOException, SQLException {
-        
+
         InputStream is = TeiidAutoConfigurationTest.class.getClassLoader().getResourceAsStream("empty-vdb.xml");
         teiidServer.deployVDB(is);
         Connection conn = teiidServer.getDriver().connect("jdbc:teiid:Portfolio", null);
         testConnection(conn);
     }
-    
+
     private void testConnection(Connection conn) throws SQLException {
         assertNotNull(conn);
         Statement stmt = conn.createStatement();
@@ -95,7 +95,7 @@ public class TeiidAutoConfigurationTest {
         assertTrue(rs.next());
         close(rs, stmt, conn);
     }
-    
+
     @Test
     public void testTeiidSpringDatasource() throws SQLException {
         Connection conn = datasource.getConnection();

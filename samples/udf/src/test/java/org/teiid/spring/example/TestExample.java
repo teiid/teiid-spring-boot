@@ -30,12 +30,12 @@ public class TestExample {
 
     @Autowired
     CustomerRepository template;
-    
+
     @Test
     public void test() {
 
-		Iterable<Customer> result = template.findAll(); 
-		
-		assertTrue(result.iterator().next().getName().startsWith("Mr."));
+    Iterable<Customer> result = template.findAll();
+
+    assertTrue(result.iterator().next().getName().startsWith("Mr."));
     }
 }

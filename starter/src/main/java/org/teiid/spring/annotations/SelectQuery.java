@@ -24,14 +24,14 @@ import java.lang.annotation.Target;
 /**
  * Defines the Teiid View's Transformation query. This is must have annotation
  * to define Entity as View.<br>
- * 
+ *
  * If you defined a @Entity annotation on a JAVA class and would like to use
  * this class as View definition in Teiid, then use this annotation to define,
  * how Teiid can build this View based on other Tables and Views.<br>
  * <br>
- * 
+ *
  * For example for entity class:<br>
- * 
+ *
  * <pre>
  * <code>
  * &#64;Entity
@@ -44,9 +44,9 @@ import java.lang.annotation.Target;
  * }
  * </code>
  * </pre>
- * 
+ *
  * Will generate view in Teiid as follows <br>
- * 
+ *
  * <pre>
  * <code>
  * CREATE VIEW person {
@@ -57,7 +57,7 @@ import java.lang.annotation.Target;
  * AS select ssn as id, dob as dob, concat(firstname, concat(lastname,',')) as full_name FROM myTable;
  * </code>
  * </pre>
- * 
+ *
  * <b>IMPOTANT</b>: No matter how the ordering of your attributes in the
  * &#64;Entity class, JPA(Hibernate) framework generates View columns in
  * ALPHABETICAL order. So, in &#64;SelectQuery the ordering of the columns in
@@ -74,13 +74,13 @@ import java.lang.annotation.Target;
  * class. Which converts column names with under scores ("_"). You can define
  * your own naming strategy by defining the property as below example. The
  * example below will keep the names intact as defined.
- * 
+ *
  * <pre>
  * {@code
  * spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
  * }
  * </pre>
- * 
+ *
  * For more information checkout <a href=
  * "http://teiid.github.io/teiid-documents/master/content/reference/DDL_Metadata.html">DDL
  * support in Teiid</a>
@@ -90,3 +90,4 @@ import java.lang.annotation.Target;
 public @interface SelectQuery {
     String value() default "";
 }
+

@@ -24,26 +24,26 @@ import org.hibernate.usertype.DynamicParameterizedType;
 /**
  * @author Vlad MIhalcea
  */
-public class BigIntegerArrayType
-		extends AbstractSingleColumnStandardBasicType<BigInteger[]>
-		implements DynamicParameterizedType {
-	private static final long serialVersionUID = 2804264991524803758L;
+public class BigIntegerArrayType extends AbstractSingleColumnStandardBasicType<BigInteger[]>
+        implements DynamicParameterizedType {
+    private static final long serialVersionUID = 2804264991524803758L;
 
-	public BigIntegerArrayType() {
-		super( ArraySqlTypeDescriptor.INSTANCE, BigIntegerArrayTypeDescriptor.INSTANCE );
-	}
+    public BigIntegerArrayType() {
+        super(ArraySqlTypeDescriptor.INSTANCE, BigIntegerArrayTypeDescriptor.INSTANCE);
+    }
 
-	public String getName() {
-		return "biginteger-array";
-	}
+    @Override
+    public String getName() {
+        return "biginteger-array";
+    }
 
-	@Override
-	protected boolean registerUnderJavaType() {
-		return true;
-	}
+    @Override
+    protected boolean registerUnderJavaType() {
+        return true;
+    }
 
-	@Override
-	public void setParameterValues(Properties parameters) {
-		((BigIntegerArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
-	}
+    @Override
+    public void setParameterValues(Properties parameters) {
+        ((BigIntegerArrayTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+    }
 }

@@ -27,38 +27,43 @@ import java.lang.annotation.Target;
  * annotated with &#64;UserDefinedFunctions, at runtime this method will be
  * available for execution in Teiid queries such as {@link SelectQuery}. During
  * runtime the function will be evaluated in the source database as it gets
- * pushed down to source for execution<br> 
- * 
+ * pushed down to source for execution<br>
+ *
  * <pre>
  * <code>
  * &#64;UserDefinedFunctions
  * public class UserFunctions {
- *	&#64;SourceFunction(source="mydb", nativequery="repeat")
- *	public static String repeat(String p1, int p2) {
- *		return null;
- *	}	
+ *  &#64;SourceFunction(source="mydb", nativequery="repeat")
+ *  public static String repeat(String p1, int p2) {
+ *    return null;
+ *  }
  * }
  * </code>
  * </pre>
- * 
+ *
  * For an example see {@link UserDefinedFunctions}.
  *
  * For more information checkout <a href=
  * "http://teiid.github.io/teiid-documents/master/content/dev/Source_Supported_Functions.html">Source
  * Supported Functions</a> in Teiid.
- * 
+ *
  */
 @Target(ElementType.METHOD)
 @Retention(RUNTIME)
 public @interface SourceFunction {
-	/**
-	 * Defines the datasource name where the function needs to be defined.
-	 * @return source database name
-	 */
-	String source();
-	/**
-	 * Adds teiid_rel:native-query to the function; when omitted the function name executed as is
-	 * @return  native query or command 
-	 */
-	String nativequery() default "";
+    /**
+     * Defines the datasource name where the function needs to be defined.
+     *
+     * @return source database name
+     */
+    String source();
+
+    /**
+     * Adds teiid_rel:native-query to the function; when omitted the function name
+     * executed as is
+     *
+     * @return native query or command
+     */
+    String nativequery() default "";
 }
+

@@ -21,15 +21,16 @@ import javax.persistence.Id;
 import org.teiid.spring.annotations.TextTable;
 
 /**
- * This entity is showing the data from a text file. Needs {@link TextTable} annotation. 
+ * This entity is showing the data from a text file. Needs {@link TextTable}
+ * annotation.
  */
 @Entity
-@TextTable(file="marketdata-price.txt") /*Also see property: spring.teiid.file.parent-directory=src/main/resources */
+@TextTable(file = "marketdata-price.txt") /* Also see property: spring.teiid.file.parent-directory=src/main/resources */
 public class StockPrice {
-    
+
     @Id
     String symbol;
-    
+
     double price;
 
     public String getSymbol() {

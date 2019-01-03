@@ -23,20 +23,23 @@ import org.teiid.spring.annotations.SelectQuery;
 @Entity
 @SelectQuery("SELECT IDKEY, IDVALUE FROM mydb.IDGENERATOR")
 public class IdGenerator {
-	@Id
-	private String idkey;
-	private Long idvalue;
-	
-	public String getIdkey() {
-		return idkey;
-	}
-	public void setIdkey(String idkey) {
-		this.idkey = idkey;
-	}
-	public Long getIdvalue() {
-		return idvalue;
-	}
-	public void setIdvalue(Long idvalue) {
-		this.idvalue = idvalue;
-	}
+    @Id
+    private String idkey;
+    private Long idvalue;
+
+    public String getIdkey() {
+        return idkey;
+    }
+
+    public void setIdkey(String idkey) {
+        this.idkey = idkey;
+    }
+
+    public Long getIdvalue() {
+        return idvalue;
+    }
+
+    public void setIdvalue(Long idvalue) {
+        this.idvalue = idvalue;
+    }
 }

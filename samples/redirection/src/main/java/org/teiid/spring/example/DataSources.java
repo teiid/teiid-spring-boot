@@ -52,5 +52,4 @@ public class DataSources extends MultiDataSourceTransactionManagement {
     public DataSource redirected() {
         return DataSourceBuilder.create().build();
     }
-
 }

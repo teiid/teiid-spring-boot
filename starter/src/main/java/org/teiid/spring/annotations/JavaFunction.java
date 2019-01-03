@@ -30,23 +30,24 @@ import org.teiid.metadata.FunctionMethod.PushDown;
  * Using this annotation, you can define a static method on a class that is
  * annotated with &#64;UserDefinedFunctions, at runtime this method will be
  * available for execution in Teiid queries such as {@link SelectQuery}<br>
- * 
+ *
  * <pre>
  * <code>
  * &#64;UserDefinedFunctions
  * public class UserFunctions {
- * 
+ *
  *   &#64;JavaFunction
  *   public static String addHello(String value) {
  *     return "Hello "+value;
  *   }
  * }
- * 
+ *
  * </code>
  * </pre>
- * 
- * Then above function can be used in annotation queries such as  &#64;SelectQuery 
- * 
+ *
+ * Then above function can be used in annotation queries such as
+ * &#64;SelectQuery
+ *
  * <pre>
  * <code>
  * &#64;Entity
@@ -59,18 +60,23 @@ import org.teiid.metadata.FunctionMethod.PushDown;
  * }
  * </code>
  * </pre>
- * Note: functions can be used any where you are writing SQL as part of Entity definition.
- * For an example see {@link org.teiid.spring.annotations.UserDefinedFunctions }
- * 
+ *
+ * Note: functions can be used any where you are writing SQL as part of Entity
+ * definition. For an example see
+ * {@link org.teiid.spring.annotations.UserDefinedFunctions }
+ *
  * For more information checkout <a href=
- * "http://teiid.github.io/teiid-documents/master/content/dev/User_Defined_Functions.html">UDF</a> in Teiid.
- * 
+ * "http://teiid.github.io/teiid-documents/master/content/dev/User_Defined_Functions.html">UDF</a>
+ * in Teiid.
+ *
  */
 @Target(ElementType.METHOD)
 @Retention(RUNTIME)
 public @interface JavaFunction {
-	boolean nullOnNull() default false;
-	Determinism determinism() default Determinism.DETERMINISTIC;
-    PushDown pushdown() default PushDown.CAN_PUSHDOWN;
+    boolean nullOnNull() default false;
 
+    Determinism determinism() default Determinism.DETERMINISTIC;
+
+    PushDown pushdown() default PushDown.CAN_PUSHDOWN;
 }
+

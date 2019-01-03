@@ -17,17 +17,16 @@ package org.teiid.hibernate.types;
 
 import java.math.BigInteger;
 
-public class BigIntegerArrayTypeDescriptor
-		extends AbstractArrayTypeDescriptor<BigInteger[]> {
-	private static final long serialVersionUID = -1221629260969279889L;
-	public static final BigIntegerArrayTypeDescriptor INSTANCE = new BigIntegerArrayTypeDescriptor();
+public class BigIntegerArrayTypeDescriptor extends AbstractArrayTypeDescriptor<BigInteger[]> {
+    private static final long serialVersionUID = -1221629260969279889L;
+    public static final BigIntegerArrayTypeDescriptor INSTANCE = new BigIntegerArrayTypeDescriptor();
 
-	public BigIntegerArrayTypeDescriptor() {
-		super(BigInteger[].class );
-	}
+    public BigIntegerArrayTypeDescriptor() {
+        super(BigInteger[].class);
+    }
 
-	@Override
-	protected String getSqlArrayType() {
-		return "biginteger";
-	}
+    @Override
+    protected String getSqlArrayType() {
+        return "biginteger";
+    }
 }

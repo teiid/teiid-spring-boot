@@ -23,23 +23,23 @@ import org.teiid.spring.annotations.UserDefinedFunctions;
 @UserDefinedFunctions
 public class UserFunctions {
 
-	/**
-	 * this is example of a UDF in Teiid. When you use this in Teiid queries the
-	 * function will be evaluated in the Teiid engine
-	 */
-	@JavaFunction
-	public static String addSalutation(String value) {
-		return "Mr. "+value;
-	}
-	
-	/**
-	 * This is example of source pushdown function for h2 when a function is not
-	 * defined in the Teiid, you define a function like below and use in your user
-	 * queries which will be pushed to the source for evaluation
-	 * http://www.h2database.com/html/functions.html#repeat
-	 */
-	@SourceFunction(source="mydb", nativequery="repeat")
-	public static String repeat(String p1, int p2) {
-		return null;
-	}	
+    /**
+     * this is example of a UDF in Teiid. When you use this in Teiid queries the
+     * function will be evaluated in the Teiid engine
+     */
+    @JavaFunction
+    public static String addSalutation(String value) {
+        return "Mr. " + value;
+    }
+
+    /**
+     * This is example of source pushdown function for h2 when a function is not
+     * defined in the Teiid, you define a function like below and use in your user
+     * queries which will be pushed to the source for evaluation
+     * http://www.h2database.com/html/functions.html#repeat
+     */
+    @SourceFunction(source = "mydb", nativequery = "repeat")
+    public static String repeat(String p1, int p2) {
+        return null;
+    }
 }

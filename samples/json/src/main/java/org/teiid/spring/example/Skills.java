@@ -24,53 +24,53 @@ import javax.persistence.Table;
 import org.teiid.spring.annotations.JsonTable;
 
 @Entity
-@Table(name="employee_skills")
+@Table(name = "employee_skills")
 @JsonTable(endpoint = "employee.json", source = "file", root = "/skills")
 public class Skills {
-	
+
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false, updatable = true)	
-	private Employee employee;
-	
-	@Id
-	private String type;
+    @JoinColumn(name = "id", nullable = false, updatable = true)
+    private Employee employee;
 
-	private int rating;
+    @Id
+    private String type;
 
-	public Skills() {
-	}
-	
-	public Skills(String type, int rating) {
-		this.type = type;
-		this.rating = rating;
-	}
-	
-	public String getType() {
-		return type;
-	}
+    private int rating;
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public Skills() {
+    }
 
-	public int getRating() {
-		return rating;
-	}
+    public Skills(String type, int rating) {
+        this.type = type;
+        this.rating = rating;
+    }
 
-	public void setRating(int rating) {
-		this.rating = rating;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public Employee getEmployee() {
-		return employee;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public void setEmployee(Employee employee) {
-		this.employee = employee;
-	}
+    public int getRating() {
+        return rating;
+    }
 
-	@Override
-	public String toString() {
-		return "[type=" + type + ", rating=" + rating + "]";
-	}
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    @Override
+    public String toString() {
+        return "[type=" + type + ", rating=" + rating + "]";
+    }
 }

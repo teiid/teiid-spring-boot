@@ -26,38 +26,38 @@ import org.teiid.spring.annotations.ExcelTable;
 
 public class ExcelTableView extends ViewBuilder<ExcelTable> {
 
-	private AtomicInteger columnIdx = new AtomicInteger();
+    private AtomicInteger columnIdx = new AtomicInteger();
     private StringBuilder columns = new StringBuilder();
 
     public ExcelTableView(Metadata metadata) {
-		super(metadata);
-	}
-    
+        super(metadata);
+    }
+
     @Override
     void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, ExcelTable annotation) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ").append(columns.toString()).append("FROM ");
-		sb.append(entityClazz.getSimpleName().toLowerCase()).append(".").append(annotation.sheetName());
-		sb.append(" AS st");
+        sb.append(entityClazz.getSimpleName().toLowerCase()).append(".").append(annotation.sheetName());
+        sb.append(" AS st");
         view.setSelectTransformation(sb.toString());
     }
-    
+
     @Override
     void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,
-    		ExcelTable annotation) {
-      
-    	boolean headerExists = annotation.headerRow() != -1;
-    	String columnName = column.getName();
-    	if (!headerExists) {
-    		columnName = "column"+columnIdx.incrementAndGet();
-    	}
-    	this.columns.append("convert(st.").append(columnName).append(",").append(column.getRuntimeType()).append(")");
-		this.columns.append(" AS ").append(column.getName());
-    	
-        if(!last) {
+            ExcelTable annotation) {
+
+        boolean headerExists = annotation.headerRow() != -1;
+        String columnName = column.getName();
+        if (!headerExists) {
+            columnName = "column" + columnIdx.incrementAndGet();
+        }
+        this.columns.append("convert(st.").append(columnName).append(",").append(column.getRuntimeType()).append(")");
+        this.columns.append(" AS ").append(column.getName());
+
+        if (!last) {
             this.columns.append(", ");
         } else {
             this.columns.append(" ");
         }
-    }    
+    }
 }

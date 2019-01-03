@@ -33,10 +33,10 @@ public class RestConfiguration {
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
-    
+
     @Bean(name="rest")
     @ConditionalOnMissingBean(value= {RestConnectionFactory.class})
     public RestConnectionFactory restConnectionFactory() {
         return new RestConnectionFactory();
-    }    
+    }
 }

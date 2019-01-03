@@ -28,7 +28,7 @@ import org.teiid.translator.FileConnection;
 @ConfigurationProperties(prefix="spring.teiid.file")
 public class FileConnectionFactory extends BaseConnectionFactory {
     private static final long serialVersionUID = 5280962211320146145L;
-        
+
     private String parentDirectory;
     private String fileMapping;
     private boolean allowParentPaths = true;
@@ -36,37 +36,37 @@ public class FileConnectionFactory extends BaseConnectionFactory {
     public FileConnectionFactory() {
         super.setTranslatorName("file");
     }
-    
+
     @Override
     public FileConnection getConnection() throws ResourceException {
         if (this.parentDirectory == null) {
             this.parentDirectory = System.getProperty("user.dir");
         }
         final Map<String, String> map = StringUtil.valueOf(this.fileMapping, Map.class);
-        
+
         return new FileConnectionImpl(parentDirectory, map, allowParentPaths);
     }
-         
+
     public String getParentDirectory() {
         return parentDirectory;
     }
-    
+
     public void setParentDirectory(String parentDirectory) {
         this.parentDirectory = parentDirectory;
     }
-    
+
     public String getFileMapping() {
         return fileMapping;
     }
-    
+
     public void setFileMapping(String fileMapping) {
         this.fileMapping = fileMapping;
     }
-    
+
     public Boolean isAllowParentPaths() {
         return allowParentPaths;
     }
-    
+
     public void setAllowParentPaths(Boolean allowParentPaths) {
         this.allowParentPaths = allowParentPaths != null && allowParentPaths;
     }
