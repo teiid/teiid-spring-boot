@@ -26,7 +26,11 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Driver;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
@@ -60,7 +64,6 @@ import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.cache.Cache;
 import org.teiid.cache.CacheFactory;
-import org.teiid.core.util.LRUCache;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
@@ -76,6 +79,8 @@ import org.teiid.translator.TranslatorException;
 import org.teiid.transport.SocketConfiguration;
 import org.teiid.transport.WireProtocol;
 import org.xml.sax.SAXException;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 @Configuration
 @ConditionalOnClass({EmbeddedServer.class, ExecutionFactory.class})
@@ -198,7 +203,7 @@ public class TeiidAutoConfiguration implements Ordered {
     }
 
     private VDBMetaData loadVDB(URL url) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
-            IOException, URISyntaxException {
+    IOException, URISyntaxException {
         VirtualFile root = PureZipFileSystem.mount(url);
         VDBMetaData metadata;
 
@@ -236,15 +241,7 @@ public class TeiidAutoConfiguration implements Ordered {
 
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
-            embeddedConfiguration.setCacheFactory(new CacheFactory() {
-                @Override
-                public <K, V> Cache<K, V> get(String name) {
-                    return new LocalCache<>(name, 10);
-                }
-                @Override
-                public void destroy() {
-                }
-            });
+            embeddedConfiguration.setCacheFactory(new CaffeineCacheFactory());
             // add ability for remote jdbc connections
             if (this.properties.isJdbcEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
@@ -264,7 +261,7 @@ public class TeiidAutoConfiguration implements Ordered {
         if (embeddedConfiguration.getTransactionManager() == null) {
             PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
             ptma.setJTATransactionManager(this.transactionManager);
-          embeddedConfiguration.setTransactionManager(ptma);
+            embeddedConfiguration.setTransactionManager(ptma);
         }
 
         server.start(embeddedConfiguration);
@@ -279,18 +276,38 @@ public class TeiidAutoConfiguration implements Ordered {
         return server;
     }
 
-    static class LocalCache<K, V> extends LRUCache<K, V> implements Cache<K, V> {
-        private static final long serialVersionUID = -7894312381042966398L;
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    static class CaffeineCacheFactory implements CacheFactory {
+        Map<String, Cache> map = new HashMap<>();
+        @Override
+        public <K, V> Cache<K, V> get(String name) {
+            map.put(name, new CaffeineCache<K,V>(name, 256));
+            return map.get(name);
+        }
+        @Override
+        public void destroy() {
+            Set<String> keys = new HashSet<>(map.keySet());
+            keys.forEach(k -> map.get(k).clear());
+            map.clear();
+        }
+    }
+    static class CaffeineCache<K, V> implements Cache<K, V> {
         private String name;
+        private com.github.benmanes.caffeine.cache.Cache<K,V> delegate;
 
-        LocalCache(String cacheName, int maxSize) {
-            super(maxSize < 0 ? Integer.MAX_VALUE : maxSize);
+        CaffeineCache(String cacheName, int maxSize) {
             this.name = cacheName;
+            this.delegate = Caffeine.newBuilder()
+                    .weakKeys()
+                    .weakValues()
+                    .maximumSize(maxSize < 0 ? 10000 : maxSize)
+                    .build();
         }
 
         @Override
         public V put(K key, V value, Long ttl) {
-            return put(key, value);
+            delegate.put(key, value);
+            return delegate.getIfPresent(key);
         }
 
         @Override
@@ -301,6 +318,33 @@ public class TeiidAutoConfiguration implements Ordered {
         @Override
         public boolean isTransactional() {
             return false;
+        }
+
+        @Override
+        public V get(K key) {
+            return delegate.getIfPresent(key);
+        }
+
+        @Override
+        public V remove(K key) {
+            V v = delegate.getIfPresent(key);
+            delegate.invalidate(key);
+            return v;
+        }
+
+        @Override
+        public int size() {
+            return Math.toIntExact(delegate.estimatedSize());
+        }
+
+        @Override
+        public void clear() {
+            delegate.invalidateAll();
+        }
+
+        @Override
+        public Set<K> keySet() {
+            return delegate.asMap().keySet();
         }
     }
 
