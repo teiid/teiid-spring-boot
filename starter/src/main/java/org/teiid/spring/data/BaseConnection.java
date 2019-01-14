@@ -15,50 +15,8 @@
  */
 package org.teiid.spring.data;
 
-import javax.resource.ResourceException;
-import javax.resource.cci.Connection;
-import javax.resource.cci.ConnectionMetaData;
-import javax.resource.cci.Interaction;
-import javax.resource.cci.LocalTransaction;
-import javax.resource.cci.ResultSetInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.transaction.xa.XAResource;
+import org.teiid.resource.api.Connection;
 
 public abstract class BaseConnection implements Connection {
 
-    @Override
-    public Interaction createInteraction() throws ResourceException {
-        throw new ResourceException("This operation not supported"); //$NON-NLS-1$
-    }
-
-    @Override
-    public LocalTransaction getLocalTransaction() throws ResourceException {
-        return null;
-    }
-
-    @Override
-    public ConnectionMetaData getMetaData() throws ResourceException {
-        throw new ResourceException("This operation not supported"); //$NON-NLS-1$
-    }
-
-    @Override
-    public ResultSetInfo getResultSetInfo() throws ResourceException {
-        throw new ResourceException("This operation not supported"); //$NON-NLS-1$
-    }
-
-    public XAResource getXAResource() throws ResourceException {
-        return null;
-    }
-
-    public boolean isAlive() {
-        return true;
-    }
-
-    /**
-     * Called by the {@link ManagedConnection} to indicate the physical connection
-     * should be cleaned up for reuse.
-     */
-    public void cleanUp() {
-
-    }
 }

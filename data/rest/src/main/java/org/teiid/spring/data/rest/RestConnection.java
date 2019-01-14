@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import javax.activation.DataSource;
-import javax.resource.ResourceException;
 import javax.xml.namespace.QName;
 import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Binding;
@@ -54,10 +53,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.teiid.core.types.InputStreamFactory;
 import org.teiid.core.util.ObjectConverterUtil;
-import org.teiid.resource.spi.BasicConnection;
-import org.teiid.translator.WSConnection;
+import org.teiid.spring.data.BaseConnection;
+import org.teiid.translator.ws.WSConnection;
 
-public class RestConnection extends BasicConnection implements WSConnection {
+public class RestConnection extends BaseConnection implements WSConnection {
 
   private static final class HttpDataSource implements DataSource {
     private final URL url;
@@ -215,7 +214,7 @@ public class RestConnection extends BasicConnection implements WSConnection {
   }
 
     @Override
-  public void close() throws ResourceException {
+  public void close() throws Exception {
   }
 
   @Override

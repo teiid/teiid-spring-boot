@@ -23,7 +23,7 @@
     <artifactId>basepom-oss</artifactId>
     <version>25</version>
   </parent>
-  
+
   <groupId>org.teiid</groupId>
   <artifactId>teiid-spring-boot-starter-parent</artifactId>
   <version>1.0.2-SNAPSHOT</version>
@@ -51,6 +51,7 @@
     <url>https://github.com/teiid/teiid-spring-boot</url>
     <tag>HEAD</tag>
   </scm>
+  
   <developers>
     <developer>
       <name>Steve Hawkins</name>
@@ -90,7 +91,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.deploy.plugin>2.8.2</version.deploy.plugin>
-    
+
     <basepom.check.skip-dependency>true</basepom.check.skip-dependency>
     <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>
     <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
@@ -98,12 +99,13 @@
 
     <!-- Project Dependencies -->
     <spring-boot.version>1.5.13.RELEASE</spring-boot.version> <!-- Matching with OpenShift SB -->
-    <teiid.version>11.2.0</teiid.version>
+    <teiid.version>12.0.0-SNAPSHOT</teiid.version>
     <version.xml-apis>1.4.01</version.xml-apis>
-    <javax.resource.version>1.0.0.Final</javax.resource.version>
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
     <hibernate.version>5.1.10.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
     <hibernate.tools.version>5.1.9.Final</hibernate.tools.version>
+    
+    <infinispan.version>9.3.1.Final</infinispan.version> <!-- overriding the version in spring -->
   </properties>
 
   <build>
@@ -140,6 +142,11 @@
         <version>${spring-boot.version}</version>
       </dependency>
       <dependency>
+          <groupId>org.infinispan</groupId>
+          <artifactId>infinispan-core</artifactId>
+          <version>${infinispan.version}</version>
+      </dependency>       
+      <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>teiid-parent</artifactId>
         <version>${teiid.version}</version>
@@ -157,11 +164,6 @@
         <version>${teiid.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.jboss.spec.javax.resource</groupId>
-        <artifactId>jboss-connector-api_1.7_spec</artifactId>
-        <version>${javax.resource.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-core</artifactId>
         <version>${hibernate.version}</version>
@@ -176,7 +178,16 @@
         <artifactId>xml-apis</artifactId>
         <version>${version.xml-apis}</version>
       </dependency>
-
+      <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>1.3.2</version>
+      </dependency>
+      <dependency>
+          <groupId>javax.xml.bind</groupId>
+          <artifactId>jaxb-api</artifactId>
+          <version>2.3.1</version>
+      </dependency>      
       <!--Project dependencies -->
       <dependency>
         <groupId>org.teiid</groupId>
@@ -241,7 +252,7 @@
         <module>starter-test</module>
         <module>data/rest</module>
         <module>data/excel</module>
-        <module>odata</module>       
+        <module>odata</module>
         <module>samples</module>
         <module>bom</module>
       </modules>

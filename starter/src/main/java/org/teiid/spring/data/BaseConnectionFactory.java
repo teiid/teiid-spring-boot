@@ -16,54 +16,13 @@
 
 package org.teiid.spring.data;
 
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.cci.Connection;
-import javax.resource.cci.ConnectionSpec;
-import javax.resource.cci.RecordFactory;
-import javax.resource.cci.ResourceAdapterMetaData;
 
-import org.teiid.core.util.EquivalenceUtil;
 
-@SuppressWarnings("serial")
-public abstract class BaseConnectionFactory implements javax.resource.cci.ConnectionFactory {
+import org.teiid.resource.api.ConnectionFactory;
+
+public abstract class BaseConnectionFactory<T extends BaseConnection> implements ConnectionFactory<T> {
 
     private String translatorName;
-
-    @Override
-    public void setReference(Reference reference) {
-
-    }
-
-    @Override
-    public Reference getReference() throws NamingException {
-        return null;
-    }
-
-    @Override
-    public Connection getConnection() throws ResourceException {
-        return null;
-    }
-
-    @Override
-    public Connection getConnection(ConnectionSpec properties) throws ResourceException {
-        return null;
-    }
-
-    @Override
-    public RecordFactory getRecordFactory() throws ResourceException {
-        return null;
-    }
-
-    @Override
-    public ResourceAdapterMetaData getMetaData() throws ResourceException {
-        return null;
-    }
-
-    protected static boolean checkEquals(Object left, Object right) {
-        return EquivalenceUtil.areEqual(left, right);
-    }
 
     public String getTranslatorName() {
         return translatorName;

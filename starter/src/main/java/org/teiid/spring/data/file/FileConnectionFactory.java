@@ -18,17 +18,12 @@ package org.teiid.spring.data.file;
 
 import java.util.Map;
 
-import javax.resource.ResourceException;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.teiid.core.util.StringUtil;
 import org.teiid.spring.data.BaseConnectionFactory;
-import org.teiid.translator.FileConnection;
 
 @ConfigurationProperties(prefix="spring.teiid.file")
-public class FileConnectionFactory extends BaseConnectionFactory {
-    private static final long serialVersionUID = 5280962211320146145L;
-
+public class FileConnectionFactory extends BaseConnectionFactory<FileConnection> {
     private String parentDirectory;
     private String fileMapping;
     private boolean allowParentPaths = true;
@@ -38,13 +33,13 @@ public class FileConnectionFactory extends BaseConnectionFactory {
     }
 
     @Override
-    public FileConnection getConnection() throws ResourceException {
+    public FileConnection getConnection() throws Exception {
         if (this.parentDirectory == null) {
             this.parentDirectory = System.getProperty("user.dir");
         }
         final Map<String, String> map = StringUtil.valueOf(this.fileMapping, Map.class);
 
-        return new FileConnectionImpl(parentDirectory, map, allowParentPaths);
+        return new FileConnection(parentDirectory, map, allowParentPaths);
     }
 
     public String getParentDirectory() {
