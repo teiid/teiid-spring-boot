@@ -14,8 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -104,6 +103,9 @@
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
     <hibernate.version>5.1.10.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
     <hibernate.tools.version>5.1.9.Final</hibernate.tools.version>
+    <version.javax.annotation>1.3.2</version.javax.annotation>
+    <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
+    <version.org.mockito>1.9.5</version.org.mockito>
   </properties>
 
   <build>
@@ -174,12 +176,12 @@
       <dependency>
         <groupId>javax.annotation</groupId>
         <artifactId>javax.annotation-api</artifactId>
-        <version>1.3.2</version>
+        <version>${version.javax.annotation}</version>
       </dependency>
       <dependency>
           <groupId>javax.xml.bind</groupId>
           <artifactId>jaxb-api</artifactId>
-          <version>2.3.1</version>
+          <version>${version.javax.xml.bind}</version>
       </dependency>      
       <!--Project dependencies -->
       <dependency>
@@ -190,7 +192,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
-        <version>1.9.5</version>
+        <version>${version.org.mockito}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -263,7 +265,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.10.4</version>
             <configuration>
               <maxmemory>512m</maxmemory>
             </configuration>
@@ -278,7 +279,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.0.1</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -290,8 +290,8 @@
             </executions>
           </plugin>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -304,7 +304,6 @@
           </plugin>
           <plugin>
             <artifactId>maven-release-plugin</artifactId>
-            <version>2.5.3</version>
             <dependencies>
               <dependency>
                 <groupId>org.apache.maven.scm</groupId>
