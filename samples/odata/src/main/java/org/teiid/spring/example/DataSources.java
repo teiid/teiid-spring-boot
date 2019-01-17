@@ -31,4 +31,10 @@ public class DataSources {
     public DataSource accounts() {
         return DataSourceBuilder.create().build();
     }
+
+    @ConfigurationProperties(prefix = "spring.datasource.accounts2")
+    @Bean
+    public DataSource accounts2() {
+        return DataSourceBuilder.create().build();
+    }
 }
