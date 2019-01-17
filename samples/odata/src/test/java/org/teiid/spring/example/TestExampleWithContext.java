@@ -28,12 +28,14 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { Application.class, TestConfiguration.class, RestTemplate.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
-public class TestExample {
+@TestPropertySource(locations="classpath:application-context.properties")
+public class TestExampleWithContext {
     @Autowired
     TestRestTemplate web;
 
@@ -42,26 +44,26 @@ public class TestExample {
 
     @Test
     public void test() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/CUSTOMER", String.class);
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/CUSTOMER", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testRoot() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port, String.class);
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/odata", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testWithModelName() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/accounts/CUSTOMER",
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/accounts/CUSTOMER",
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testWithModelName2() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/accounts2/CUSTOMER",
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/accounts2/CUSTOMER",
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }

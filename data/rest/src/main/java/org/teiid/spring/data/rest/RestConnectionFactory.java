@@ -16,18 +16,15 @@
 
 package org.teiid.spring.data.rest;
 
-import javax.resource.ResourceException;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.web.client.RestTemplate;
 import org.teiid.spring.data.BaseConnectionFactory;
-import org.teiid.translator.WSConnection;
 
 @ConfigurationProperties(prefix="spring.teiid.ws")
-public class RestConnectionFactory extends BaseConnectionFactory {
-    private static final long serialVersionUID = 7082082147591076185L;
+public class RestConnectionFactory extends BaseConnectionFactory<RestConnection> {
 
     @Autowired
     RestTemplate template;
@@ -40,7 +37,7 @@ public class RestConnectionFactory extends BaseConnectionFactory {
     }
 
     @Override
-    public WSConnection getConnection() throws ResourceException {
+    public RestConnection getConnection() throws Exception {
         return new RestConnection(template, beanFactory);
     }
 }
