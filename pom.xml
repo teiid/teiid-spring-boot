@@ -253,9 +253,11 @@
     </profile>
     <profile>
       <id>release</id>
+      <properties>
+         <basepom.check.skip-javadoc>false</basepom.check.skip-javadoc>      
+      </properties>
       <modules>
         <module>starter</module>
-        <module>starter-test</module>
         <module>data/rest</module>
         <module>data/excel</module>
         <module>odata</module>
