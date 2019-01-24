@@ -67,4 +67,13 @@ public class TestExampleWithContext {
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
+
+    @Test
+    public void testAPI() throws Exception{
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/api/hi",
+                String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        assertThat(response.getBody(), equalTo("hello"));
+
+    }
 }
