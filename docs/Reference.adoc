@@ -65,3 +65,12 @@ For configuring the JDBC data sources please see https://docs.spring.io/spring-b
 |spring.datasource.{dsname}.platfrom|Name of the platform, where when init SQL queries for the database are provided this will be used ad postfix. See rdbms-file-example for example.|n/a|
 |spring.datasource.{dsname}.importer.{property-name}|Translator importer properties to control the type and amount of metadata to import. See for more information about http://teiid.github.io/teiid-documents/master/content/reference/JDBC_Translators.html[importer properties]
 |=======================
+
+== OData Properties
+
+[options="header"]
+|=======================
+|Property|Description|Default Value
+|spring.teiid.odata.xxx|Any connection properties. ex:batch-size,skiptoken-cache-time,|n/a|
+|spring.teiid.odata.alt.paths|Comma separated context paths that should be redirected from OData context handler. This will be useful when user wants handle custom paths in addition to OData. ex: /api,/foo  where when a request comes for these paths they will redirected to registered servlet. To Register a servlet see https://www.baeldung.com/register-servlet|n/a|
+|=======================

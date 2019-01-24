@@ -16,10 +16,16 @@
 
 package org.teiid.spring.example;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,5 +42,22 @@ public class DataSources {
     @Bean
     public DataSource accounts2() {
         return DataSourceBuilder.create().build();
+    }
+
+
+    // the below only needed when separate context is needed by same application
+    // like / and /api but api handled by separate servlet.
+    @Bean
+    public ServletRegistrationBean apiServlet() {
+        return new ServletRegistrationBean(new APIServlet(), "/api/*");
+    }
+
+    @SuppressWarnings("serial")
+    class APIServlet extends HttpServlet {
+        @Override
+        public void doGet(HttpServletRequest request, HttpServletResponse response)
+                throws IOException {
+            response.getWriter().write("hello");
+        }
     }
 }

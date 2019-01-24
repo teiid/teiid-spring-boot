@@ -25,7 +25,7 @@
 
   <groupId>org.teiid</groupId>
   <artifactId>teiid-spring-boot-starter-parent</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>teiid-spring-boot-starter-parent</name>
   <url>http://teiid.org</url>

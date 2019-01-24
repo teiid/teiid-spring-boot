@@ -44,10 +44,25 @@ public class SpringODataFilter extends ODataFilter {
 
     private TeiidServer server;
     private VDB vdb;
+    private String[] alternatePaths;
 
-    public SpringODataFilter(TeiidServer server, VDB vdb) {
+    public SpringODataFilter(TeiidServer server, VDB vdb, String[] redirectedPaths) {
         this.server = server;
         this.vdb = vdb;
+        this.alternatePaths = redirectedPaths;
+    }
+
+    private boolean skipPath(String uri) {
+        if (this.alternatePaths == null) {
+            return false;
+        }
+        for (int i = 0; i < this.alternatePaths.length; i++) {
+            String path = this.alternatePaths[i];
+            if (uri.contains(path)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -59,7 +74,7 @@ public class SpringODataFilter extends ODataFilter {
 
         String uri = ((HttpServletRequest) request).getRequestURI().toString();
         String fullURL = ((HttpServletRequest) request).getRequestURL().toString();
-        if (uri.contains("/static/") || uri.contains("/keycloak/")){ //$NON-NLS-1$ //$NON-NLS-2$
+        if (uri.contains("/static/") || skipPath(uri)){ //$NON-NLS-1$
             chain.doFilter(httpRequest, response);
             return;
         }
