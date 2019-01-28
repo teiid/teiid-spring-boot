@@ -84,12 +84,12 @@ public class ODataConfiguration {
     }
 
     @Bean
-    public ServletRegistrationBean odataServlet() {
-        return new ServletRegistrationBean(new ODataServlet(), URL_MAPPING);
+    public ServletRegistrationBean<ODataServlet> odataServlet() {
+        return new ServletRegistrationBean<ODataServlet>(new ODataServlet(), URL_MAPPING);
     }
 
     @Bean
-    public ServletRegistrationBean staticContentServlet() {
-        return new ServletRegistrationBean(new StaticContentServlet(), URL_MAPPING_STATIC);
+    public ServletRegistrationBean<StaticContentServlet> staticContentServlet() {
+        return new ServletRegistrationBean<StaticContentServlet>(new StaticContentServlet(), URL_MAPPING_STATIC);
     }
 }

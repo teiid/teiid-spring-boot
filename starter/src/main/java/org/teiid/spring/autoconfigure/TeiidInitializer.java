@@ -24,8 +24,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceInitializedEvent;
-import org.springframework.boot.context.config.ResourceNotFoundException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
@@ -88,18 +86,16 @@ class TeiidInitializer implements ApplicationListener<TeiidInitializedEvent> {
         }
         List<String> fallbackResources = new ArrayList<String>();
         fallbackResources.add("classpath*:" + vdb);
-        return getResources(propertyName, fallbackResources, false, context);
+        return getResources(propertyName, fallbackResources, context);
     }
 
-    private static List<Resource> getResources(String propertyName, List<String> locations, boolean validate,
+    private static List<Resource> getResources(String propertyName, List<String> locations,
             ApplicationContext context) {
         List<Resource> resources = new ArrayList<Resource>();
         for (String location : locations) {
             for (Resource resource : doGetResources(location, context)) {
                 if (resource.exists()) {
                     resources.add(resource);
-                } else if (validate) {
-                    throw new ResourceNotFoundException(propertyName, resource);
                 }
             }
         }

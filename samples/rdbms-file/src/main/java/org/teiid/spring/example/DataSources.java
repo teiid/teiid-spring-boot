@@ -18,17 +18,17 @@ package org.teiid.spring.example;
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DataSources {
 
-    @ConfigurationProperties(prefix = "spring.datasource.accountsDS")
+    @ConfigurationProperties(prefix = "spring.datasource.accounts")
     @Bean
-    public DataSource accountsDS() {
+    public DataSource accounts() {
         return DataSourceBuilder.create().build();
     }
 }

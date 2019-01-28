@@ -32,7 +32,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.boot.jta.XADataSourceWrapper;
+import org.springframework.boot.jdbc.XADataSourceWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -63,9 +63,6 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
     @Autowired
     private ApplicationContext context;
 
-    @Autowired
-    private PhysicalNamingStrategy namingStrategy;
-
     @Autowired(required = false)
     private XADataSourceWrapper xaWrapper;
 
@@ -77,6 +74,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         return bean;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof TeiidServer) {
@@ -118,7 +116,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         } else if (bean instanceof PlatformTransactionManager) {
             TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             server.getPlatformTransactionManagerAdapter()
-                    .setPlatformTransactionManager((PlatformTransactionManager) bean);
+            .setPlatformTransactionManager((PlatformTransactionManager) bean);
         }
         return bean;
     }
@@ -129,6 +127,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
         TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
         if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
+            PhysicalNamingStrategy namingStrategy = this.beanFactory.getBean(PhysicalNamingStrategy.class);
             deploy = server.findAndConfigureViews(vdb, event.getApplicationContext(), namingStrategy);
         }
 

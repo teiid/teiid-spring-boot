@@ -107,6 +107,8 @@ import org.teiid.translator.TranslatorException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 public class TeiidServer extends EmbeddedServer {
     static final String DIALECT = "dialect";
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
@@ -118,6 +120,7 @@ public class TeiidServer extends EmbeddedServer {
         this.cmr = new SBConnectorManagerRepository();
     }
 
+    @SuppressWarnings("rawtypes")
     public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
         // only when user did not define a explicit VDB then build one.
         if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
@@ -131,8 +134,14 @@ public class TeiidServer extends EmbeddedServer {
             if (source instanceof DataSource) {
                 String driverName = getDriverName(source);
                 if (driverName == null) {
-                    throw new IllegalStateException("Failed to determine the type of source defined with bean name "
-                            + sourceBeanName + "On Tomcat based DataSource and XA DataSources are supported");
+                    throw new IllegalStateException("Failed to determine the type of data source defined with bean name "
+                            + sourceBeanName + " use Tomcat based DataSource and XA DataSources are supported. "
+                            + "Add the following to your pom.xml\n"
+                            + "  <dependency>\n" +
+                            "      <groupId>org.apache.tomcat</groupId>\n" +
+                            "      <artifactId>tomcat-jdbc</artifactId>\n" +
+                            "    </dependency>"
+                            );
                 }
                 try {
                     model = buildModelFromDataSource(sourceBeanName, driverName, context,
@@ -216,13 +225,15 @@ public class TeiidServer extends EmbeddedServer {
         String driverName = null;
         if (source instanceof org.apache.tomcat.jdbc.pool.DataSource) {
             driverName = ((org.apache.tomcat.jdbc.pool.DataSource) source).getDriverClassName();
+        } else if (source instanceof HikariDataSource) {
+            driverName = ((HikariDataSource) source).getDriverClassName();
         } else {
             if (source instanceof DataSource) {
                 try {
                     XADataSource xads = ((DataSource) source).unwrap(XADataSource.class);
                     if (xads != null) {
                         if (xads instanceof XADataSourceBuilder) {
-                            driverName = ((XADataSourceBuilder) xads).getDataSourceClassName();
+                            driverName = ((XADataSourceBuilder) xads).dataSourceClassName();
                         } else {
                             driverName = xads.getClass().getName();
                         }
@@ -330,6 +341,7 @@ public class TeiidServer extends EmbeddedServer {
         return model;
     }
 
+    @SuppressWarnings("rawtypes")
     private ModelMetaData buildModelFromConnectionFactory(String sourceBeanName, BaseConnectionFactory factory,
             ApplicationContext context) {
         ModelMetaData model = new ModelMetaData();
@@ -478,8 +490,8 @@ public class TeiidServer extends EmbeddedServer {
                 if (dialect == null) {
                     throw new IllegalStateException(
                             "Redirection is enabled, however data source named \"" + redirectedDSName
-                                    + "\" cannot be used with schema initialization, choose a different data source"
-                                    + "as there are no schema generation facilities for this data source.");
+                            + "\" cannot be used with schema initialization, choose a different data source"
+                            + "as there are no schema generation facilities for this data source.");
                 }
                 new RedirectionSchemaInitializer(redirectedDS, redirectedDSName, getDialect(dialect), metadata,
                         this.metadataSources.getServiceRegistry(), mf.getSchema(), context).init();
@@ -538,7 +550,7 @@ public class TeiidServer extends EmbeddedServer {
         ServiceRegistry registry = metadataSources.getServiceRegistry();
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(
                 (BootstrapServiceRegistry) registry).applySetting(AvailableSettings.DIALECT, TeiidDialect.class)
-                        .build();
+                .build();
         // Generate Hibernate model based on @Entity definitions
         for (BeanDefinition c : components) {
             try {
@@ -603,6 +615,7 @@ public class TeiidServer extends EmbeddedServer {
         return platformTransactionManagerAdapter;
     }
 
+    @SuppressWarnings("serial")
     protected class SBConnectorManagerRepository extends ConnectorManagerRepository {
         public SBConnectorManagerRepository() {
             super(true);
