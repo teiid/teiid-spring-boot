@@ -26,12 +26,14 @@ import java.util.Properties;
 import org.hibernate.MappingException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.internal.BootstrapContextImpl;
 import org.hibernate.boot.internal.InFlightMetadataCollectorImpl;
 import org.hibernate.boot.internal.MetadataBuilderImpl.MetadataBuildingOptionsImpl;
 import org.hibernate.boot.internal.MetadataBuildingContextRootImpl;
 import org.hibernate.boot.registry.BootstrapServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.boot.spi.BootstrapContext;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.boot.spi.MetadataBuildingOptions;
 import org.hibernate.cfg.AvailableSettings;
@@ -57,10 +59,7 @@ import org.hibernate.mapping.UniqueKey;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.tool.hbm2x.ArtifactCollector;
 import org.hibernate.tool.hbm2x.HibernateMappingExporter;
-import org.hibernate.type.BasicTypeRegistry;
 import org.hibernate.type.Type;
-import org.hibernate.type.TypeFactory;
-import org.hibernate.type.TypeResolver;
 import org.springframework.context.ApplicationContext;
 import org.teiid.core.types.JDBCSQLTypeInfo;
 import org.teiid.dialect.TeiidDialect;
@@ -80,7 +79,7 @@ public class SchemaBuilderUtility {
         generateVBLSchema(source, target);
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(
                 (BootstrapServiceRegistry) metadataSources.getServiceRegistry())
-                        .applySetting(AvailableSettings.DIALECT, dialect).build();
+                .applySetting(AvailableSettings.DIALECT, dialect).build();
         ArtifactCollector files = generateHibernateModel(source, serviceRegistry);
         for (File f : files.getFiles("hbm.xml")) {
             metadataSources.addFile(f);
@@ -141,25 +140,28 @@ public class SchemaBuilderUtility {
     public static Metadata generateHbmModel(ConnectionProvider provider, Dialect dialect) throws SQLException {
         MetadataSources metadataSources = new MetadataSources();
         ServiceRegistry registry = metadataSources.getServiceRegistry();
+
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(
                 (BootstrapServiceRegistry) registry).applySetting(AvailableSettings.DIALECT, TeiidDialect.class)
-                .addService(ConnectionProvider.class, provider)
-                .addService(JdbcEnvironment.class, new JdbcEnvironmentImpl(provider.getConnection().getMetaData(), dialect))
-                        .build();
+                .addService(ConnectionProvider.class, provider).addService(JdbcEnvironment.class,
+                        new JdbcEnvironmentImpl(provider.getConnection().getMetaData(), dialect))
+                .build();
+
+        MetadataBuildingOptions options = new MetadataBuildingOptionsImpl(serviceRegistry);
+        BootstrapContext bootstrapContext = new BootstrapContextImpl( serviceRegistry, options );
 
         ReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
-        MetadataBuildingOptions options = new MetadataBuildingOptionsImpl(serviceRegistry);
-        BasicTypeRegistry basicTypeRegistry = new BasicTypeRegistry();
-        TypeResolver typeResolver = new TypeResolver(basicTypeRegistry, new TypeFactory());
-        InFlightMetadataCollectorImpl metadataCollector =  new InFlightMetadataCollectorImpl(options, typeResolver);
-        MetadataBuildingContext buildingContext = new MetadataBuildingContextRootImpl(options, null, metadataCollector);
+
+        InFlightMetadataCollectorImpl metadataCollector =  new InFlightMetadataCollectorImpl(bootstrapContext, options);
+        MetadataBuildingContext buildingContext = new MetadataBuildingContextRootImpl(bootstrapContext, options,
+                metadataCollector);
 
         JDBCBinder binder = new JDBCBinder(serviceRegistry, new Properties(), buildingContext, strategy, false);
         Metadata metadata = metadataCollector.buildMetadataInstance(buildingContext);
         binder.readFromDatabase(null, null, buildMapping(metadata));
         HibernateMappingExporter exporter = new HibernateMappingExporter() {
             @Override
-            protected Metadata getMetadata() {
+            public Metadata getMetadata() {
                 return metadata;
             }
         };
@@ -240,7 +242,7 @@ public class SchemaBuilderUtility {
                 for (Column column : table.getColumns()) {
                     org.hibernate.mapping.Column hc = new org.hibernate.mapping.Column();
                     hc.setName(column.getName());
-                    hc.setSqlTypeCode(new Integer(JDBCSQLTypeInfo.getSQLType(column.getRuntimeType())));
+                    hc.setSqlTypeCode(Integer.valueOf(JDBCSQLTypeInfo.getSQLType(column.getRuntimeType())));
                     hc.setLength(column.getLength());
                     hc.setPrecision(column.getPrecision());
                     hc.setScale(column.getScale());
@@ -319,13 +321,16 @@ public class SchemaBuilderUtility {
         }
     }
 
-    public static ArtifactCollector generateHibernateModel(MetadataFactory source, StandardServiceRegistry serviceRegistry) {
+    public static ArtifactCollector generateHibernateModel(MetadataFactory source,
+            StandardServiceRegistry serviceRegistry) {
         ReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
         MetadataBuildingOptions options = new MetadataBuildingOptionsImpl(serviceRegistry);
-        BasicTypeRegistry basicTypeRegistry = new BasicTypeRegistry();
-        TypeResolver typeResolver = new TypeResolver(basicTypeRegistry, new TypeFactory());
-        InFlightMetadataCollectorImpl metadataCollector =  new InFlightMetadataCollectorImpl(options, typeResolver);
-        MetadataBuildingContext buildingContext = new MetadataBuildingContextRootImpl(options, null, metadataCollector);
+
+        BootstrapContext bootstrapContext = new BootstrapContextImpl(serviceRegistry, options);
+
+        InFlightMetadataCollectorImpl metadataCollector = new InFlightMetadataCollectorImpl(bootstrapContext, options);
+        MetadataBuildingContext buildingContext = new MetadataBuildingContextRootImpl(bootstrapContext, options,
+                metadataCollector);
 
         TeiidJDBCBinder binder = new TeiidJDBCBinder(serviceRegistry, new Properties(), buildingContext, strategy,
                 false, metadataCollector, source);
@@ -334,7 +339,7 @@ public class SchemaBuilderUtility {
 
         HibernateMappingExporter exporter = new HibernateMappingExporter() {
             @Override
-            protected Metadata getMetadata() {
+            public Metadata getMetadata() {
                 return metadata;
             }
         };

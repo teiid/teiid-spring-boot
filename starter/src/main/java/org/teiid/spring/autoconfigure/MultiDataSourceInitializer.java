@@ -27,9 +27,8 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceInitializedEvent;
-import org.springframework.boot.context.config.ResourceNotFoundException;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceSchemaCreatedEvent;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
@@ -37,6 +36,7 @@ import org.springframework.jdbc.config.SortedResourcesFactoryBean;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.util.StringUtils;
+import org.teiid.core.TeiidRuntimeException;
 
 /**
  * Bean to handle {@link DataSource} initialization by running
@@ -51,7 +51,7 @@ import org.springframework.util.StringUtils;
  * @since 1.1.0
  * @see DataSourceAutoConfiguration
  */
-class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitializedEvent> {
+class MultiDataSourceInitializer implements ApplicationListener<DataSourceSchemaCreatedEvent> {
 
     private static final Log logger = LogFactory.getLog(MultiDataSourceInitializer.class);
 
@@ -91,7 +91,7 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
             String password = getProperty("schema-password");
             runScripts(scripts, username, password);
             try {
-                this.applicationContext.publishEvent(new DataSourceInitializedEvent(this.dataSource));
+                this.applicationContext.publishEvent(new DataSourceSchemaCreatedEvent(this.dataSource));
                 // The listener might not be registered yet, so don't rely on
                 // it.
                 if (!this.initialized) {
@@ -105,7 +105,7 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
     }
 
     @Override
-    public void onApplicationEvent(DataSourceInitializedEvent event) {
+    public void onApplicationEvent(DataSourceSchemaCreatedEvent event) {
         String initialize = getProperty("initialize");
 
         if (initialize != null && !Boolean.parseBoolean(initialize)) {
@@ -151,7 +151,7 @@ class MultiDataSourceInitializer implements ApplicationListener<DataSourceInitia
                 if (resource.exists()) {
                     resources.add(resource);
                 } else if (validate) {
-                    throw new ResourceNotFoundException(propertyName, resource);
+                    throw new TeiidRuntimeException(resource.getFilename() + " does not exist!");
                 }
             }
         }

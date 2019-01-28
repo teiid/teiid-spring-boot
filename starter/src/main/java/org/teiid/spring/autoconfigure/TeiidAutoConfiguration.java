@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Driver;
@@ -103,7 +104,7 @@ public class TeiidAutoConfiguration implements Ordered {
     ApplicationContext context;
 
     @Value("${spring.jpa.hibernate.naming.physical-strategy:org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy}")
-    String hibernateNamingClass;
+    private String hibernateNamingClass;
 
     @Autowired(required=false)
     private TransactionManager transactionManager;
@@ -353,11 +354,13 @@ public class TeiidAutoConfiguration implements Ordered {
         return new FileConnectionFactory();
     }
 
-    @Bean(name="teiidNamingStrategy")
+    @Bean(name = "teiidNamingStrategy")
     public PhysicalNamingStrategy teiidNamingStrategy() {
         try {
-            return (PhysicalNamingStrategy)Class.forName(hibernateNamingClass).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            return (PhysicalNamingStrategy) Class.forName(hibernateNamingClass).getDeclaredConstructors()[0]
+                    .newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+                | InvocationTargetException e) {
             return null;
         }
     }

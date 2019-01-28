@@ -122,7 +122,7 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
 
         @Override
         public void commit() throws HeuristicMixedException, HeuristicRollbackException, RollbackException,
-                SecurityException, SystemException {
+        SecurityException, SystemException {
             throw new SystemException();
         }
 
@@ -156,7 +156,7 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
         this.platformTransactionManager = platformTransactionManager;
         if (this.platformTransactionManager instanceof DelegatingPlatformTransactionManager) {
             ((DelegatingPlatformTransactionManager) this.platformTransactionManager)
-                    .setTransactionManagers(this.txnManagersForEachDataSource);
+            .setTransactionManagers(this.txnManagersForEachDataSource);
         }
     }
 
@@ -208,7 +208,7 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
 
     @Override
     public void commit() throws HeuristicMixedException, HeuristicRollbackException, IllegalStateException,
-            RollbackException, SecurityException, SystemException {
+    RollbackException, SecurityException, SystemException {
         if (allowJTA()) {
             this.jtaTransactionManager.commit();
             return;
@@ -272,6 +272,7 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
         this.txnManagersForEachDataSource.add(new DataSourceTransactionManager(ds));
     }
 
+    @SuppressWarnings("rawtypes")
     public void addDataSource(BaseConnectionFactory bean) {
         // TODO: not used currently, need to come up some strategy here.
     }

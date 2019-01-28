@@ -25,7 +25,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = {Application.class, TestConfiguration.class, EmployeeRepository.class})
+@SpringBootTest(classes = {Application.class, TestConfiguration.class})
 public class TestExample {
 
     @Autowired

@@ -18,8 +18,8 @@ package org.teiid.spring.example;
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.teiid.spring.autoconfigure.MultiDataSourceTransactionManagement;
@@ -39,7 +39,7 @@ public class DataSources extends MultiDataSourceTransactionManagement {
     public XADataSource redirectedXA() throws Exception {
         return XADataSourceBuilder.create().build();
     }
-    */
+     */
 
     @Bean(name="sampledb")
     @ConfigurationProperties(prefix = "spring.datasource.sampledb")
