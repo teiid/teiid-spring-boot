@@ -1,10 +1,10 @@
 === Existing VDB Based Example
 
-This guide walks you through the process of building an application that uses Teiid Spring Boot and existing Dynamic VDB you may have defined and would like query based on it.
+This guide walks you through the process of building an application that uses Teiid Spring Boot Starter and existing VDB you may have defined previously to build application and would like query based on it.
 
 === What you’ll build
 
-You’ll build an application that loads the VDB supplied and provides a JDBC interface on it using Teiid technologies.
+You’ll build an application that loads the VDB supplied and provides a JDBC interface on it using Teiid.
 
 === What you’ll need
 
@@ -80,7 +80,7 @@ We need to provide the corresponding configuration for this data source. In "app
 [source,text]
 .*src/main/resources/application.properties*
 ----
-spring.datasource.mydb.url=jdbc:h2:mem:mydb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
+spring.datasource.mydb.jdbc-url=jdbc:h2:mem:mydb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS ACCOUNTS
 spring.datasource.mydb.username=sa
 spring.datasource.mydb.password=sa
 spring.datasource.mydb.driver-class-name=org.h2.Driver
@@ -88,14 +88,24 @@ spring.datasource.mydb.platform=mydb
 
 ----
 
-Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for Translator "importer" properties.
+repeat above step for all the data sources you are going to use in the vdb. Note the bean name, as you need to use that name as jndi name in the VDB source definitions. For example, see the line
+
+---
+CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("jndi-name" 'mydb');
+---
+
+from the example customer-vdb.ddl file defined.
 
 === Copy the VDB file
-Copy your -vdb.xml file into "src/main/resources" directory, and add below property in `application.properties` this tells the application which VDB file to load.
+Copy your -vdb.ddl file into "src/main/resources" directory, and add below property in `application.properties` this tells the application which VDB file to load.
 
 ----
-teiid.vdb-file=customer-vdb.xml
+teiid.vdb-file=customer-vdb.ddl
 ----
+
+NOTE: you can omit the above `teiid.vdb-file` property, however the vdb file needs have a explit name as `teiid.ddl` and must be available in the classpath. If you need reference to the DDL based VDB syntax see link:http://teiid.github.io/teiid-documents/master/content/reference/ddl_deployment_mode.html 
+
+NOTE: If you have a .vdb or -vdb.xml based VDB files, you can use vdb migration utility to convert into a .DDL file to use. But currently we support .vdb, -vdb.xml or .ddl formats. But .vdb and -vdb.xml formats will be deprecated. 
   
 Let’s wire this up and see what it looks like!
 
@@ -132,7 +142,7 @@ mvn clean install
 and execute your application 
 
 ----
-java -jar target/myservice-{version}.jar
+java -jar target/spring-vdb-example-{version}.jar
 ----
 
 If you want to expose this VDB through OData, add following dependency to your `pom.xml` file.
@@ -143,3 +153,5 @@ If you want to expose this VDB through OData, add following dependency to your `
     <artifactId>spring-odata</artifactId>
 </dependency> 
 ----
+
+and re-run the build, and then run, after that on port 8080 the OData REST API can be queried.

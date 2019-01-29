@@ -13,6 +13,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+SET SCHEMA ACCOUNTS;
+
 DROP TABLE IF EXISTS CUSTOMER;
 CREATE TABLE CUSTOMER
 (
