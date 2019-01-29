@@ -19,10 +19,12 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -69,8 +71,11 @@ import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
+import org.teiid.metadata.Database;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
+import org.teiid.query.metadata.DatabaseUtil;
 import org.teiid.query.metadata.PureZipFileSystem;
+import org.teiid.query.parser.QueryParser;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
@@ -165,10 +170,24 @@ public class TeiidAutoConfiguration implements Ordered {
             for (Resource resource : resources) {
                 if (resource.getFilename().endsWith(".ddl")) {
                     try {
-                        DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
-                        String db = "CREATE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
-                        db = db + "USE DATABASE "+VDBNAME+" VERSION '"+VDBVERSION+"';\n";
-                        db = db + ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
+                        DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository()) {
+                            @Override
+                            public VDBMetaData getVDBMetadata(String contents) {
+                                StringReader reader = new StringReader(contents);
+                                try {
+                                    startEditing(false);
+                                    this.setMode(Mode.DATABASE_STRUCTURE);
+                                    QueryParser.getQueryParser().parseDDL(this, new BufferedReader(reader));
+                                } finally {
+                                    reader.close();
+                                    stopEditing();
+                                }
+                                Database database = getDatabases().get(0);
+                                VDBMetaData vdb = DatabaseUtil.convert(database);
+                                return vdb;
+                            }
+                        };
+                        String db = ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
                         vdb = store.getVDBMetadata(db);
                         logger.info("Predefined VDB found :" + resources.get(0).getFilename());
                     } catch (FileNotFoundException e) {
