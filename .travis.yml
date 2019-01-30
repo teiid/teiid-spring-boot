@@ -2,7 +2,9 @@ language: java
 sudo: false
 before_install:
 - cp .travis.settings.xml $HOME/.m2/settings.xml
-install: travis_wait 10 mvn install -Dmaven.javadoc.skip=true -B -V -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn 
+install: true
+script: mvn install -Dmaven.javadoc.skip=true -B -V -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn 
+after_script: travis_wait 5 mvn --version
 deploy:
   provider: script
   script: "mvn -B -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests=true deploy"
