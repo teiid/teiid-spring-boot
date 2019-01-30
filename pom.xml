@@ -324,12 +324,4 @@
     </profile>
   </profiles>
 
-  <modules>
-    <module>starter</module>
-    <module>starter-test</module>
-    <module>data/rest</module>
-    <module>data/excel</module>
-    <module>odata</module>
-    <module>samples</module>
-  </modules>
 </project>
