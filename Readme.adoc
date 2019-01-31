@@ -1,3 +1,5 @@
+image:https://travis-ci.com/teiid/teiid-spring-boot.svg?branch=master["Build Status", link="https://travis-ci.com/teiid/teiid-spring-boot"]
+
 = Teiid Spring Boot Starter
 
 Primary purpose of `teiid-spring-boot` is to enable Teiid in Spring Boot applications. The Teiid can be added using Maven dependency below to your Spring Boot application pom.xml file.
