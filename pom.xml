@@ -183,11 +183,6 @@
           <artifactId>jaxb-api</artifactId>
           <version>${version.javax.xml.bind}</version>
       </dependency>
-      <dependency>
-          <groupId>net.jcip</groupId>
-          <artifactId>jcip-annotations</artifactId>
-          <version>1.0</version>
-      </dependency>        
       <!--Project dependencies -->
       <dependency>
         <groupId>org.teiid</groupId>
