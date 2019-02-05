@@ -1,3 +1,4 @@
+/*
 --
 -- Copyright (C) 2016 Red Hat, Inc.
 --
@@ -13,9 +14,22 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-CREATE DATABASE customer VERSION '1' OPTIONS (ANNOTATION 'Customer VDB', "connection-type" 'BY_VERSION');
-USE DATABASE customer VERSION '1';
+*/
+CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
+USE DATABASE customer;
 CREATE FOREIGN DATA WRAPPER h2;
 CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("jndi-name" 'mydb');
+CREATE VIRTUAL SCHEMA virt;
 CREATE SCHEMA accounts SERVER mydb;
 IMPORT FOREIGN SCHEMA accounts FROM SERVER mydb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
+-- foo
+SET SCHEMA accounts;
+CREATE FOREIGN FUNCTION REPEAT (x string, y integer) RETURNS string 
+    OPTIONS (JAVA_CLASS 'org.teiid.spring.example.UserFunctions',
+             JAVA_METHOD 'repeat'); 
+
+
+SET SCHEMA virt;
+CREATE VIRTUAL FUNCTION addSalutation(param1 string) RETURNS string
+    OPTIONS (NAMEINSOURCE 'addSalutation', JAVA_CLASS 'org.teiid.spring.example.UserFunctions', 
+    JAVA_METHOD 'addSalutation');

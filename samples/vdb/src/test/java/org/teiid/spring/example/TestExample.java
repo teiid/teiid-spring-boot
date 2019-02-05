@@ -15,6 +15,7 @@
  */
 package org.teiid.spring.example;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.ResultSet;
@@ -30,7 +31,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = {Application.class, TestConfiguration.class})
+@SpringBootTest(classes = { Application.class, TestConfiguration.class })
 public class TestExample {
 
     @Autowired
@@ -42,6 +43,16 @@ public class TestExample {
             @Override
             public void processRow(ResultSet rs) throws SQLException {
                 assertTrue(rs.getString(1).equals("foo"));
+            }
+        });
+
+        template.query("SELECT id, ADDSALUTATION(name) as name, repeat(ssn, 2) as ssn FROM customer where id = 10",
+                new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                assertEquals(10, rs.getInt(1));
+                assertTrue(rs.getString(2).startsWith("Mr."));
+                assertEquals("CST01002CST01002", rs.getString(3));
             }
         });
     }
