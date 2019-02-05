@@ -22,7 +22,7 @@ CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("jndi-name" 'myd
 CREATE VIRTUAL SCHEMA virt;
 CREATE SCHEMA accounts SERVER mydb;
 IMPORT FOREIGN SCHEMA accounts FROM SERVER mydb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
--- foo
+
 SET SCHEMA accounts;
 CREATE FOREIGN FUNCTION REPEAT (x string, y integer) RETURNS string 
     OPTIONS (JAVA_CLASS 'org.teiid.spring.example.UserFunctions',
