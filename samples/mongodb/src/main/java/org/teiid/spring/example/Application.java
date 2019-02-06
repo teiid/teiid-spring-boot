@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.data.rest;
+package org.teiid.spring.example;
 
+import java.util.List;
+import java.util.Map;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.web.client.RestTemplate;
-import org.teiid.spring.data.BaseConnectionFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-@ConfigurationProperties(prefix="spring.teiid.ws")
-public class RestConnectionFactory extends BaseConnectionFactory<RestConnection> {
-
-    @Autowired
-    RestTemplate template;
+@SpringBootApplication
+public class Application implements CommandLineRunner {
 
     @Autowired
-    private BeanFactory beanFactory;
+    private JdbcTemplate jdbcTemplate;
 
-    public RestConnectionFactory() {
-        super.setTranslatorName("rest");
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
     }
 
     @Override
-    public RestConnection getConnection() throws Exception {
-        return new RestConnection(template, beanFactory);
+    public void run(String... args) throws Exception {
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT *  FROM zips limit 1");
+        System.out.println(list);
     }
 }

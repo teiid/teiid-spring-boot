@@ -51,8 +51,8 @@ public enum ExternalSource {
     FILE("file", new String[] { FileConnectionFactory.class.getName() }, new String[] {},"file", null),
     LOOPBACK("loopback", new String[] {}, new String[] {}, "loopback", null),
     REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {},"ws", null),
-    EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {},"excel", null);
-
+    EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {},"excel", null),
+    MONGODB("mongodb", new String[] { "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" }, new String[] {},"mongodb", null);
 
     private String name;
     private String[] driverNames;
@@ -125,7 +125,7 @@ public enum ExternalSource {
             try {
                 @SuppressWarnings("unchecked")
                 Class<? extends ExecutionFactory<?, ?>> clazz = (Class<? extends ExecutionFactory<?, ?>>) Class
-                        .forName(c.getBeanClassName());
+                .forName(c.getBeanClassName());
                 String name = clazz.getAnnotation(Translator.class).name();
                 if (name.equals(translatorName)) {
                     return clazz;
@@ -137,14 +137,14 @@ public enum ExternalSource {
         return null;
     }
 
-  public static String findTransaltorNameFromAlias(String sourceName) {
-    for (ExternalSource source : ExternalSource.values()) {
-      if (source.name.equalsIgnoreCase(sourceName)) {
-        return source.getTranslatorName();
-      }
+    public static String findTransaltorNameFromAlias(String sourceName) {
+        for (ExternalSource source : ExternalSource.values()) {
+            if (source.name.equalsIgnoreCase(sourceName)) {
+                return source.getTranslatorName();
+            }
+        }
+        return null;
     }
-    return null;
-  }
 
     public static String[] findDriverNameFromAlias(String sourceName) {
         for (ExternalSource source : ExternalSource.values()) {
