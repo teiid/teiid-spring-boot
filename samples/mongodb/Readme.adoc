@@ -1,0 +1,125 @@
+= Reading Data from EXCEL Based Source
+
+This article shows an example to read/write data from MongoDB using Teiid. There may be many examples doing the similar task of reading MongoDB. However this example is little different, here the MongoDB's data is queries as if it is a SQL Database, i.e. you can issue queries against it or join the entities with another entities to integrate data using Teiid.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies Spring Boot
+
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter,data-mongodb*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>data-mongodb</artifactId>
+</dependency>
+----
+
+== Local MongoDB Instance
+If you already have existing MongoDB instance in your environment you can skip this step. Otherwise the instructions below will take you in creating local MongoDB instance using a Docker and loads it with some sample data.
+
+----
+# pull the latest docker image
+$docker pull mongo
+
+# start a mongodb container with demo user names
+$docker run -d --name sampledb -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -e MONGO_INITDB_DATABASE=sampledb mongo
+
+# download a sample mongodb collection
+wget http://media.mongodb.org/zips.json
+
+# copy the sample mongodb collection into docker container
+docker cp zips.json sampledb:/zips.json
+
+# load the sample collection into mongodb instance
+docker exec -it sampledb sh -c "mongoimport --db sampledb --authenticationDatabase=admin --username admin --password admin --collection zips --file zips.json"
+----
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file. 
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+Now lets define the proeprties to connect to MongoDB in `application.properties`
+
+----
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=sampledb
+spring.data.mongodb.username=admin
+spring.data.mongodb.password=admin
+spring.data.mongodb.authenticationDatabase=admin
+----
+
+=== Create a class that Teiid can recognize as Data Source
+This class akin to the resource-adapter, which provides the access to data source
+
+----
+@Configuration
+public class DataSources {
+    @Bean
+    public MongoDBConnectionFactory accounts(@Autowired MongoTemplate template) {
+        return new MongoDBConnectionFactory(template);
+    }
+}
+----
+
+The above class defines a "accounts" bean which Teiid recognizes as data source and reads the metadata upon creation and makes internal model out of it. Now using this model, Teiid can read/write to it. All collections inside MongoDB will be available as Tables now.
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args).close();
+	}
+	
+    @Override
+    public void run(String... args) throws Exception {
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT *  FROM zips limit 1");
+        System.out.println(list);
+    }
+}
+----
+
+Now when you execute this application, you should see results of your query in jdbc template
+
+----
+[{_id=01002, city=CUSHMAN, loc=[-72.51565, 42.377017], pop=36963, state=MA}]
+----
+
+Note: You can always integrate data from multiple different types of data sources using Teiid.

@@ -159,6 +159,16 @@
         <version>${teiid.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-mongodb</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>mongodb-api</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-core</artifactId>
         <version>${hibernate.version}</version>
@@ -247,6 +257,7 @@
         <module>starter-test</module>
         <module>data/rest</module>
         <module>data/excel</module>
+        <module>data/mongodb</module>
         <module>odata</module>
         <module>samples</module>
       </modules>
@@ -260,6 +271,7 @@
         <module>starter</module>
         <module>data/rest</module>
         <module>data/excel</module>
+        <module>data/mongodb</module>
         <module>odata</module>
       </modules>
       <build>

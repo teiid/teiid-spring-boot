@@ -60,6 +60,7 @@
     <module>odata</module>
     <module>redirection</module>
     <module>vdb</module>
+    <module>mongodb</module>
   </modules>
 
 </project>
