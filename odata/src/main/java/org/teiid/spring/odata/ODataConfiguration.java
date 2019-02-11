@@ -18,6 +18,8 @@ package org.teiid.spring.odata;
 
 import java.util.ArrayList;
 
+import javax.servlet.ServletContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -55,6 +57,9 @@ public class ODataConfiguration {
     @Autowired
     VDBMetaData vdb;
 
+    @Autowired
+    ServletContext servletContext;
+
     @Value("${spring.teiid.odata.alt.paths:#{null}}")
     private String[] alternatePaths;
 
@@ -66,7 +71,7 @@ public class ODataConfiguration {
 
         CorsFilter corsFilter = new CorsFilter();
         GzipFilter gzipFilter = new GzipFilter();
-        SpringODataFilter odataFilter = new SpringODataFilter(server, vdb, alternatePaths);
+        SpringODataFilter odataFilter = new SpringODataFilter(server, vdb, alternatePaths, servletContext);
 
         registrationBean.setFilter(corsFilter);
         registrationBean.setFilter(gzipFilter);

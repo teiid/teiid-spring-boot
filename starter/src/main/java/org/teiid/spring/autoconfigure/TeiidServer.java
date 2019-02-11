@@ -20,7 +20,6 @@ import static org.teiid.spring.autoconfigure.TeiidConstants.REDIRECTED;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -135,7 +134,7 @@ public class TeiidServer extends EmbeddedServer {
                 String driverName = getDriverName(source);
                 if (driverName == null) {
                     throw new IllegalStateException("Failed to determine the type of data source defined with bean name "
-                            + sourceBeanName + " use Tomcat based DataSource and XA DataSources are supported. "
+                            + sourceBeanName + " use Tomcat/Hikari based DataSource and XA DataSources are supported. "
                             + "Add the following to your pom.xml\n"
                             + "  <dependency>\n" +
                             "      <groupId>org.apache.tomcat</groupId>\n" +
@@ -155,12 +154,6 @@ public class TeiidServer extends EmbeddedServer {
                 throw new IllegalStateException("Unknown source type is being added");
             }
 
-            if (model != null) {
-                model.setVisible(false);
-                vdb.addModel(model);
-                logger.info("Added " + sourceBeanName + " to the Teiid Database");
-            }
-
             // since each time a data source is added the vdb is reloaded
             // this is a cheap way not to do the reload of the metadata from source. a.k.a
             // metadata caching
@@ -175,6 +168,13 @@ public class TeiidServer extends EmbeddedServer {
                 }
             } catch (AdminException e) {
                 // no-op. if failed redo
+            }
+
+            // add the new model
+            if (model != null) {
+                model.setVisible(false);
+                vdb.addModel(model);
+                logger.info("Added " + sourceBeanName + " to the Teiid Database");
             }
 
             undeployVDB(VDBNAME, VDBVERSION);
@@ -262,12 +262,12 @@ public class TeiidServer extends EmbeddedServer {
                     }
                 }
             }
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            VDBMetadataParser.marshell(vdb, out);
-            if (last) {
+            if (last && logger.isDebugEnabled()) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                VDBMetadataParser.marshell(vdb, out);
                 logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
             }
-            deployVDB(new ByteArrayInputStream(out.toByteArray()));
+            deployVDB(vdb, null);
         } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
                 | IOException e) {
             throw new IllegalStateException("Failed to deploy the VDB file", e);

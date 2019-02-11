@@ -1,4 +1,3 @@
-/*
 --
 -- Copyright (C) 2016 Red Hat, Inc.
 --
@@ -14,7 +13,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-*/
+
 CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer;
 CREATE FOREIGN DATA WRAPPER h2;
