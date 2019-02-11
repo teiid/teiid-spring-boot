@@ -22,12 +22,14 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.olingo.server.api.ODataHandler;
 import org.apache.olingo.server.api.ODataHttpHandler;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
@@ -35,8 +37,10 @@ import org.teiid.core.TeiidProcessingException;
 import org.teiid.metadata.Schema;
 import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
+import org.teiid.olingo.service.OlingoBridge.HandlerInfo;
 import org.teiid.olingo.web.ContextAwareHttpSerlvetRequest;
 import org.teiid.olingo.web.ODataFilter;
+import org.teiid.olingo.web.OpenApiHandler;
 import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.vdb.runtime.VDBKey;
 
@@ -45,11 +49,17 @@ public class SpringODataFilter extends ODataFilter {
     private TeiidServer server;
     private VDB vdb;
     private String[] alternatePaths;
+    protected OpenApiHandler openApiHandler;
 
-    public SpringODataFilter(TeiidServer server, VDB vdb, String[] redirectedPaths) {
+    public SpringODataFilter(TeiidServer server, VDB vdb, String[] redirectedPaths, ServletContext servletContext) {
         this.server = server;
         this.vdb = vdb;
         this.alternatePaths = redirectedPaths;
+        try {
+            this.openApiHandler = new OpenApiHandler(servletContext);
+        } catch (ServletException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private boolean skipPath(String uri) {
@@ -128,7 +138,14 @@ public class SpringODataFilter extends ODataFilter {
         try {
             Connection connection = client.open();
             registerVDBListener(client, connection);
-            ODataHttpHandler handler = context.getHandler(baseURI, client, modelName);
+            HandlerInfo handlerInfo = context.getHandlers(baseURI, client, modelName);
+            ODataHandler handler = handlerInfo.oDataHttpHandler;
+
+            if (openApiHandler.processOpenApiMetadata(httpRequest, key, uri, modelName,
+                    response, handlerInfo.serviceMetadata, null)) {
+                return;
+            }
+
             httpRequest.setAttribute(ODataHttpHandler.class.getName(), handler);
             httpRequest.setAttribute(Client.class.getName(), client);
             chain.doFilter(httpRequest, response);

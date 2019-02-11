@@ -65,4 +65,11 @@ public class TestExample {
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
+
+    @Test
+    public void testOpenAPI() throws Exception{
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/swagger.json",
+                String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+    }
 }
