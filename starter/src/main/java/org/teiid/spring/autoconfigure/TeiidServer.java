@@ -177,7 +177,7 @@ public class TeiidServer extends EmbeddedServer {
                 logger.info("Added " + sourceBeanName + " to the Teiid Database");
             }
 
-            undeployVDB(VDBNAME, VDBVERSION);
+            undeployVDB(vdb.getName(), vdb.getVersion());
             deployVDB(vdb, false);
         } else {
             for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
