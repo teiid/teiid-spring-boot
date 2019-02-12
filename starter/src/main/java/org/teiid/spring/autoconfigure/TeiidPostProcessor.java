@@ -16,9 +16,6 @@
 
 package org.teiid.spring.autoconfigure;
 
-import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
-import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
-
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -133,7 +130,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
 
         if (deploy) {
             // Deploy at the end when all the data sources are configured
-            server.undeployVDB(VDBNAME, VDBVERSION);
+            server.undeployVDB(vdb.getName(), vdb.getVersion());
             server.deployVDB(vdb, true);
         }
     }
