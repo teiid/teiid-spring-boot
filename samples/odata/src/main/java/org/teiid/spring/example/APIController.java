@@ -13,28 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.teiid.spring.example;
 
-import javax.sql.DataSource;
+import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Configuration
-public class DataSources {
-
-    @ConfigurationProperties(prefix = "spring.datasource.accounts")
-    @Bean
-    public DataSource accounts() {
-        return DataSourceBuilder.create().build();
-    }
-
-    @ConfigurationProperties(prefix = "spring.datasource.accounts2")
-    @Bean
-    public DataSource accounts2() {
-        return DataSourceBuilder.create().build();
+@RestController
+@RequestMapping("/api")
+public class APIController {
+    @RequestMapping(value = "*")
+    public String process(HttpServletRequest request){
+        return "hello";
     }
 }
