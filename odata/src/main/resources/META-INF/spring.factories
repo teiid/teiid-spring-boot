@@ -1,5 +1,5 @@
 # Configurations
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.teiid.spring.odata.ODataConfiguration
+ org.teiid.spring.odata.WebConfig, org.teiid.spring.odata.ODataController, org.teiid.spring.odata.StaticContentController
 
 # Listeners

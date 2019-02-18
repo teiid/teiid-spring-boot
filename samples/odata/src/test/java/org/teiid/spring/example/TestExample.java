@@ -72,4 +72,11 @@ public class TestExample {
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
+
+    @Test
+    public void testStaticContent() throws Exception{
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/static/org.teiid.v1.xml",
+                String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+    }
 }
