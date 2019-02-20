@@ -39,7 +39,6 @@
 		<dependency>
 			<groupId>org.teiid</groupId>
 			<artifactId>spring-data-excel</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

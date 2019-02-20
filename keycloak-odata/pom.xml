@@ -19,50 +19,31 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.teiid</groupId>
-    <artifactId>samples</artifactId>
+    <artifactId>teiid-spring-boot-starter-parent</artifactId>
     <version>1.0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>spring-mongodb-example</artifactId>
-  <name>spring-mongodb-example</name>
-  <description>Demo project for Spring Boot show casing mongodb based </description>
+  <artifactId>spring-keycloak-odata</artifactId>
+  <name>spring-keycloak-odata</name>
+  <description>Expose OData interface and Secure using the Keycloak</description>
   <packaging>jar</packaging>
 
   <dependencies>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-odata</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>teiid-spring-boot-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>spring-data-mongodb</artifactId>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
+      <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-spring-boot-starter</artifactId>
+    </dependency>    
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
-
 </project>

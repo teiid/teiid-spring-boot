@@ -54,6 +54,7 @@ When working with REST based sources with entities like @JsonTable or @TextTable
 |spring.teiid.model.package|This property defines the package name, where the @Entity classes are defined in the application. This will be used to scan the classes and generate necessary metadata. In absense of this property whole classpath will be scanned which can lead very slow start up |* (all classpath)
 |logging.level.org.teiid.{context}|Defines the logging lvel for Teiid specific code. "spring" is context where spring boot specific log messages are defined. example: *logging.level.org.teiid.spring=DEBUG*|n/a
 |spring.teiid.file.parent-directory|When using the "file"based resources such as @TextTable, @ExcelTable this property defines a parent directory where files exist. | ${user.dir} system property.
+|spring.teiid.odata.secure.role|Role to be used to secure the OData interface|odata
 |=======================
 
 == JDBC Data Source Properties

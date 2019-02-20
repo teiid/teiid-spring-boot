@@ -75,6 +75,7 @@ import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
 import org.teiid.spring.data.file.FileConnectionFactory;
+import org.teiid.spring.identity.SpringSecurityHelper;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
 import org.teiid.transport.SocketConfiguration;
@@ -230,7 +231,7 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name = "teiid")
     @ConditionalOnMissingBean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public TeiidServer teiidServer() {
+    public TeiidServer teiidServer(SpringSecurityHelper securityHelper) {
         logger.info("Starting Teiid Server.");
 
         // turning off PostgreSQL support
@@ -263,6 +264,10 @@ public class TeiidAutoConfiguration implements Ordered {
             embeddedConfiguration.setTransactionManager(ptma);
         }
 
+        if (embeddedConfiguration.getSecurityHelper() == null) {
+            embeddedConfiguration.setSecurityHelper(securityHelper);
+        }
+
         server.start(embeddedConfiguration);
 
         // this is dummy vdb to satisfy the boot process to create the connections
@@ -273,6 +278,13 @@ public class TeiidAutoConfiguration implements Ordered {
 
         serverContext.set(server);
         return server;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public SpringSecurityHelper securityHelper() {
+        return new SpringSecurityHelper();
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
