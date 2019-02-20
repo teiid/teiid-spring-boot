@@ -33,6 +33,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.spring.autoconfigure.TeiidServer;
+import org.teiid.spring.identity.SpringSecurityHelper;
 
 @EnableWebMvc
 @Configuration
@@ -56,6 +57,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     ServletContext servletContext;
 
+    @Autowired
+    SpringSecurityHelper securityHelper;
+
     @Value("${spring.teiid.odata.alt.paths:#{null}}")
     private String[] alternatePaths;
 
@@ -77,6 +81,11 @@ public class WebConfig implements WebMvcConfigurer {
         return new SpringODataFilter(this.props, this.server, this.vdb, this.servletContext);
     }
 
+    @Bean
+    AuthenticationInterceptor getAuthInterceptor() {
+        return new AuthenticationInterceptor(securityHelper);
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         ArrayList<String> exclude = new ArrayList<String>();
@@ -87,9 +96,15 @@ public class WebConfig implements WebMvcConfigurer {
             }
         }
 
+        String[] excludes = exclude.toArray(new String[exclude.size()]);
+
         registry.addInterceptor(getOdataFilter())
         .addPathPatterns("/**")
-        .excludePathPatterns(exclude.toArray(new String[exclude.size()]));
+        .excludePathPatterns(excludes);
+
+        registry.addInterceptor(getAuthInterceptor())
+        .addPathPatterns("/**")
+        .excludePathPatterns(excludes);
     }
 
     @Override
