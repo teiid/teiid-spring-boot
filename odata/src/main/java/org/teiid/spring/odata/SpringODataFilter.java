@@ -31,11 +31,14 @@ import org.springframework.web.servlet.ModelAndView;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
 import org.teiid.metadata.Schema;
+import org.teiid.net.TeiidURL;
 import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
 import org.teiid.olingo.service.OlingoBridge.HandlerInfo;
 import org.teiid.olingo.web.OpenApiHandler;
 import org.teiid.spring.autoconfigure.TeiidServer;
+import org.teiid.spring.identity.SpringSecurityHelper;
+import org.teiid.spring.identity.TeiidSecurityContext;
 import org.teiid.vdb.runtime.VDBKey;
 
 public class SpringODataFilter implements HandlerInterceptor {
@@ -45,8 +48,10 @@ public class SpringODataFilter implements HandlerInterceptor {
     protected OpenApiHandler openApiHandler;
     protected SoftReference<OlingoBridge> clientReference = null;
     protected Properties connectionProperties;
+    private SpringSecurityHelper securityHelper;
 
-    public SpringODataFilter(Properties props, TeiidServer server, VDB vdb, ServletContext servletContext) {
+    public SpringODataFilter(Properties props, TeiidServer server, VDB vdb, ServletContext servletContext,
+            SpringSecurityHelper securityHelper) {
         this.connectionProperties = props;
         this.server = server;
         this.vdb = vdb;
@@ -55,6 +60,7 @@ public class SpringODataFilter implements HandlerInterceptor {
         } catch (ServletException e) {
             throw new IllegalStateException(e);
         }
+        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -108,6 +114,10 @@ public class SpringODataFilter implements HandlerInterceptor {
         }
 
         VDBKey key = new VDBKey(vdbName, vdbVersion);
+        TeiidSecurityContext tsc = securityHelper.getSecurityContext();
+        if (tsc != null && tsc.getSubject() != null) {
+            this.connectionProperties.setProperty(TeiidURL.CONNECTION.USER_NAME, tsc.getUserName());
+        }
         Client client = buildClient(vdbName, vdbVersion, this.connectionProperties);
         client.open();
 

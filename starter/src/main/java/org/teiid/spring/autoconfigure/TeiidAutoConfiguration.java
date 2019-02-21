@@ -265,6 +265,7 @@ public class TeiidAutoConfiguration implements Ordered {
         }
 
         if (embeddedConfiguration.getSecurityHelper() == null) {
+            embeddedConfiguration.setSecurityDomain(TeiidConstants.SPRING_SECURITY);
             embeddedConfiguration.setSecurityHelper(securityHelper);
         }
 
