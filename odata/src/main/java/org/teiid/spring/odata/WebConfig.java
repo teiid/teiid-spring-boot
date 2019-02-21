@@ -78,7 +78,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     SpringODataFilter getOdataFilter() {
-        return new SpringODataFilter(this.props, this.server, this.vdb, this.servletContext);
+        return new SpringODataFilter(this.props, this.server, this.vdb, this.servletContext, this.securityHelper);
     }
 
     @Bean
@@ -98,11 +98,11 @@ public class WebConfig implements WebMvcConfigurer {
 
         String[] excludes = exclude.toArray(new String[exclude.size()]);
 
-        registry.addInterceptor(getOdataFilter())
+        registry.addInterceptor(getAuthInterceptor())
         .addPathPatterns("/**")
         .excludePathPatterns(excludes);
 
-        registry.addInterceptor(getAuthInterceptor())
+        registry.addInterceptor(getOdataFilter())
         .addPathPatterns("/**")
         .excludePathPatterns(excludes);
     }

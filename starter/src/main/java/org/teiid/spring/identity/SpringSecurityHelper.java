@@ -74,16 +74,19 @@ public class SpringSecurityHelper implements SecurityHelper {
             Credentials credentials, String applicationName) throws LoginException {
         Subject s = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication instanceof AnonymousAuthenticationToken)) {
+        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
             s = buildSubject(authentication);
+            baseUserName = authentication.getName();
         } else {
             s = new Subject();
             s.getPrincipals().add(new SimplePrincipal(baseUserName));
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Logged in user: " + s);
+        if (logger.isTraceEnabled()) {
+            logger.trace("Logged in user: " + s);
         }
-        return new TeiidSecurityContext(s, securityDomain);
+        TeiidSecurityContext tsc =  new TeiidSecurityContext(s, baseUserName, securityDomain);
+        associateSecurityContext(tsc);
+        return tsc;
     }
 
     @Override
@@ -91,35 +94,19 @@ public class SpringSecurityHelper implements SecurityHelper {
         return null;
     }
 
-    static class TeiidSecurityContext {
-        private Subject subject;
-        private String securityDomain;
-
-        public Subject getSubject() {
-            return subject;
-        }
-
-        public String getSecurityDomain() {
-            return securityDomain;
-        }
-
-        public TeiidSecurityContext(Subject s, String securityDomain) {
-            this.subject = s;
-            this.securityDomain = securityDomain;
-        }
-    }
-
     private Subject buildSubject(final Authentication authentication) {
         Subject s = new Subject();
         s.getPrincipals().add(new SimplePrincipal(authentication == null ? "anonymous":authentication.getName()));
         if (authentication != null) {
+            SimpleGroup g = new SimpleGroup("Roles");
             for (GrantedAuthority ga : authentication.getAuthorities()) {
                 String role = ga.getAuthority();
                 if (role.startsWith("ROLE_")) {
                     role = role.substring(5);
+                    g.addMember(new SimplePrincipal(role));
                 }
-                s.getPrincipals().add(new SimpleGroup(role));
             }
+            s.getPrincipals().add(g);
         }
         return s;
     }

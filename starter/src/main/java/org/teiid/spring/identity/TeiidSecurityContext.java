@@ -13,19 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.teiid.spring.identity;
 
-package org.teiid.spring.autoconfigure;
+import javax.security.auth.Subject;
 
-public interface TeiidConstants {
+public class TeiidSecurityContext {
+    private Subject subject;
+    private String securityDomain;
+    private String userName;
 
-    String ENTITY_SCAN_DIR = "spring.teiid.model.package";
-    String REDIRECTED = "spring.teiid.redirected";
+    public String getUserName() {
+        return userName;
+    }
 
-    String REDIRECTED_TABLE_POSTFIX = "_REDIRECTED";
+    public TeiidSecurityContext(Subject s, String user, String securityDomain) {
+        this.subject = s;
+        this.userName = user;
+        this.securityDomain = securityDomain;
+    }
 
-    String SPRING_SECURITY = "spring-security";
+    public Subject getSubject() {
+        return subject;
+    }
 
-    String VDBNAME = "spring";
-    String VDBVERSION = "1.0.0";
-    String EXPOSED_VIEW = "teiid";
+    public String getSecurityDomain() {
+        return securityDomain;
+    }
 }

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.teiid.spring.autoconfigure.TeiidConstants;
 import org.teiid.spring.identity.SpringSecurityHelper;
 
 public class AuthenticationInterceptor implements HandlerInterceptor {
@@ -32,7 +33,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        this.securityHelper.authenticate("passthrough", "anonymous", null, null);
+        this.securityHelper.authenticate(TeiidConstants.SPRING_SECURITY, "anonymous", null, null);
         return true;
     }
 
