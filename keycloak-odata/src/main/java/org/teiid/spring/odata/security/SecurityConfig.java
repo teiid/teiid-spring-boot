@@ -54,7 +54,7 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
 @PropertySource("classpath:keycloak.properties")
 @Order(99)
-class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
+public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     @Value("${spring.teiid.odata.secure.role:odata}")
     private String odataRole;
