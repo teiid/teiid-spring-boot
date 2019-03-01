@@ -21,8 +21,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.teiid.autoconfigure.JDBCUtils.close;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,13 +35,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.impl.VDBMetaData;
-import org.teiid.deployers.VirtualDatabaseException;
-import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.spring.autoconfigure.TeiidAutoConfiguration;
-import org.teiid.spring.autoconfigure.TeiidConstants;
 import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.spring.configuration.TestConfiguration;
-import org.teiid.translator.TranslatorException;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -70,19 +64,10 @@ public class TeiidAutoConfigurationTest {
     public void testSpringVDB() throws SQLException {
 
         assertEquals(Status.ACTIVE, vdbMetaData.getStatus());
-        assertEquals(TeiidConstants.VDBNAME, vdbMetaData.getName());
-        assertEquals(TeiidConstants.VDBVERSION, vdbMetaData.getVersion());
+        assertEquals("customer", vdbMetaData.getName());
+        assertEquals("1", vdbMetaData.getVersion());
 
         Connection conn = teiidServer.getDriver().connect("jdbc:teiid:spring", null);
-        testConnection(conn);
-    }
-
-    @Test
-    public void testXmlVDBDeployment() throws VirtualDatabaseException, ConnectorManagerException, TranslatorException, IOException, SQLException {
-
-        InputStream is = TeiidAutoConfigurationTest.class.getClassLoader().getResourceAsStream("empty-vdb.xml");
-        teiidServer.deployVDB(is);
-        Connection conn = teiidServer.getDriver().connect("jdbc:teiid:Portfolio", null);
         testConnection(conn);
     }
 
@@ -102,4 +87,21 @@ public class TeiidAutoConfigurationTest {
         testConnection(conn);
     }
 
+    @Test
+    public void testCustomTranslator() throws SQLException {
+        Connection conn = datasource.getConnection();
+        Statement stmt = conn.createStatement();
+        assertNotNull(stmt);
+        ResultSet rs = stmt.executeQuery("SELECT * FROM accounts.mytable");
+        assertNotNull(rs);
+        assertTrue(rs.next());
+        assertEquals("one", rs.getString(1));
+
+        rs = stmt.executeQuery("SELECT * FROM accounts2.mytable");
+        assertNotNull(rs);
+        assertTrue(rs.next());
+        assertEquals("one", rs.getString(1));
+
+        close(rs, stmt, conn);
+    }
 }

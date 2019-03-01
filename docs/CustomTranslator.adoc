@@ -1,0 +1,59 @@
+= How to add a Custom Translator
+
+If are have developed a custom translator to a source that is not already defined in the Teiid or extended a existing translator to add in some custom functionality, then before you can use that translator in the Spring Boot based Teiid you need to register or configure it.
+
+If the custom translator is general purpose one like a popular OpenSource database or NOSQL store, you can donate it to Teiid community such that it is available without any configuration. If not please follow below steps to configure your Translator.
+
+WARNING: Note that below describe the scenarios where the separate DDL based Virtual Database is defined. If you are using the JPA style application this does not apply.
+
+== Option 1: Using the @Translator Annotation
+
+* When you develop the Teiid based application, write a custom translator by extending `ExecutionFactory` class and annotate the class with @Translator annotation as described in the http://teiid.github.io/teiid-documents/master/content/dev/Translator_Development.html[Translator Developer's Guide]. It should be noted that the must class exists in the current project where you are building your virtualization.
+
+* Once you have the class defined, you need to configure Teiid Spring Boot library to discover this class during the startup. For that define the following property in the `application.properties` file.
+
+.application.properties
+----
+spring.teiid.model.package =  <java-package-name-where-translator-exists>
+----
+
+* Then when you use the translator name in your Virtual Database, it will be automatically loaded. This option is well suited if you are developing a new Translator or brining it through a separate library (jar file).
+
+This is also recommended way if you are going to use this translator in more than *single* schema, as the framework will create a separate instance of this translator for each schema. 
+
+== Option 2: Using the @Bean annotation
+
+* This option is also very much similar to the Option 1, little simpler. However instead of configuring the Teiid library to do the scanning to find the the translator, you can define spring boot's way to provide the translator instance using @Bean annotation on a method that creates an instance of this translator.
+
+* If you plan to use same translator on multiple schema objects in your vdb, plan on providing separate instances with different names that match with vdb definition.
+
+[source, java]
+----
+@Bean("customTranslator")
+public ExecutionFactory<?, ?> customTranslator(){
+    return new CustomTranslator();
+}
+----
+
+* From above example, the method needs to be defined in a class with `@Configuration` annotation, and `CustomTranslator` defines a Java class that implements the Translator. 
+
+* If you are also writing a link:CustomSource.adoc[custom source connection] that goes along with the this custom translator, and you are using Option 2, you might need to define @DependsOn annotation on it as shown in below example to make sure the bean loading order is correctly followed.
+
+[source, java]
+----
+@Bean("customTranslator")
+@DependsOn({"customTranslator"})
+public ConnectionFactory customSource() {
+    return new CustomConnectionFactory();
+}
+----
+
+* Given above as your custom translator and custom connection factory to your data store, then you can use them in the your virtual database DDL as follows
+
+----
+CREATE FOREIGN DATA WRAPPER customTranslator;
+CREATE SERVER customSource TYPE 'NONE' FOREIGN DATA WRAPPER customTranslator OPTIONS ("jndi-name" 'customSource');
+----
+
+* The above is defining a translator in your virtual database, and next defining a server using translator and binding that with the connection factory object in your source.   
+

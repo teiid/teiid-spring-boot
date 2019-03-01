@@ -1,0 +1,65 @@
+= How to develop a Custom Connection Factory
+
+If are have developed a custom translator to a source that is not already defined in the Teiid or trying to write a translator to data source, to make translator work, you need a Connection to that source. Teiid library requires that Connection be provided in a particular interface. Below shows an example on how build Connection and ConnectionFacory that can be used with the corresponding Translator.
+
+* Define a connection interface to your Data Source, this can be anything. For example, to a MongoDB this can be `DB` class. This is the go between class that Translator understands to communicate with the souce
+
+[source, java]
+----
+public interface MyConnection {
+    void executeTask();
+}
+----
+
+* Using the above interface to access the data source, define a concrete class that extends `org.teiid.spring.data.BaseConnection`, to define the connection class.
+
+[source, java]
+----
+public class CustomConnection extends BaseConnection implements MyConnection {
+
+    @Override
+    public void close() throws Exception {
+        // release any resources.
+    }
+
+    @Override
+    public void executeTask() {
+        // take some action with with source
+    }
+} 
+----
+
+* Using the above connection class, provide a factory class that can be used to create many connections. This class must extend `org.teiid.spring.data.BaseConnectionFactory` class.
+
+[source, java]
+----
+public class CustomConnectionFactory extends BaseConnectionFactory<CustomConnection> {
+    @Override
+    public CustomConnection getConnection() throws Exception {
+        return new CustomConnection();
+    }
+}
+----
+
+In this factory class if you need to pass in configuration like URL, username and password define those properties and initialize the class with those properties. If Spring Boot already provides templates you can @AutoWire those object in here. For ex: see MongoDBConnectionFactory as an example.
+
+* The connection classes are now complete. Follow below to create instance of the data source connection factory and make use of them in your application.
+
+[source,java]
+----
+@Configuration
+public class DataSources {
+    @Bean
+    public CustomConnectionFactory accounts() {
+        return new CustomConnectionFactory();
+    }
+}
+----
+
+the above code creates a bean with name `accounts` in the application, which can be used as the `jndi-name` and SERVER name as shown in below example
+
+----
+CREATE SERVER accounts TYPE 'NONE' FOREIGN DATA WRAPPER customTranslator OPTIONS ("jndi-name" 'accounts');
+----
+
+see link:CustomTranslator.adoc[Custom Translator] on how write and deploy a custom translator. 

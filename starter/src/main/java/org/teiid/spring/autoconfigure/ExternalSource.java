@@ -117,10 +117,20 @@ public enum ExternalSource {
         return null;
     }
 
-    public static Class<? extends ExecutionFactory<?, ?>> translatorClass(String translatorName) {
+    public static Class<? extends ExecutionFactory<?, ?>> translatorClass(String translatorName, String basePackage) {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new AnnotationTypeFilter(Translator.class));
-        Set<BeanDefinition> components = provider.findCandidateComponents("org.teiid.translator");
+        Class<? extends ExecutionFactory<?, ?>> clazz = findTranslatorInPackage(translatorName, provider,
+                "org.teiid.translator");
+        if (clazz == null) {
+            clazz = findTranslatorInPackage(translatorName, provider,basePackage);
+        }
+        return clazz;
+    }
+
+    static Class<? extends ExecutionFactory<?, ?>> findTranslatorInPackage(String translatorName,
+            ClassPathScanningCandidateComponentProvider provider, String packageName) {
+        Set<BeanDefinition> components = provider.findCandidateComponents(packageName);
         for (BeanDefinition c : components) {
             try {
                 @SuppressWarnings("unchecked")
