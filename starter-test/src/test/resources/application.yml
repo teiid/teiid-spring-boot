@@ -16,5 +16,6 @@
 spring:
   teiid:
     model:
-      package: org.teiid.spring.example
+      package: org.teiid.spring.configuration
 teiid:
+  vdb-file: test-vdb.ddl

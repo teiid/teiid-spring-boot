@@ -20,7 +20,9 @@ CREATE FOREIGN DATA WRAPPER h2;
 CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("jndi-name" 'mydb');
 CREATE VIRTUAL SCHEMA virt;
 CREATE SCHEMA accounts SERVER mydb;
-IMPORT FOREIGN SCHEMA accounts FROM SERVER mydb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
+
+-- H2 converts the schema name to capital case
+IMPORT FOREIGN SCHEMA MYSCHEMA FROM SERVER mydb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
 
 SET SCHEMA accounts;
 CREATE FOREIGN FUNCTION REPEAT (x string, y integer) RETURNS string 

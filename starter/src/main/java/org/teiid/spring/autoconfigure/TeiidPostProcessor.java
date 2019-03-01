@@ -39,6 +39,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.translator.ExecutionFactory;
 
 /**
  * {@link BeanPostProcessor} used to fire {@link TeiidInitializedEvent}s. Should
@@ -114,6 +115,9 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
             TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             server.getPlatformTransactionManagerAdapter()
             .setPlatformTransactionManager((PlatformTransactionManager) bean);
+        } else if (bean instanceof ExecutionFactory) {
+            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
+            server.addTranslator(beanName, (ExecutionFactory)bean);
         }
         return bean;
     }

@@ -21,11 +21,52 @@ import javax.transaction.TransactionManager;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.teiid.resource.api.Connection;
+import org.teiid.resource.api.ConnectionFactory;
+import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.translator.ExecutionFactory;
 
 @Configuration
 public class TestConfiguration {
     @Bean
     public TransactionManager transactionManager() {
         return Mockito.mock(TransactionManager.class);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Bean("fakeSource")
+    public ConnectionFactory fakeSource() {
+        return new BaseConnectionFactory() {
+            @Override
+            public Connection getConnection() throws Exception {
+                return new Connection() {
+                    @Override
+                    public void close() throws Exception {
+                    }
+                };
+            }
+        };
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Bean("fakeSource2")
+    @DependsOn({"fake2"})
+    public ConnectionFactory fakeSource2() {
+        return new BaseConnectionFactory() {
+            @Override
+            public Connection getConnection() throws Exception {
+                return new Connection() {
+                    @Override
+                    public void close() throws Exception {
+                    }
+                };
+            }
+        };
+    }
+
+    @Bean("fake2")
+    public ExecutionFactory<?, ?> fake2(){
+        return new FakeTranslator();
     }
 }

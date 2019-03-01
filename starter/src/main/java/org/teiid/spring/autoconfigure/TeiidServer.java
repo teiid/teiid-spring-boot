@@ -182,19 +182,30 @@ public class TeiidServer extends EmbeddedServer {
         } else {
             for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
                 for (SourceMappingMetadata smm : model.getSourceMappings()) {
-                    addTranslator(smm.getTranslatorName());
                     if (smm.getConnectionJndiName() != null && smm.getName().equalsIgnoreCase(sourceBeanName)) {
+                        addTranslator(smm.getTranslatorName(), context);
                         addConnectionFactory(smm.getConnectionJndiName(), source);
+                        break;
                     }
                 }
             }
         }
     }
 
-    void addTranslator(String translatorname) {
+    void addTranslator(String translatorname, ApplicationContext context) {
         try {
             if (this.getExecutionFactory(translatorname) == null) {
-                addTranslator(ExternalSource.translatorClass(translatorname));
+                String basePackage = getBasePackage(context);
+                Class<? extends ExecutionFactory<?, ?>> clazz = ExternalSource.translatorClass(translatorname,
+                        basePackage);
+                if (clazz != null) {
+                    addTranslator(clazz);
+                } else {
+                    throw new IllegalStateException("Failed to load translator " + translatorname
+                            + ". Check to make sure @Translator annotation is added on your custom translator "
+                            + "and also set the 'spring.teiid.model.package' set to package where the translator "
+                            + "is defined");
+                }
             }
         } catch (ConnectorManagerException | TranslatorException e) {
             throw new IllegalStateException("Failed to load translator " + translatorname, e);
@@ -316,7 +327,7 @@ public class TeiidServer extends EmbeddedServer {
         }
 
         // load the translator class
-        addTranslator(translatorName);
+        addTranslator(translatorName, context);
 
         // add the importer properties from the configuration
         // note that above defaults can be overridden with this too.
@@ -358,15 +369,17 @@ public class TeiidServer extends EmbeddedServer {
         source.setTranslatorName(translatorName);
         try {
             if (this.getExecutionFactory(translatorName) == null) {
-                addTranslator(ExternalSource.translatorClass(translatorName));
+                addTranslator(translatorName, context);
             }
-        } catch (ConnectorManagerException | TranslatorException e) {
+        } catch (ConnectorManagerException e) {
             throw new IllegalStateException("Failed to load translator " + translatorName, e);
         }
 
         model.addSourceMapping(source);
         return model;
     }
+
+
 
     boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context, PhysicalNamingStrategy namingStrategy) {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
@@ -375,15 +388,7 @@ public class TeiidServer extends EmbeddedServer {
         provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
         provider.addIncludeFilter(new AnnotationTypeFilter(UserDefinedFunctions.class));
 
-        String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
-        if (basePackage == null) {
-            logger.warn("***************************************************************");
-            logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
-                    + "\" is NOT set, scanning entire classpath for @Entity classes.");
-            logger.warn("consider setting this property to avoid time consuming scanning");
-            logger.warn("***************************************************************");
-            basePackage = "*";
-        }
+        String basePackage = getBasePackage(context);
 
         // check to add any source models first based on the annotations
         boolean load = false;
@@ -394,7 +399,7 @@ public class TeiidServer extends EmbeddedServer {
                 ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
 
                 if (excelAnnotation != null) {
-                    addExcelModel(vdb, clazz, excelAnnotation);
+                    addExcelModel(vdb, clazz, excelAnnotation, context);
                     load = true;
                 }
             } catch (ClassNotFoundException e) {
@@ -520,6 +525,19 @@ public class TeiidServer extends EmbeddedServer {
         return load;
     }
 
+    private String getBasePackage(ApplicationContext context) {
+        String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
+        if (basePackage == null) {
+            logger.warn("***************************************************************");
+            logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
+                    + "\" is NOT set, scanning entire classpath for @Entity classes.");
+            logger.warn("consider setting this property to avoid time consuming scanning");
+            logger.warn("***************************************************************");
+            basePackage = "*";
+        }
+        return basePackage;
+    }
+
     boolean isRedirectUpdatesEnabled(ApplicationContext context) {
         return Boolean.parseBoolean(context.getEnvironment().getProperty(REDIRECTED));
     }
@@ -564,7 +582,7 @@ public class TeiidServer extends EmbeddedServer {
         return metadataSources.getMetadataBuilder(serviceRegistry).applyPhysicalNamingStrategy(namingStrategy).build();
     }
 
-    private void addExcelModel(VDBMetaData vdb, Class<?> clazz, ExcelTable excelAnnotation) {
+    private void addExcelModel(VDBMetaData vdb, Class<?> clazz, ExcelTable excelAnnotation, ApplicationContext context) {
         ModelMetaData model = new ModelMetaData();
         model.setName(clazz.getSimpleName().toLowerCase());
         model.setModelType(Model.Type.PHYSICAL);
@@ -581,9 +599,9 @@ public class TeiidServer extends EmbeddedServer {
         source.setTranslatorName(ExternalSource.EXCEL.getTranslatorName());
         try {
             if (this.getExecutionFactory(ExternalSource.EXCEL.getTranslatorName()) == null) {
-                addTranslator(ExternalSource.translatorClass(ExternalSource.EXCEL.getTranslatorName()));
+                addTranslator(ExternalSource.EXCEL.getTranslatorName(), context);
             }
-        } catch (ConnectorManagerException | TranslatorException e) {
+        } catch (ConnectorManagerException e) {
             throw new IllegalStateException("Failed to load translator " + ExternalSource.EXCEL.getTranslatorName(), e);
         }
         model.addSourceMapping(source);
