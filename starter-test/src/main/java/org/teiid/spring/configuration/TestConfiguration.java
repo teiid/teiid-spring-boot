@@ -50,6 +50,21 @@ public class TestConfiguration {
     }
 
     @SuppressWarnings("rawtypes")
+    @Bean("fakeSource3")
+    public ConnectionFactory fakeSource3() {
+        return new BaseConnectionFactory() {
+            @Override
+            public Connection getConnection() throws Exception {
+                return new Connection() {
+                    @Override
+                    public void close() throws Exception {
+                    }
+                };
+            }
+        };
+    }
+
+    @SuppressWarnings("rawtypes")
     @Bean("fakeSource2")
     @DependsOn({"fake2"})
     public ConnectionFactory fakeSource2() {

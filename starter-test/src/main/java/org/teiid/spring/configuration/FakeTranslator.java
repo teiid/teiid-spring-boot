@@ -31,6 +31,7 @@ import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.ResultSetExecution;
 import org.teiid.translator.Translator;
 import org.teiid.translator.TranslatorException;
+import org.teiid.translator.TranslatorProperty;
 import org.teiid.translator.TypeFacility;
 
 @Translator(name = "fake")
@@ -77,7 +78,7 @@ public class FakeTranslator extends ExecutionFactory<Object, Object> {
                     return null;
                 }
                 first = false;
-                String[] results = { "one" };
+                String[] results = { myProperty == null?"one":myProperty };
                 return Arrays.asList(results);
             }
         };
@@ -87,5 +88,16 @@ public class FakeTranslator extends ExecutionFactory<Object, Object> {
     @Override
     public boolean isSourceRequiredForMetadata() {
         return false;
+    }
+
+    private String myProperty;
+
+    @TranslatorProperty
+    public String getMyProperty() {
+        return myProperty;
+    }
+
+    public void setMyProperty(String prop) {
+        myProperty = prop;
     }
 }

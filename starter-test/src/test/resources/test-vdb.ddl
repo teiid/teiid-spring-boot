@@ -19,15 +19,21 @@ USE DATABASE customer;
 
 CREATE FOREIGN DATA WRAPPER fake;
 CREATE FOREIGN DATA WRAPPER fake2;
+CREATE FOREIGN DATA WRAPPER fake3 TYPE fake OPTIONS ("myProperty" 'foo');
 
 CREATE SERVER fakeSource TYPE 'NONE' FOREIGN DATA WRAPPER fake OPTIONS ("jndi-name" 'fakeSource');
 CREATE SERVER fakeSource2 TYPE 'NONE' FOREIGN DATA WRAPPER fake2 OPTIONS ("jndi-name" 'fakeSource2');
+CREATE SERVER fakeSource3 TYPE 'NONE' FOREIGN DATA WRAPPER fake3 OPTIONS ("jndi-name" 'fakeSource3');
 
 CREATE SCHEMA accounts SERVER fakeSource;
 CREATE SCHEMA accounts2 SERVER fakeSource2;
+CREATE SCHEMA accounts3 SERVER fakeSource3;
 
 SET SCHEMA accounts;
 IMPORT FOREIGN SCHEMA public FROM SERVER fakeSource INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
 
 SET SCHEMA accounts2;
 IMPORT FOREIGN SCHEMA public FROM SERVER fakeSource2 INTO accounts2 OPTIONS("importer.useFullSchemaName" 'false');
+
+SET SCHEMA accounts3;
+IMPORT FOREIGN SCHEMA public FROM SERVER fakeSource3 INTO accounts3 OPTIONS("importer.useFullSchemaName" 'false');
