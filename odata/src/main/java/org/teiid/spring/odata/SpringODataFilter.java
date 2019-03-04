@@ -157,16 +157,16 @@ public class SpringODataFilter implements HandlerInterceptor {
                 firstModel = m.getName();
             }
 
-            if (path == null) {
+            if (path == null && !m.isSource()) {
                 modelName = m.getName();
                 break;
-            } else if (path.equalsIgnoreCase(m.getName())) {
+            } else if (path != null && path.equalsIgnoreCase(m.getName())) {
                 modelName = m.getName();
                 break;
             }
         }
 
-        if (modelName == null) {
+        if (path == null && modelName == null) {
             modelName = firstModel;
         }
         return modelName;
