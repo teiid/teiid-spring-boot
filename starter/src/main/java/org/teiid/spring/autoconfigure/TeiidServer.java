@@ -72,6 +72,7 @@ import org.teiid.adminapi.impl.ModelMetaData;
 import org.teiid.adminapi.impl.SourceMappingMetadata;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
+import org.teiid.adminapi.impl.VDBTranslatorMetaData;
 import org.teiid.core.TeiidException;
 import org.teiid.core.TeiidRuntimeException;
 import org.teiid.core.util.ReflectionHelper;
@@ -183,12 +184,27 @@ public class TeiidServer extends EmbeddedServer {
             for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
                 for (SourceMappingMetadata smm : model.getSourceMappings()) {
                     if (smm.getConnectionJndiName() != null && smm.getName().equalsIgnoreCase(sourceBeanName)) {
-                        addTranslator(smm.getTranslatorName(), context);
+                        VDBTranslatorMetaData translator = vdb.getTranslator(smm.getTranslatorName());
+                        if (translator != null) {
+                            addOverrideTranslator(translator, context);
+                        } else {
+                            addTranslator(smm.getTranslatorName(), context);
+                        }
                         addConnectionFactory(smm.getConnectionJndiName(), source);
                         break;
                     }
                 }
             }
+        }
+    }
+
+    void addOverrideTranslator(VDBTranslatorMetaData translator, ApplicationContext context) {
+        try {
+            String type = translator.getType();
+            addTranslator(type, context);
+            addTranslator(translator.getName(), type, translator.getPropertiesMap());
+        } catch (TranslatorException e) {
+            throw new IllegalStateException("Failed to load translator " + translator.getName(), e);
         }
     }
 
@@ -272,6 +288,10 @@ public class TeiidServer extends EmbeddedServer {
                         }
                     }
                 }
+            } else {
+                // embedded engine does not allow vdb-scoped transaltors, however these are
+                // already handled during the load in spring boot.
+                vdb.getOverrideTranslatorsMap().clear();
             }
             if (last && logger.isDebugEnabled()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();

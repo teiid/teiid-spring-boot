@@ -102,6 +102,10 @@ public class TeiidAutoConfigurationTest {
         assertTrue(rs.next());
         assertEquals("one", rs.getString(1));
 
+        rs = stmt.executeQuery("SELECT * FROM accounts3.mytable");
+        assertNotNull(rs);
+        assertTrue(rs.next());
+        assertEquals("foo", rs.getString(1));
         close(rs, stmt, conn);
     }
 }
