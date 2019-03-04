@@ -92,7 +92,7 @@ public class WebConfig implements WebMvcConfigurer {
         exclude.add("/static/**");
         if (this.alternatePaths != null) {
             for(int i = 0; i < alternatePaths.length; i++) {
-                exclude.add(this.alternatePaths[i]);
+                exclude.add(this.alternatePaths[i]+"/**");
             }
         }
 
