@@ -99,7 +99,7 @@
 
     <!-- Project Dependencies -->
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
-    <teiid.version>12.1.0-SNAPSHOT</teiid.version>
+    <teiid.version>12.1.0</teiid.version>
     <version.xml-apis>1.4.01</version.xml-apis>
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
     <hibernate.version>5.3.7.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
