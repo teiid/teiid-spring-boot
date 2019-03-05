@@ -275,7 +275,7 @@ public class TeiidAutoConfiguration implements Ordered {
         VDBMetaData vdb =  new VDBMetaData();
         vdb.setName(VDBNAME);
         vdb.setVersion(VDBVERSION);
-        server.deployVDB(vdb, false);
+        server.deployVDB(vdb, false, this.context);
 
         serverContext.set(server);
         return server;

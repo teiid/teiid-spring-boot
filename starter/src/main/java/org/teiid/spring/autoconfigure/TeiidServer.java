@@ -179,17 +179,11 @@ public class TeiidServer extends EmbeddedServer {
             }
 
             undeployVDB(vdb.getName(), vdb.getVersion());
-            deployVDB(vdb, false);
+            deployVDB(vdb, false, context);
         } else {
             for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
                 for (SourceMappingMetadata smm : model.getSourceMappings()) {
                     if (smm.getConnectionJndiName() != null && smm.getName().equalsIgnoreCase(sourceBeanName)) {
-                        VDBTranslatorMetaData translator = vdb.getTranslator(smm.getTranslatorName());
-                        if (translator != null) {
-                            addOverrideTranslator(translator, context);
-                        } else {
-                            addTranslator(smm.getTranslatorName(), context);
-                        }
                         addConnectionFactory(smm.getConnectionJndiName(), source);
                         break;
                     }
@@ -273,7 +267,7 @@ public class TeiidServer extends EmbeddedServer {
         return driverName;
     }
 
-    void deployVDB(VDBMetaData vdb, boolean last) {
+    void deployVDB(VDBMetaData vdb, boolean last, ApplicationContext context) {
         try {
             if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
                 // if there is no view model, then keep all the other models as visible.
@@ -288,15 +282,32 @@ public class TeiidServer extends EmbeddedServer {
                         }
                     }
                 }
-            } else {
-                // embedded engine does not allow vdb-scoped transaltors, however these are
-                // already handled during the load in spring boot.
-                vdb.getOverrideTranslatorsMap().clear();
             }
             if (last && logger.isDebugEnabled()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 VDBMetadataParser.marshell(vdb, out);
                 logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
+            }
+
+            // add any missing translators
+            for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+                for (SourceMappingMetadata smm : model.getSourceMappings()) {
+                    VDBTranslatorMetaData translator = vdb.getTranslator(smm.getTranslatorName());
+                    if (translator != null) {
+                        addOverrideTranslator(translator, context);
+                    } else {
+                        addTranslator(smm.getTranslatorName(), context);
+                    }
+
+                    if (smm.getConnectionJndiName() != null) {
+                        if (this.connectionFactoryProviders.get(smm.getConnectionJndiName()) == null){
+                            throw new IllegalStateException("A Data source with JNDI name "
+                                    + smm.getConnectionJndiName()
+                                    + " is used but not configured, check your DataSources.java "
+                                    + "file and configure it.");
+                        }
+                    }
+                }
             }
             deployVDB(vdb, null);
         } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
@@ -693,5 +704,10 @@ public class TeiidServer extends EmbeddedServer {
 
     public ConnectionFactoryProvider<?> removeConnectionFactoryProvider(String jndiName) {
         return this.connectionFactoryProviders.remove(jndiName);
+    }
+
+    @Override
+    protected boolean allowOverrideTranslators() {
+        return true;
     }
 }
