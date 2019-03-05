@@ -135,7 +135,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         if (deploy) {
             // Deploy at the end when all the data sources are configured
             server.undeployVDB(vdb.getName(), vdb.getVersion());
-            server.deployVDB(vdb, true);
+            server.deployVDB(vdb, true, this.context);
         }
     }
 
