@@ -96,6 +96,7 @@
     <basepom.check.skip-duplicate-finder>false</basepom.check.skip-duplicate-finder>
     <basepom.check.skip-dependency-versions-check>false</basepom.check.skip-dependency-versions-check>
     <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
+    <basepom.release.push-changes>true</basepom.release.push-changes>
 
     <!-- Project Dependencies -->
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
