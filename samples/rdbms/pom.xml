@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>org.teiid</groupId>
 		<artifactId>samples</artifactId>
-		<version>1.0.3-SNAPSHOT</version>
+		<version>1.0.3</version>
 	</parent>
 
 	<artifactId>spring-rdbms-example</artifactId>
