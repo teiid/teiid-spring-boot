@@ -61,6 +61,6 @@ The directory structure is defined as follows:
 
 ----
 git pull upstream master
-mvn -DautoVersionSubmodules=true -P release clean package release:prepare
-mvn -P release release:perform
+mvn -DautoVersionSubmodules=true clean package release:prepare
+mvn release:perform
 ----
