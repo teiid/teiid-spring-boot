@@ -63,6 +63,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+import org.teiid.PreParser;
 import org.teiid.adminapi.Admin;
 import org.teiid.adminapi.Admin.TranlatorPropertyType;
 import org.teiid.adminapi.AdminException;
@@ -709,5 +710,9 @@ public class TeiidServer extends EmbeddedServer {
     @Override
     protected boolean allowOverrideTranslators() {
         return true;
+    }
+
+    public void setPreParser(PreParser bean) {
+        getConfiguration().setPreParser(bean);
     }
 }
