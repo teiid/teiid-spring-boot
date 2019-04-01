@@ -37,6 +37,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.teiid.PreParser;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.translator.ExecutionFactory;
@@ -118,6 +119,9 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         } else if (bean instanceof ExecutionFactory) {
             TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             server.addTranslator(beanName, (ExecutionFactory)bean);
+        } else if (bean instanceof PreParser) {
+            TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
+            server.setPreParser((PreParser)bean);
         }
         return bean;
     }

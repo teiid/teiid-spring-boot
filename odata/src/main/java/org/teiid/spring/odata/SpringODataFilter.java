@@ -16,7 +16,10 @@
 package org.teiid.spring.odata;
 
 import java.lang.ref.SoftReference;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -49,6 +52,7 @@ public class SpringODataFilter implements HandlerInterceptor {
     protected SoftReference<OlingoBridge> clientReference = null;
     protected Properties connectionProperties;
     private SpringSecurityHelper securityHelper;
+    private Map<Object, Future<Boolean>> loadingQueries = new ConcurrentHashMap<>();
 
     public SpringODataFilter(Properties props, TeiidServer server, VDB vdb, ServletContext servletContext,
             SpringSecurityHelper securityHelper) {
@@ -173,7 +177,7 @@ public class SpringODataFilter implements HandlerInterceptor {
     }
 
     public Client buildClient(String vdbName, String version, Properties props) {
-        return new SpringClient(vdbName, version, props, server);
+        return new SpringClient(vdbName, version, props, server, loadingQueries);
     }
 
     @Override

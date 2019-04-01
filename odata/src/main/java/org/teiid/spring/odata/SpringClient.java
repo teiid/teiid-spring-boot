@@ -17,7 +17,9 @@ package org.teiid.spring.odata;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 import org.teiid.core.TeiidProcessingException;
 import org.teiid.jdbc.ConnectionImpl;
@@ -32,8 +34,9 @@ public class SpringClient extends LocalClient {
     private Properties properties;
     private TeiidServer server;
 
-    public SpringClient(String vdbName, String vdbVersion, Properties properties, TeiidServer server) {
-        super(vdbName, vdbVersion, properties);
+    public SpringClient(String vdbName, String vdbVersion, Properties properties, TeiidServer server,
+            Map<Object, Future<Boolean>> loading) {
+        super(vdbName, vdbVersion, properties, loading);
         this.properties = properties;
         this.vdbName = vdbName;
         this.vdbVersion = vdbVersion;

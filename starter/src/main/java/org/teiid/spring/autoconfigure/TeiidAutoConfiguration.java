@@ -40,7 +40,6 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
-import org.jboss.vfs.VirtualFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -70,7 +69,8 @@ import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
-import org.teiid.query.metadata.PureZipFileSystem;
+import org.teiid.query.metadata.NioZipFileSystem;
+import org.teiid.query.metadata.VirtualFile;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
@@ -204,7 +204,7 @@ public class TeiidAutoConfiguration implements Ordered {
 
     private VDBMetaData loadVDB(URL url) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
     IOException, URISyntaxException {
-        VirtualFile root = PureZipFileSystem.mount(url);
+        VirtualFile root = NioZipFileSystem.mount(url);
         VDBMetaData metadata;
 
         VirtualFile vdbMetadata = root.getChild("/META-INF/vdb.xml"); //$NON-NLS-1$
