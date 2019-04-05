@@ -50,8 +50,14 @@ public class TestExampleWithContext {
 
     @Test
     public void testRoot() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/odata", String.class);
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/odata/", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+    }
+
+    @Test
+    public void testMetadata() throws Exception {
+        TestExample.olingoClient("http://localhost:" + port+"/odata/accounts");
+        TestExample.olingoClient("http://localhost:" + port+"/odata");
     }
 
     @Test
