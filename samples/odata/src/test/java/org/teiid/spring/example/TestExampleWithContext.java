@@ -17,6 +17,7 @@ package org.teiid.spring.example;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,12 +53,14 @@ public class TestExampleWithContext {
     public void testRoot() throws Exception{
         ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/odata/", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        response = web.getForEntity("http://localhost:" + port+"/odata/$metadata", String.class);
+        assertTrue(response.getBody().contains("http://localhost:" + port+"/odata/static/org.teiid.v1.xml"));
     }
 
     @Test
     public void testMetadata() throws Exception {
-        TestExample.olingoClient("http://localhost:" + port+"/odata/accounts");
         TestExample.olingoClient("http://localhost:" + port+"/odata");
+        TestExample.olingoClient("http://localhost:" + port+"/odata/accounts");
     }
 
     @Test

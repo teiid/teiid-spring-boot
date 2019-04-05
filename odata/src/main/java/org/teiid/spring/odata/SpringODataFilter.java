@@ -75,6 +75,7 @@ public class SpringODataFilter implements HandlerInterceptor {
         HttpServletResponse httpResponse = response;
 
         String uri = request.getRequestURI();
+        boolean root = uri.equals("/");
         String fullURL = request.getRequestURL().toString();
 
         // possible vdb and model names
@@ -105,11 +106,14 @@ public class SpringODataFilter implements HandlerInterceptor {
         if (subContext != null) {
             baseURI = fullURL.substring(0, fullURL.indexOf(subContext)-1);
             contextPath = contextPath.isEmpty()?subContext:(contextPath+"/"+subContext);
-        } else {
+        } else if (!root) {
             baseURI = fullURL.substring(0, fullURL.indexOf(contextPath.isEmpty()?uri:contextPath+uri));
             if (!contextPath.isEmpty()) {
                 baseURI = baseURI + contextPath;
             }
+        }
+        if (baseURI.endsWith("/")) {
+            baseURI = baseURI.substring(0, baseURI.length()-1);
         }
 
         OlingoBridge context = null;
