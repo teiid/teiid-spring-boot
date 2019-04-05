@@ -83,14 +83,16 @@ public class TestExample {
 
     @Test
     public void testMetadata() throws Exception {
-        olingoClient("http://localhost:" + port+"/accounts");
         olingoClient("http://localhost:" + port);
+        olingoClient("http://localhost:" + port+"/accounts");
     }
 
     @Test
     public void testRoot() throws Exception{
         ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        response = web.getForEntity("http://localhost:" + port+"/$metadata", String.class);
+        assertTrue(response.getBody().contains("http://localhost:" + port+"/static/org.teiid.v1.xml"));
     }
 
     @Test
