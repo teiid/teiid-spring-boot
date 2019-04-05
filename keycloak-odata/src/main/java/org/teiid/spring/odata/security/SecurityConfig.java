@@ -84,7 +84,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         .antMatchers("/actuator/health").permitAll()
         .antMatchers("/$metadata").permitAll()
         .antMatchers("/swagger.json").permitAll()
-        .antMatchers("/opensapi.json").permitAll()
+        .antMatchers("/openapi.json").permitAll()
         .anyRequest().hasRole(odataRole);
     }
 }

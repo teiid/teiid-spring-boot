@@ -100,6 +100,7 @@
 
     <!-- Project Dependencies -->
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
+    <spring-social.version>1.1.6.RELEASE</spring-social.version>    
     <teiid.version>12.2.0-SNAPSHOT</teiid.version>
     <version.xml-apis>1.4.01</version.xml-apis>
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
@@ -166,13 +167,14 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-jdbc</artifactId>
         <version>${spring-boot.version}</version>
-      </dependency>
+      </dependency>    
       <dependency>
           <groupId>me.snowdrop</groupId>
           <artifactId>narayana-spring-boot-starter</artifactId>
           <version>${narayana.version}</version>
           <exclusions>
             <exclusion>
+                <!-- Other JARS bring in this dependency -->
                 <groupId>org.jboss.spec.javax.transaction</groupId>
                 <artifactId>jboss-transaction-api_1.2_spec</artifactId>
             </exclusion>
@@ -236,6 +238,17 @@
         </exclusions>            
       </dependency>
       <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-salesforce-41</artifactId>
+        <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>      
+      <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-core</artifactId>
         <version>${hibernate.version}</version>
@@ -295,7 +308,12 @@
         <version>${version.org.keycloak}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>       
+      </dependency> 
+      <dependency>
+          <groupId>org.springframework.social</groupId>
+          <artifactId>spring-social-core</artifactId>
+          <version>${spring-social.version}</version>
+      </dependency>            
       <!--Project dependencies -->
       <dependency>
         <groupId>org.teiid</groupId>
@@ -326,7 +344,12 @@
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-excel</artifactId>
         <version>${project.version}</version>
-      </dependency>                  
+      </dependency>
+      <dependency>
+          <groupId>org.teiid</groupId>
+          <artifactId>spring-data-salesforce</artifactId>
+          <version>${project.version}</version>
+      </dependency>                        
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
@@ -395,6 +418,7 @@
         <module>data/rest</module>
         <module>data/excel</module>
         <module>data/mongodb</module>
+        <module>data/salesforce</module>        
         <module>odata</module>
         <module>keycloak-odata</module>
         <module>samples</module>
@@ -410,6 +434,7 @@
         <module>data/rest</module>
         <module>data/excel</module>
         <module>data/mongodb</module>        
+        <module>data/salesforce</module>        
         <module>odata</module>
         <module>keycloak-odata</module>
       </modules>
