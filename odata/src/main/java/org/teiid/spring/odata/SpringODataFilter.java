@@ -70,7 +70,8 @@ public class SpringODataFilter implements HandlerInterceptor {
         HttpServletRequest httpRequest = request;
         HttpServletResponse httpResponse = response;
 
-        String uri = request.getRequestURI().toString();
+        String uri = request.getRequestURI();
+        boolean root = uri.equals("/");
         String fullURL = request.getRequestURL().toString();
 
         // possible vdb and model names
@@ -99,8 +100,16 @@ public class SpringODataFilter implements HandlerInterceptor {
 
         String baseURI = fullURL;
         if (subContext != null) {
-            baseURI = fullURL.substring(0, fullURL.indexOf(subContext));
+            baseURI = fullURL.substring(0, fullURL.indexOf(subContext)-1);
             contextPath = contextPath.isEmpty()?subContext:(contextPath+"/"+subContext);
+        } else if (!root) {
+            baseURI = fullURL.substring(0, fullURL.indexOf(contextPath.isEmpty()?uri:contextPath+uri));
+            if (!contextPath.isEmpty()) {
+                baseURI = baseURI + contextPath;
+            }
+        }
+        if (baseURI.endsWith("/")) {
+            baseURI = baseURI.substring(0, baseURI.length()-1);
         }
 
         OlingoBridge context = null;
@@ -180,7 +189,9 @@ public class SpringODataFilter implements HandlerInterceptor {
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
             @Nullable ModelAndView modelAndView) throws Exception {
         Client client = (Client) request.getAttribute(Client.class.getName());
-        client.close();
+        if (client != null) {
+            client.close();
+        }
     }
 }
 

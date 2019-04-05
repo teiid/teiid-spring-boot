@@ -16,8 +16,21 @@
 package org.teiid.spring.example;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
+
+import org.apache.olingo.client.api.EdmEnabledODataClient;
+import org.apache.olingo.client.api.communication.response.ODataRetrieveResponse;
+import org.apache.olingo.client.api.domain.ClientEntity;
+import org.apache.olingo.client.api.domain.ClientEntitySet;
+import org.apache.olingo.client.api.domain.ClientEntitySetIterator;
+import org.apache.olingo.client.core.ODataClientFactory;
+import org.apache.olingo.commons.api.edm.Edm;
+import org.apache.olingo.commons.api.edm.EdmEntitySet;
+import org.apache.olingo.commons.api.edm.constants.ODataServiceVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +59,40 @@ public class TestExample {
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
+    static void olingoClient(String serviceRoot) throws Exception {
+        EdmEnabledODataClient client = ODataClientFactory
+                .getEdmEnabledClient(serviceRoot);
+        ODataServiceVersion version = client.getServiceVersion();
+        assertThat(ODataServiceVersion.V40, equalTo(version));
+        Edm edm = client.getCachedEdm();
+        EdmEntitySet es = edm.getEntityContainer().getEntitySet("CUSTOMER");
+        assertThat("CUSTOMER", equalTo(es.getName()));
+
+        URI customersUri = client.newURIBuilder(serviceRoot)
+                .appendEntitySetSegment("CUSTOMER").filter("LASTNAME eq 'Smith'").build();
+
+        ODataRetrieveResponse<ClientEntitySetIterator<ClientEntitySet, ClientEntity>> response = client
+                .getRetrieveRequestFactory().getEntitySetIteratorRequest(customersUri).execute();
+
+        ClientEntitySetIterator<ClientEntitySet, ClientEntity> iterator = response.getBody();
+        assertTrue(iterator.hasNext());
+        ClientEntity entity = iterator.next();
+        assertNotNull(entity);
+        assertThat(entity.getProperty("FIRSTNAME").getValue().asPrimitive().toValue(), equalTo("Joseph"));
+    }
+
+    @Test
+    public void testMetadata() throws Exception {
+        olingoClient("http://localhost:" + port);
+        olingoClient("http://localhost:" + port+"/accounts");
+    }
+
     @Test
     public void testRoot() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port, String.class);
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        response = web.getForEntity("http://localhost:" + port+"/$metadata", String.class);
+        assertTrue(response.getBody().contains("http://localhost:" + port+"/static/org.teiid.v1.xml"));
     }
 
     @Test

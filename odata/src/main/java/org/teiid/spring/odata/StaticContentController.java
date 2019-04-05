@@ -45,8 +45,9 @@ public class StaticContentController {
                     && !pathInfo.endsWith("pom.xml") //$NON-NLS-1$
                     && !pathInfo.contains("META-INF") //$NON-NLS-1$
                     && !pathInfo.contains("WEB-INF") //$NON-NLS-1$
-                    && !pathInfo.substring(1).contains("/static")) { //$NON-NLS-1$
-                pathInfo = pathInfo.substring(7);
+                    && pathInfo.contains("/static")) { //$NON-NLS-1$
+                int idx = pathInfo.indexOf("/static");
+                pathInfo = pathInfo.substring(idx+7);
                 InputStream contents = getClass().getResourceAsStream(pathInfo);
                 if (contents != null) {
                     writeContent(response, contents);
