@@ -104,10 +104,10 @@ public class SpringODataFilter implements HandlerInterceptor {
         String baseURI = fullURL;
         if (subContext != null) {
             baseURI = fullURL.substring(0, fullURL.indexOf(subContext)-1);
-            contextPath = contextPath.isBlank()?subContext:(contextPath+"/"+subContext);
+            contextPath = contextPath.isEmpty()?subContext:(contextPath+"/"+subContext);
         } else {
-            baseURI = fullURL.substring(0, fullURL.indexOf(contextPath.isBlank()?uri:contextPath+uri));
-            if (!contextPath.isBlank()) {
+            baseURI = fullURL.substring(0, fullURL.indexOf(contextPath.isEmpty()?uri:contextPath+uri));
+            if (!contextPath.isEmpty()) {
                 baseURI = baseURI + contextPath;
             }
         }
