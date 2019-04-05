@@ -270,7 +270,18 @@
         <version>${version.org.keycloak}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>       
+      </dependency>
+    <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-spring-boot-starter</artifactId>
+        <version>${version.org.keycloak}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
       <!--Project dependencies -->
       <dependency>
         <groupId>org.teiid</groupId>
