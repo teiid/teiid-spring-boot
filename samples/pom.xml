@@ -61,6 +61,7 @@
     <module>redirection</module>
     <module>vdb</module>
     <module>mongodb</module>
+    <module>salesforce</module>
   </modules>
 
 </project>

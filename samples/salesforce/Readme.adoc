@@ -1,0 +1,151 @@
+= Reading/Writing Data from Salesforce Based Source
+
+This article shows an example to read/write data from Salesforce using Teiid. Teiid provides SQL based interface to interact with Salesforce. i.e. you can issue queries against it or join the entities with another entities to integrate data using Teiid.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 11 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies Spring Boot
+
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter,spring-data-salesforce*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>spring-data-salesforce</artifactId>
+</dependency>
+----
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file. 
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+.Properties that one can configure to connect to the Salesforce.
+[options="header,footer"]
+|==========================================================
+|Property Name     | Description        |Default
+|url               |Login URL           |https://login.salesforce.com/services/Soap/u/45.0
+|requestTimeout    |Request Timeout     |Integer.MAX_VALUE
+|connectTimeout    |Connection Timeout  |Integer.MAX_VALUE
+|pollingInterval   |Polling intervel for bulk results |500
+|clientId          |OAuth2 clientId |N/A
+|clientSecret      |OAuth2 client Secret |N/A
+|refreshToken      |OAuth2 Refresh Token |N/A
+|userName          |User name |N/A
+|password          |Password |N/A
+|==========================================================    
+
+Now depending upon how you are trying to connect to the Salesforce, use any one the methods below
+CAUTION: Your connection properties may be differnt from what shown as example below.
+
+==== Connect using Username/Password 
+.*src/main/resources/application.properties*
+----
+spring.teiid.data.salesforce.user-name=joe@teiid.com
+spring.teiid.data.salesforce.password=Wild00d2s1sEcB90KHMGAK6WO49rpzwO0
+spring.teiid.data.salesforce.client-id = 3MVG9yZ.WNe6byQAQdiv.
+spring.teiid.data.salesforce.client-secret = 2044794F81160D6657B5
+----
+
+==== Connect using RefreshToken
+.*src/main/resources/application.properties*
+----
+spring.teiid.data.salesforce.refresh-token=5Aep861Yij7AXt5Ce7V1kehE3pYYGhi6TK.dlC9sYAuBigo
+spring.teiid.data.salesforce.client-id = 3MVG9yZ.WNe6byQAQdiv.
+spring.teiid.data.salesforce.client-secret = 2044794F81160D6657B5
+----
+
+=== Create a class that Teiid can recognize as Data Source
+This class akin to the resource-adapter, which provides the access to data source
+
+----
+@Configuration
+public class DataSources {
+    @Bean
+    public SalesforceConnectionFactory accounts(SalesforceConfiguration config) {
+        return new SalesforceConnectionFactory(config);
+    }
+    @Bean
+    @ConfigurationProperties("spring.teiid.data.salesforce")
+    public SalesforceConfiguration salesforceConfig() {
+        return new SalesforceConfiguration();
+    }
+}
+----
+
+The above class defines a "accounts" bean which Teiid recognizes as data source and reads the metadata upon creation and makes internal model out of it. Now using this model, Teiid can read/write to it. All SObjects inside Salesforce will be available as Tables now to access.
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT *  FROM Contact");
+        System.out.println(list);
+    }
+}
+----
+
+=== Build 
+
+You can build the application now using maven 
+
+----
+mvn clean install
+----
+
+and execute your application 
+
+----
+java -jar target/spring-salesforce-example-{version}.jar
+----
+
+If you want to expose Salesforce through OData API, add following dependency to your `pom.xml` file.
+
+----
+<dependency>
+    <groupId>org.teiid</groupId>
+    <artifactId>spring-odata</artifactId>
+</dependency> 
+----
+
+and re-run the build, and then run, after that on port 8080 the OData REST API can be queried. 

@@ -52,7 +52,8 @@ public enum ExternalSource {
     LOOPBACK("loopback", new String[] {}, new String[] {}, "loopback", null),
     REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {},"ws", null),
     EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {},"excel", null),
-    MONGODB("mongodb", new String[] { "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" }, new String[] {},"mongodb", null);
+    MONGODB("mongodb", new String[] { "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" }, new String[] {},"mongodb", null),
+    SALESFORCE("salesforce", new String[] { "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" }, new String[] {},"salesforce", null);
 
     private String name;
     private String[] driverNames;

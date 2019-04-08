@@ -40,7 +40,7 @@ The following are the Teiid related dependencies
 </dependency>
 <dependency>
     <groupId>org.teiid.spring</groupId>
-    <artifactId>data-excel</artifactId>
+    <artifactId>spring-data-excel</artifactId>
 </dependency>
 ----
 

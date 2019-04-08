@@ -1,4 +1,4 @@
-= Reading Data from EXCEL Based Source
+= Reading/Writing Data from MongoDB Based Source
 
 This article shows an example to read/write data from MongoDB using Teiid. There may be many examples doing the similar task of reading MongoDB. However this example is little different, here the MongoDB's data is queries as if it is a SQL Database, i.e. you can issue queries against it or join the entities with another entities to integrate data using Teiid.
 
@@ -12,7 +12,7 @@ This article shows an example to read/write data from MongoDB using Teiid. There
 === Build With Maven
 First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
 
-Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+Go to link:http://start.spring.io/[Spring Initializer] and type in "MongoDB" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
 
 Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
 ----
@@ -23,7 +23,7 @@ and create pom.xml file of your choosing and add following maven dependencies Sp
 
 The following are the Teiid related dependencies
 [source,xml]
-.*teiid-spring-boot-starter,data-mongodb*
+.*teiid-spring-boot-starter,spring-data-mongodb*
 ----
 <dependency>
    <groupId>org.teiid</groupId>
@@ -31,7 +31,7 @@ The following are the Teiid related dependencies
 </dependency>
 <dependency>
     <groupId>org.teiid.spring</groupId>
-    <artifactId>data-mongodb</artifactId>
+    <artifactId>spring-data-mongodb</artifactId>
 </dependency>
 ----
 
@@ -63,7 +63,7 @@ At application boot time, Teiid Spring Boot scans the application's packages for
 spring.teiid.model.package=org.example
 ----
 
-Now lets define the proeprties to connect to MongoDB in `application.properties`
+Now lets define the properties to connect to MongoDB in `application.properties`
 
 ----
 spring.data.mongodb.host=localhost
