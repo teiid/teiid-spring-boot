@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
+import java.util.Collections;
 
 import org.apache.olingo.client.api.EdmEnabledODataClient;
 import org.apache.olingo.client.api.communication.response.ODataRetrieveResponse;
@@ -39,7 +40,10 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
@@ -121,5 +125,39 @@ public class TestExample {
         ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/static/org.teiid.v1.xml",
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+    }
+
+    @Test
+    public void testEntityAdd() throws Exception{
+        String payload = "{\n" +
+                "    \"SSN\": \"35712\",\n" +
+                "    \"FIRSTNAME\": \"John\",\n" +
+                "    \"LASTNAME\": \"Doe\",\n" +
+                "    \"ST_ADDRESS\": \"5544 Monroe st\",\n" +
+                "    \"APT_NUMBER\": null,\n" +
+                "    \"CITY\": \"LA\",\n" +
+                "    \"STATE\": \"CA\",\n" +
+                "    \"ZIPCODE\": \"55555\",\n" +
+                "    \"PHONE\": \"(314)555-1212\"\n" +
+                "}";
+
+        String entityResponse = "{\"@odata.context\":\"http://localhost:"+port+"/$metadata#CUSTOMER\","
+                + "\"SSN\":\"35712\","
+                + "\"FIRSTNAME\":\"John\",\"LASTNAME\":\"Doe\",\"ST_ADDRESS\":\"5544 Monroe st\","
+                + "\"APT_NUMBER\":null,\"CITY\":\"LA\",\"STATE\":\"CA\",\"ZIPCODE\":\"55555\","
+                + "\"PHONE\":\"(314)555-1212\"}";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(payload, headers);
+
+        ResponseEntity<String> response = web.postForEntity("http://localhost:" + port + "/CUSTOMER",
+                entity, String.class);
+
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.CREATED));
+
+        assertThat(response.getBody(), equalTo(entityResponse));
     }
 }

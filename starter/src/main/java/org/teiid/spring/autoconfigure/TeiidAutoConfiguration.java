@@ -258,7 +258,8 @@ public class TeiidAutoConfiguration implements Ordered {
             }
         }
 
-        if (embeddedConfiguration.getTransactionManager() == null) {
+        if (embeddedConfiguration.getTransactionManager() == null && this.transactionManager != null) {
+            logger.info("Transaction Manager found and being registed into Teiid.");
             PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
             ptma.setJTATransactionManager(this.transactionManager);
             embeddedConfiguration.setTransactionManager(ptma);
