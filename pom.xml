@@ -109,7 +109,8 @@
     <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
     <version.org.mockito>1.10.19</version.org.mockito>
     <version.org.keycloak>4.8.3.Final</version.org.keycloak>
-    <olingo.version>4.5.0</olingo.version>  
+    <olingo.version>4.5.0</olingo.version>
+    <narayana.version>2.1.0</narayana.version> <!-- me.snowdrop version, not narayana -->
   </properties>
 
   <build>
@@ -166,6 +167,17 @@
         <artifactId>spring-boot-starter-jdbc</artifactId>
         <version>${spring-boot.version}</version>
       </dependency>
+      <dependency>
+          <groupId>me.snowdrop</groupId>
+          <artifactId>narayana-spring-boot-starter</artifactId>
+          <version>${narayana.version}</version>
+          <exclusions>
+            <exclusion>
+                <groupId>org.jboss.spec.javax.transaction</groupId>
+                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+            </exclusion>
+          </exclusions>
+      </dependency>      
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>teiid-parent</artifactId>
