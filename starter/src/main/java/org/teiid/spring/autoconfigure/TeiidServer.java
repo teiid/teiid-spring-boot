@@ -116,6 +116,7 @@ public class TeiidServer extends EmbeddedServer {
     private MetadataSources metadataSources = new MetadataSources();
     private PlatformTransactionManagerAdapter platformTransactionManagerAdapter = new PlatformTransactionManagerAdapter();
     private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
+    private boolean usingPlatformTransactionManager;
 
     public TeiidServer() {
         this.cmr = new SBConnectorManagerRepository();
@@ -714,5 +715,13 @@ public class TeiidServer extends EmbeddedServer {
 
     public void setPreParser(PreParser bean) {
         getConfiguration().setPreParser(bean);
+    }
+
+    public void setUsingPlatformTransactionManager(boolean b) {
+        this.usingPlatformTransactionManager = b;
+    }
+
+    public boolean isUsingPlatformTransactionManager() {
+        return usingPlatformTransactionManager;
     }
 }

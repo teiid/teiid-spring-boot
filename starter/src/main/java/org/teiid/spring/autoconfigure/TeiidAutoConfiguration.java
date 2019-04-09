@@ -258,11 +258,17 @@ public class TeiidAutoConfiguration implements Ordered {
             }
         }
 
-        if (embeddedConfiguration.getTransactionManager() == null && this.transactionManager != null) {
-            logger.info("Transaction Manager found and being registed into Teiid.");
-            PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
-            ptma.setJTATransactionManager(this.transactionManager);
-            embeddedConfiguration.setTransactionManager(ptma);
+        if (embeddedConfiguration.getTransactionManager() == null) {
+            if (this.transactionManager != null) {
+                logger.info("Transaction Manager found and being registed into Teiid.");
+                embeddedConfiguration.setTransactionManager(this.transactionManager);
+            } else {
+                PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
+                this.embeddedConfiguration.setTransactionManager(ptma);
+                server.setUsingPlatformTransactionManager(true);
+            }
+        } else if (this.transactionManager != null && this.transactionManager != embeddedConfiguration.getTransactionManager()) {
+            throw new IllegalStateException("TransactionManager defined in both Spring and on the EmbeddedConfiguration.  Only one is expected.");
         }
 
         if (embeddedConfiguration.getSecurityHelper() == null) {

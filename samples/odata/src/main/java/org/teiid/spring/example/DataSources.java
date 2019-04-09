@@ -22,9 +22,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.teiid.spring.autoconfigure.MultiDataSourceTransactionManagement;
 
 @Configuration
-public class DataSources {
+public class DataSources extends MultiDataSourceTransactionManagement {
 
     @ConfigurationProperties(prefix = "spring.datasource.accounts")
     @Bean

@@ -38,6 +38,7 @@ import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -51,25 +52,38 @@ import org.teiid.spring.data.BaseConnectionFactory;
  * {@link PlatformTransactionManager} This is the transaction manager that Teiid
  * code sees.
  *
- * Notes: If a third party transaction manager is found, but data sources
- * defined are not XA capable then default Spring behavior continued, which
- * means the data sources are not co-ordinated in a transaction at all. If they
- * are XA sources then JTA transaction semantics will take over.
- *
  * If no third party transaction manager found, but there are multiple data
- * sources are defined, then this class will provide lite weight JTA *like*
+ * sources are defined, then this class will provide light weight JTA *like*
  * functionality. Here in case of failure it is totally on the user to manually
  * rollback any changes if any datasources failed to commit during the commit
- * run. This transaction manager is best used when we are dealing with 2
- * sources, especially one of them is readonly.
+ * run. This transaction manager is best used when we are dealing with only 1
+ * transactional resource.
  */
 public final class PlatformTransactionManagerAdapter implements TransactionManager {
+
+    public static class TransactionHolder {
+        public final TransactionStatus status;
+        public final Transaction transaction;
+
+        TransactionHolder(TransactionStatus status, PlatformTransactionAdapter adapter) {
+            this.status = status;
+            this.transaction = adapter;
+        }
+    }
+
     private List<PlatformTransactionManager> txnManagersForEachDataSource = new ArrayList<>();
 
-    private static DefaultTransactionDefinition DEFAULT_TRANSACTION_DEFINITION = new DefaultTransactionDefinition();
+    private static DefaultTransactionDefinition NEW_TRANSACTION_DEFINITION = new DefaultTransactionDefinition();
     static {
-        DEFAULT_TRANSACTION_DEFINITION.setPropagationBehavior(TransactionDefinition.PROPAGATION_MANDATORY);
+        NEW_TRANSACTION_DEFINITION.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
+
+    private static DefaultTransactionDefinition EXISTING_TRANSACTION_DEFINITION = new DefaultTransactionDefinition();
+    static {
+        EXISTING_TRANSACTION_DEFINITION.setPropagationBehavior(TransactionDefinition.PROPAGATION_MANDATORY);
+    }
+
+    private static final ThreadLocal<TransactionHolder> TRANSACTION_HOLDERS = new ThreadLocal<>();
 
     private static final class PlatformTransactionAdapter implements Transaction {
 
@@ -146,8 +160,6 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
     private PlatformTransactionManager platformTransactionManager;
     private WeakHashMap<TransactionStatus, PlatformTransactionAdapter> transactions = new WeakHashMap<>();
 
-    private TransactionManager jtaTransactionManager;
-
     public PlatformTransactionManagerAdapter() {
 
     }
@@ -160,111 +172,96 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
         }
     }
 
-    // When a third party JTA transaction manager is registered, this method will be
-    // called.
-    public void setJTATransactionManager(TransactionManager txnManager) {
-        this.jtaTransactionManager = txnManager;
-    }
-
     @Override
     public Transaction getTransaction() throws SystemException {
         try {
-            if (allowJTA()) {
-                return this.jtaTransactionManager.getTransaction();
-            }
-
             if (platformTransactionManager == null) {
                 return null;
             }
-            TransactionStatus status = null;
-            try {
-                status = TransactionAspectSupport.currentTransactionStatus();
-            } catch (NoTransactionException e) {
+            TransactionHolder holder = getOrCreateTransaction(false);
+            if (holder == null) {
                 return null;
             }
-            // status =
-            // platformTransactionManager.getTransaction(DEFAULT_TRANSACTION_DEFINITION);
-            synchronized (transactions) {
-                PlatformTransactionAdapter adapter = transactions.get(status);
-                if (adapter == null) {
-                    adapter = new PlatformTransactionAdapter(status);
-                    transactions.put(status, adapter);
-                }
-                return adapter;
-            }
+            return holder.transaction;
         } catch (IllegalTransactionStateException e) {
             return null;
         }
     }
 
+    public TransactionHolder getOrCreateTransaction(boolean start) {
+        TransactionStatus status = null;
+        try {
+            //Spring managed transaction
+            status = TransactionAspectSupport.currentTransactionStatus();
+        } catch (NoTransactionException e) {
+            //Teiid programatically managed transaction
+            if (start) {
+                status = platformTransactionManager.getTransaction(NEW_TRANSACTION_DEFINITION);
+                TransactionHolder holder = new TransactionHolder(status, new PlatformTransactionAdapter(status));
+                TRANSACTION_HOLDERS.set(holder);
+                return holder;
+            } else {
+                try {
+                    status = platformTransactionManager.getTransaction(EXISTING_TRANSACTION_DEFINITION);
+                    //success means that there is one defined/associated, so we are safe to use
+                    //the thread local
+                    return TRANSACTION_HOLDERS.get();
+                } catch (TransactionException e1) {
+                    TRANSACTION_HOLDERS.remove();
+                }
+            }
+        }
+        if (status == null) {
+            return null;
+        }
+        synchronized (transactions) {
+            PlatformTransactionAdapter adapter = transactions.get(status);
+            if (adapter == null) {
+                adapter = new PlatformTransactionAdapter(status);
+                transactions.put(status, adapter);
+            }
+            return new TransactionHolder(status, adapter);
+        }
+    }
+
     @Override
     public void rollback() throws IllegalStateException, SecurityException, SystemException {
-        if (allowJTA()) {
-            this.jtaTransactionManager.rollback();
-            return;
-        }
         throw new SystemException();
     }
 
     @Override
     public void commit() throws HeuristicMixedException, HeuristicRollbackException, IllegalStateException,
     RollbackException, SecurityException, SystemException {
-        if (allowJTA()) {
-            this.jtaTransactionManager.commit();
-            return;
-        }
         throw new SystemException();
     }
 
     @Override
     public void begin() throws NotSupportedException, SystemException {
-        if (allowJTA()) {
-            this.jtaTransactionManager.begin();
-            return;
-        }
         throw new SystemException();
     }
 
     @Override
     public Transaction suspend() throws SystemException {
-        if (allowJTA()) {
-            return this.jtaTransactionManager.suspend();
-        }
         throw new SystemException();
     }
 
     @Override
     public void setTransactionTimeout(int seconds) throws SystemException {
-        if (allowJTA()) {
-            this.jtaTransactionManager.setTransactionTimeout(seconds);
-            return;
-        }
         throw new SystemException();
     }
 
     @Override
     public void resume(Transaction tobj) throws IllegalStateException, InvalidTransactionException, SystemException {
-        if (allowJTA()) {
-            this.jtaTransactionManager.resume(tobj);
-            return;
-        }
         throw new SystemException();
     }
 
     @Override
     public void setRollbackOnly() throws IllegalStateException, SystemException {
-        if (allowJTA()) {
-            this.jtaTransactionManager.setRollbackOnly();
-            return;
-        }
         throw new SystemException();
     }
 
     @Override
     public int getStatus() throws SystemException {
-        if (allowJTA()) {
-            return this.jtaTransactionManager.getStatus();
-        }
         throw new SystemException();
     }
 
@@ -277,8 +274,15 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
         // TODO: not used currently, need to come up some strategy here.
     }
 
-    private boolean allowJTA() {
-        return (this.jtaTransactionManager != null);// && (this.txnManagersForEachDataSource.isEmpty());
+    public void commit(TransactionStatus status) {
+        this.platformTransactionManager.commit(status);
+        TRANSACTION_HOLDERS.remove();
     }
+
+    public void rollback(TransactionStatus status) {
+        this.platformTransactionManager.rollback(status);
+        TRANSACTION_HOLDERS.remove();
+    }
+
 }
 

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import org.springframework.transaction.TransactionStatus;
 import org.teiid.core.TeiidProcessingException;
 import org.teiid.jdbc.ConnectionImpl;
 import org.teiid.odbc.ODBCServerRemoteImpl;
@@ -33,6 +34,7 @@ public class SpringClient extends LocalClient {
     private ConnectionImpl connection;
     private Properties properties;
     private TeiidServer server;
+    private TransactionStatus status;
 
     public SpringClient(String vdbName, String vdbVersion, Properties properties, TeiidServer server,
             Map<Object, Future<Boolean>> loading) {
@@ -62,5 +64,32 @@ public class SpringClient extends LocalClient {
     @Override
     public ConnectionImpl getConnection() {
         return this.connection;
+    }
+
+    @Override
+    public String startTransaction() throws SQLException {
+        if (this.server.isUsingPlatformTransactionManager()) {
+            status = this.server.getPlatformTransactionManagerAdapter().getOrCreateTransaction(true).status;
+            return "anyid";
+        }
+        return super.startTransaction();
+    }
+
+    @Override
+    public void commit(String txnId) throws SQLException {
+        if (this.server.isUsingPlatformTransactionManager()) {
+            this.server.getPlatformTransactionManagerAdapter().commit(status);
+        } else {
+            super.commit(txnId);
+        }
+    }
+
+    @Override
+    public void rollback(String txnId) throws SQLException {
+        if (this.server.isUsingPlatformTransactionManager()) {
+            this.server.getPlatformTransactionManagerAdapter().rollback(status);
+        } else {
+            super.rollback(txnId);
+        }
     }
 }
