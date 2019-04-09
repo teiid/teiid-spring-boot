@@ -23,7 +23,7 @@ import javax.persistence.Id;
 import org.teiid.spring.annotations.SelectQuery;
 
 @Entity
-@SelectQuery("SELECT id, addSalutation(name), ssn FROM mydb.customer")
+@SelectQuery("SELECT id, addSalutation(name), ssn FROM mydb.CUSTOMER")
 public class Customer {
     @Id
     Long id;
