@@ -112,6 +112,7 @@
     <version.org.keycloak>4.8.3.Final</version.org.keycloak>
     <olingo.version>4.5.0</olingo.version>
     <narayana.version>2.1.0</narayana.version> <!-- me.snowdrop version, not narayana -->
+    <version.springfox>2.9.2</version.springfox>
   </properties>
 
   <build>
@@ -139,9 +140,12 @@
               <ignoredClassPattern>META\-.*</ignoredClassPattern>
               <ignoredClassPattern>module\-info</ignoredClassPattern>
               <ignoredClassPattern>org\.apache\.juli\..*</ignoredClassPattern>
+              <ignoredClassPattern>about\.html</ignoredClassPattern>
           </ignoredClassPatterns>
           <ignoredResourcePatterns>
             <ignoredResourcePattern>changelog\.txt</ignoredResourcePattern>
+            <ignoredResourcePattern>about\.html</ignoredResourcePattern>
+             <ignoredResourcePattern>\.gitkeep</ignoredResourcePattern>
           </ignoredResourcePatterns>                   
           <ignoredDependencies>
               <dependency>
@@ -313,8 +317,23 @@
           <groupId>org.springframework.social</groupId>
           <artifactId>spring-social-core</artifactId>
           <version>${spring-social.version}</version>
-      </dependency>            
+      </dependency>
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-swagger2</artifactId>
+        <version>${version.springfox}</version>
+      </dependency>
+        <dependency>
+          <groupId>io.springfox</groupId>
+          <artifactId>springfox-swagger-ui</artifactId>
+          <version>${version.springfox}</version>
+        </dependency>                 
       <!--Project dependencies -->
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-spring-boot-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>teiid-spring-boot-starter</artifactId>
@@ -413,6 +432,8 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
+        <module>common</module>
+        <module>tools</module>
         <module>starter</module>
         <module>starter-test</module>
         <module>data/rest</module>
@@ -420,6 +441,7 @@
         <module>data/mongodb</module>
         <module>data/salesforce</module>        
         <module>odata</module>
+        <module>openapi</module>
         <module>keycloak-odata</module>
         <module>samples</module>
       </modules>
@@ -430,12 +452,15 @@
          <basepom.check.skip-javadoc>false</basepom.check.skip-javadoc>      
       </properties>
       <modules>
+        <module>common</module>
+        <module>tools</module>
         <module>starter</module>
         <module>data/rest</module>
         <module>data/excel</module>
         <module>data/mongodb</module>        
         <module>data/salesforce</module>        
         <module>odata</module>
+        <module>openapi</module>
         <module>keycloak-odata</module>
       </modules>
       <build>

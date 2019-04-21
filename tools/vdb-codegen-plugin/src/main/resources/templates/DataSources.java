@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.example;
+/*
+ * GENERATED CODE - DO NOT EDIT
+ */
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+package ${packageName};
 
-@SpringBootApplication
-public class Application {
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+import javax.sql.DataSource;
+
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class DataSources${dsName} {
+
+    @ConfigurationProperties(prefix = "spring.datasource.${dsName}")
+    @Bean
+    public DataSource ${dsName}() {
+        return DataSourceBuilder.create().build();
     }
 }

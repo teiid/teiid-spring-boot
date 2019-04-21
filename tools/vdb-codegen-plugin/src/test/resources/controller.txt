@@ -1,0 +1,85 @@
+/*
+ * Copyright 2012-2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * GENERATED CODE - DO NOT EDIT
+ */
+package com.example;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Clob;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.teiid.spring.openapi.OpenApiInputStream;
+import org.teiid.spring.openapi.TeiidRSProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import io.swagger.annotations.ApiOperation;
+
+@RestController
+@RequestMapping("/portfolio")
+public class portfolio extends TeiidRSProvider {
+    @AutoWired
+    private TeiidServer server;
+    
+    @AutoWired
+    private VDB vdb;
+    
+    public portfolio() {
+        super(server, vdb);
+    }
+    @RequestMapping(value = "g1/{p1}", method = RequestMethod.GET, produces = MediaType.XML_UTF_8, )
+    @ResponseBody
+    @ApiOperation(value="", response=OpenApiInputStream.class.class)
+    public OpenApiInputStream g1Table(@PathVariable(name="p1") java.lang.Integer p1, @RequestParam(name="p2") java.lang.String p2) {
+        Map<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("p1",p1);
+    parameters.put("p2",p2);
+    
+        return execute(g1Table, parameters, "UTF-8", false);
+    }
+
+    @RequestMapping(value = "g2", method = RequestMethod.GET, produces = MediaType.TEXT_TYPE, )
+    @ResponseBody
+    @ApiOperation(value="", response=OpenApiInputStream.class.class)
+    public OpenApiInputStream g2Table() {
+        Map<String, Object> parameters = new LinkedHashMap<String, Object>();
+        
+        return execute(g2Table, parameters, "UTF-8", false);
+    }
+
+    @RequestMapping(value = "g3", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,  consumes = multipart/form-data )
+    @ResponseBody
+    @ApiOperation(value="", response=OpenApiInputStream.class.class)
+    public OpenApiInputStream g3Table(@RequestParam(name="p1") java.lang.Integer p1, @RequestParam(name="p2") MultipartFile p2) {
+        Map<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("p1",p1);
+    parameters.put("p2",p2);
+    
+        return execute(g3Table, parameters, "UTF-8", false);
+    }
+
