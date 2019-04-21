@@ -28,6 +28,12 @@ SET NAMESPACE 'http://teiid.org/rest' AS REST;
 CREATE FOREIGN DATA WRAPPER postgresql;
 CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql OPTIONS ("jndi-name" 'sampledb');
 
+CREATE FOREIGN DATA WRAPPER mongodb;
+CREATE SERVER samplemango TYPE 'NONE' FOREIGN DATA WRAPPER mongodb OPTIONS ("jndi-name" 'samplemongo');
+
+CREATE FOREIGN DATA WRAPPER salesforce;
+CREATE SERVER samplesf TYPE 'NONE' FOREIGN DATA WRAPPER salesforce OPTIONS ("jndi-name" 'samplesf');
+
 -- create schema, then import the metadata from the PostgreSQL database
 CREATE SCHEMA accounts SERVER sampledb;
 CREATE VIRTUAL SCHEMA portfolio;

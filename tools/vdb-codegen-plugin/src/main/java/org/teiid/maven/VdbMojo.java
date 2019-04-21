@@ -219,10 +219,29 @@ public class VdbMojo extends AbstractMojo {
 
             getLog().info("Building DataSource.java for source :" + server.getName());
 
-            Template template = cfg.getTemplate("DataSources.java");
-            Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-            template.process(tempMap, out);
-            out.close();
+            // Custom data sources are expected to provide their own DataSource classes
+            // when application is built
+            String translator = server.getDataWrapper();
+            if (translator.equals(ExternalSource.MONGODB.getTranslatorName())) {
+                Template template = cfg.getTemplate("DataSources_MongoDB.java");
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                template.process(tempMap, out);
+                out.close();
+            } else if (translator.equals(ExternalSource.SALESFORCE.getTranslatorName())) {
+                Template template = cfg.getTemplate("DataSources_Salesforce.java");
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                template.process(tempMap, out);
+                out.close();
+            } else if (translator.equals(ExternalSource.FILE.getTranslatorName())) {
+                // ignore as by default it is created
+            } else if (translator.equals(ExternalSource.REST.getTranslatorName())) {
+                // ignore as by default it is created
+            } else {
+                Template template = cfg.getTemplate("DataSources_JDBC.java");
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                template.process(tempMap, out);
+                out.close();
+            }
         }
     }
 
