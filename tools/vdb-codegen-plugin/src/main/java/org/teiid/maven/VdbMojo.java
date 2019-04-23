@@ -86,6 +86,12 @@ public class VdbMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/teiid-sb")
     private File outputDirectory;
 
+    @Parameter
+    private String packageName;
+
+    @Parameter
+    private Boolean generateApplicationClass = true;
+
     // A list of folders or files to be included in the final artifact archive.
     @Parameter
     private File[] includes;
@@ -114,9 +120,13 @@ public class VdbMojo extends AbstractMojo {
                 outputDir.mkdirs();
             }
 
+            if (this.packageName == null) {
+                this.packageName = project.getGroupId();
+            }
+            String codeDirectory = this.packageName.replace('.', '/');
+
             // where to keep source files
-            String codeDir = project.getGroupId().replace('.', '/');
-            File javaSrcDir = new File(getOutputDirectory(), codeDir);
+            File javaSrcDir = new File(getOutputDirectory(), codeDirectory);
             if (!javaSrcDir.exists()) {
                 javaSrcDir.mkdirs();
             }
@@ -125,9 +135,12 @@ public class VdbMojo extends AbstractMojo {
             Database database = getDatabase(vdbfile);
 
             HashMap<String, String> parentMap = new HashMap<String, String>();
-            parentMap.put("packageName", project.getGroupId());
+            parentMap.put("packageName", this.packageName);
             parentMap.put("vdbName", database.getName());
-            createApplication(cfg, javaSrcDir, database, parentMap);
+            parentMap.put("openapi", generateOpenApiScoffolding()?"true":"false");
+            if (this.generateApplicationClass) {
+                createApplication(cfg, javaSrcDir, database, parentMap);
+            }
             createDataSources(cfg, javaSrcDir, database, parentMap);
             verifyTranslatorDependencies(database);
             if (generateOpenApiScoffolding()) {
@@ -311,13 +324,15 @@ public class VdbMojo extends AbstractMojo {
             template.process(replacementMap, out);
 
             String servicePattern =
-                    "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = ${contentType}, <#if consumes??> consumes = ${consumes} </#if>)\n" +
+                    "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = {${contentType}} <#if consumes??>, consumes = ${consumes} </#if>)\n" +
                             "    @ResponseBody\n" +
-                            "    @ApiOperation(value=\"${description}\", response=${responseClass}.class)\n" +
-                            "    public OpenApiInputStream ${procedureName}(${paramSignature}) {\n" +
-                            "        Map<String, Object> parameters = new LinkedHashMap<String, Object>();\n" +
+                            "    @ApiOperation(value=\"${description}\", <#if responseClass??>response=${responseClass}</#if>)\n" +
+                            "    public OpenApiInputStream ${procedureName}(${paramSignature}) throws SQLException {\n" +
+                            "        setServer(this.server);\n"+
+                            "        setVdb(this.vdb);\n"+
+                            "        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();\n" +
                             "        ${paramMapping}\n" +
-                            "        return execute(${procedureName}, parameters, ${charset}, ${usingReturn});\n" +
+                            "        return execute(\"${procedureFullName}\", parameters, \"${charset}\", ${usingReturn});\n" +
                             "    }\n";
             StringTemplateLoader stl = new StringTemplateLoader();
             stl.putTemplate("service", servicePattern);
@@ -331,6 +346,8 @@ public class VdbMojo extends AbstractMojo {
                     buildRestService(procedure, replacementMap, cfg, out);
                 }
             }
+            out.write("}");
+            out.flush();
             out.close();
         }
     }
@@ -373,9 +390,10 @@ public class VdbMojo extends AbstractMojo {
         replacementMap.put("contentType", contentType);
         replacementMap.put("uri", uri);
         replacementMap.put("method", method);
-        replacementMap.put("charset", "\""+charSet+"\"");
+        replacementMap.put("charset", charSet);
         replacementMap.put("description", procedure.getAnnotation() == null ? "" : procedure.getAnnotation());
         replacementMap.put("procedureName", procedure.getName());
+        replacementMap.put("procedureFullName", procedure.getFullName());
         replacementMap.put("usingReturn", usingReturn?"true":"false");
 
         // handle parameters
@@ -469,11 +487,11 @@ public class VdbMojo extends AbstractMojo {
         }
         contentType = contentType.toLowerCase().trim();
         if (contentType.equals("xml")) {
-            contentType = "MediaType.XML_UTF_8";
+            contentType = "MediaType.APPLICATION_XML_VALUE";
         } else if (contentType.equals("json")) {
             contentType = "MediaType.APPLICATION_JSON_UTF8_VALUE";
         } else if (contentType.equals("plain")) {
-            contentType = "MediaType.TEXT_TYPE";
+            contentType = "text/plain";
         }
         return contentType;
     }

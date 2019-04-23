@@ -25,31 +25,31 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.teiid.spring.openapi.OpenApiInputStream;
 import org.teiid.spring.openapi.TeiidRSProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.teiid.spring.autoconfigure.TeiidServer;
+import org.teiid.adminapi.VDB;
 
 import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("/${modelName}")
 public class ${modelName} extends TeiidRSProvider {
-    @AutoWired
+    
+    @Autowired
     private TeiidServer server;
     
-    @AutoWired
+    @Autowired
     private VDB vdb;
     
-    public ${modelName}() {
-        super(server, vdb);
-    }
     
