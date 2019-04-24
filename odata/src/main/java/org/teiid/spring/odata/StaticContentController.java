@@ -36,7 +36,7 @@ import org.teiid.json.simple.JSONParser;
 import org.teiid.olingo.ODataPlugin;
 
 @RestController
-@RequestMapping("/static")
+@RequestMapping("/odata/static")
 public class StaticContentController {
 
     @RequestMapping(value = "**")

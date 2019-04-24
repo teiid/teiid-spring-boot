@@ -19,22 +19,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.teiid.spring.openapi;
-
-import java.io.IOException;
-import java.io.InputStream;
+package com.example;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.common.base.Predicates;
 
+import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -44,26 +40,18 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class SwaggerConfig {
     @Bean
     public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2).select().apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any()).build();
+        return new Docket(DocumentationType.SWAGGER_2).select()
+                .apis(Predicates.and(RequestHandlerSelectors.withClassAnnotation(RestController.class),
+                        RequestHandlerSelectors.basePackage("com.example")))
+                .paths(PathSelectors.any())
+                .build()
+                .apiInfo(metadata());
     }
 
-    @Bean
-    public com.fasterxml.jackson.databind.Module customModule() {
-        SimpleModule module = new SimpleModule("OpenApiInputStream");
-        module.addSerializer(OpenApiInputStream.class, new JsonSerializer<OpenApiInputStream>() {
-            @Override
-            public void serialize(OpenApiInputStream value, JsonGenerator gen, SerializerProvider serializers)
-                    throws IOException, JsonProcessingException {
-                InputStream is = value;
-                if (is != null) {
-                    int c;
-                    while ((c = is.read()) != -1) {
-                        gen.writeRaw((char) c);
-                    }
-                }
-            }
-        });
-        return module;
+    private ApiInfo metadata() {
+        return new ApiInfoBuilder()
+                .title("customer")
+                .description("Customer VDB")
+                .build();
     }
 }

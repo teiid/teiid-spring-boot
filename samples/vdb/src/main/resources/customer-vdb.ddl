@@ -16,6 +16,7 @@
 
 CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer;
+SET NAMESPACE 'http://teiid.org/rest' AS REST;
 CREATE FOREIGN DATA WRAPPER h2;
 CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("jndi-name" 'mydb');
 CREATE VIRTUAL SCHEMA virt;
@@ -34,3 +35,17 @@ SET SCHEMA virt;
 CREATE VIRTUAL FUNCTION addSalutation(param1 string) RETURNS string
     OPTIONS (NAMEINSOURCE 'addSalutation', JAVA_CLASS 'org.teiid.spring.example.UserFunctions', 
     JAVA_METHOD 'addSalutation');
+
+CREATE VIRTUAL PROCEDURE CustomerXML(IN p1 integer) RETURNS TABLE (xml_out xml) 
+  OPTIONS (UPDATECOUNT 0, "REST:METHOD" 'GET', "REST:URI" 'CustomerXml/{p1}') AS
+BEGIN
+    SELECT XMLELEMENT(NAME "customer", XMLATTRIBUTES (CustomerXML.p1 as p1), 
+           XMLAGG(XMLELEMENT(NAME "row", XMLFOREST(SSN, Name)))) AS xml_out 
+    FROM accounts.customer;
+END
+
+CREATE VIRTUAL PROCEDURE CustomerJSON(IN p1 clob) RETURNS TABLE (json_out clob) 
+  OPTIONS (UPDATECOUNT 0, "REST:METHOD" 'POST', "REST:URI" 'CustomerJson/{p1}') AS
+BEGIN
+    SELECT CustomerJSON.p1 AS json_out;
+END

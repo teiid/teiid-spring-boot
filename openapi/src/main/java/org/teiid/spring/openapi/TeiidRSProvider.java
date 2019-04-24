@@ -37,7 +37,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.teiid.adminapi.VDB;
 import org.teiid.core.types.BlobImpl;
 import org.teiid.core.types.BlobType;
@@ -67,19 +72,35 @@ public abstract class TeiidRSProvider {
     private TeiidServer server;
     private VDB vdb;
 
-    public TeiidRSProvider(TeiidServer server, VDB vdb) {
+    public TeiidServer getServer() {
+        return server;
+    }
+
+    public void setServer(TeiidServer server) {
         this.server = server;
+    }
+
+    public VDB getVdb() {
+        return vdb;
+    }
+
+    public void setVdb(VDB vdb) {
         this.vdb = vdb;
     }
 
-    public OpenApiInputStream execute(final String procedureName, final LinkedHashMap<String, Object> parameters,
-            final String charSet, final boolean usingReturn) throws SQLException {
+    public ResponseEntity<InputStreamResource> execute(final String procedureName, final LinkedHashMap<String, Object> parameters,
+            final String charSet, final boolean usingReturn) {
         Connection conn = null;
         try {
             conn = getConnection();
             LinkedHashMap<String, Object> updatedParameters = convertParameters(conn, procedureName,
                     parameters);
-            return executeProc(conn, procedureName, updatedParameters, charSet, usingReturn);
+            InputStream is = executeProc(conn, procedureName, updatedParameters, charSet, usingReturn);
+            InputStreamResource inputStreamResource = new InputStreamResource(is);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            return new ResponseEntity<InputStreamResource>(inputStreamResource, httpHeaders, HttpStatus.OK);
+        } catch (SQLException e ) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } finally {
             if (conn != null) {
                 try {
@@ -90,7 +111,7 @@ public abstract class TeiidRSProvider {
         }
     }
 
-    public OpenApiInputStream executeProc(Connection conn, String procedureName,
+    private InputStream executeProc(Connection conn, String procedureName,
             LinkedHashMap<String, Object> parameters, String charSet, boolean usingReturn) throws SQLException {
         // the generated code sends a empty string rather than null.
         if (charSet != null && charSet.trim().isEmpty()) {
@@ -134,10 +155,10 @@ public abstract class TeiidRSProvider {
             if (rs.next()) {
                 result = rs.getObject(1);
             } else {
-                throw new SQLException("Only result producing procedures are allowed");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only result producing procedures are allowed");
             }
         } else if (!usingReturn) {
-            throw new SQLException("Only result producing procedures are allowed");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Only result producing procedures are allowed");
         } else {
             result = statement.getObject(1);
         }
@@ -145,7 +166,7 @@ public abstract class TeiidRSProvider {
     }
 
     private LinkedHashMap<String, Object> convertParameters(Connection conn, String procedureName,
-            LinkedHashMap<String, Object> inputParameters) throws SQLException {
+            LinkedHashMap<String, Object> inputParameters) {
 
         Map<String, Class<?>> expectedTypes = getParameterTypes(conn, this.vdb.getName(), procedureName);
         LinkedHashMap<String, Object> expectedValues = new LinkedHashMap<String, Object>();
@@ -153,12 +174,15 @@ public abstract class TeiidRSProvider {
             for (String columnName : inputParameters.keySet()) {
                 Class<?> runtimeType = expectedTypes.get(columnName);
                 if (runtimeType == null) {
-                    throw new SQLException("Invalid form parameter; No column with name " + columnName
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid form parameter; No column with name " + columnName
                             + " defined on procedure " + procedureName);
                 }
                 Object value = inputParameters.get(columnName);
                 if (value != null) {
-                    if (value instanceof MultipartFile) {
+                    if (value.getClass().isAssignableFrom(runtimeType)) {
+                        // continue
+                    }
+                    else if (value instanceof MultipartFile) {
                         value = convertToRuntimeType(runtimeType, (MultipartFile) value);
                     } else if (Array.class.isAssignableFrom(runtimeType)) {
                         List<String> array = StringUtil.split((String) value, ","); //$NON-NLS-1$
@@ -168,59 +192,60 @@ public abstract class TeiidRSProvider {
                     } else {
                         if (DataTypeManager.isTransformable(String.class, runtimeType)) {
                             Transform t = DataTypeManager.getTransform(String.class, runtimeType);
-                            value = t.transform(value, runtimeType);
+                            value = t.transform(value.toString(), runtimeType);
                         }
                     }
                 }
                 expectedValues.put(columnName, value);
             }
             return expectedValues;
-        } catch (TransformationException | IOException e) {
-            throw new SQLException(e);
+        } catch (TransformationException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Failed to convert input into runtime types required by the engine", e);
         }
     }
 
-    private Object convertToRuntimeType(Class<?> runtimeType, final MultipartFile part)
-            throws IOException, SQLException {
-        if (SQLXML.class.isAssignableFrom(runtimeType)) {
-            SQLXMLImpl xml = new SQLXMLImpl(new InputStreamFactory() {
-                @Override
-                public InputStream getInputStream() throws IOException {
-                    return part.getInputStream();
+    private Object convertToRuntimeType(Class<?> runtimeType, final MultipartFile part) {
+        try {
+            if (SQLXML.class.isAssignableFrom(runtimeType)) {
+                SQLXMLImpl xml = new SQLXMLImpl(new InputStreamFactory() {
+                    @Override
+                    public InputStream getInputStream() throws IOException {
+                        return part.getInputStream();
+                    }
+                });
+                if (charset(part) != null) {
+                    xml.setEncoding(charset(part));
                 }
-            });
-            if (charset(part) != null) {
-                xml.setEncoding(charset(part));
-            }
-            return xml;
-        } else if (Blob.class.isAssignableFrom(runtimeType)) {
-            return new BlobImpl(new InputStreamFactory() {
-                @Override
-                public InputStream getInputStream() throws IOException {
-                    return part.getInputStream();
+                return xml;
+            } else if (Blob.class.isAssignableFrom(runtimeType)) {
+                return new BlobImpl(new InputStreamFactory() {
+                    @Override
+                    public InputStream getInputStream() throws IOException {
+                        return part.getInputStream();
+                    }
+                });
+            } else if (Clob.class.isAssignableFrom(runtimeType)) {
+                ClobImpl clob = new ClobImpl(new InputStreamFactory() {
+                    @Override
+                    public InputStream getInputStream() throws IOException {
+                        return part.getInputStream();
+                    }
+                }, -1);
+                if (charset(part) != null) {
+                    clob.setEncoding(charset(part));
                 }
-            });
-        } else if (Clob.class.isAssignableFrom(runtimeType)) {
-            ClobImpl clob = new ClobImpl(new InputStreamFactory() {
-                @Override
-                public InputStream getInputStream() throws IOException {
-                    return part.getInputStream();
-                }
-            }, -1);
-            if (charset(part) != null) {
-                clob.setEncoding(charset(part));
-            }
-            return clob;
-        } else if (DataTypeManager.DefaultDataClasses.VARBINARY.isAssignableFrom(runtimeType)) {
-            return Base64.decode(new String(part.getBytes()));
-        } else if (DataTypeManager.isTransformable(String.class, runtimeType)) {
-            try {
+                return clob;
+            } else if (DataTypeManager.DefaultDataClasses.VARBINARY.isAssignableFrom(runtimeType)) {
+                return Base64.decode(new String(part.getBytes()));
+            } else if (DataTypeManager.isTransformable(String.class, runtimeType)) {
                 return DataTypeManager.transformValue(new String(part.getBytes()), runtimeType);
-            } catch (TransformationException e) {
-                throw new SQLException(e);
             }
+            return new String(part.getBytes());
+        } catch (IOException | TransformationException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Failed to convert input into runtime types required by the engine", e);
         }
-        return new String(part.getBytes());
     }
 
     private String charset(final MultipartFile part) {
@@ -239,8 +264,7 @@ public abstract class TeiidRSProvider {
         return null;
     }
 
-    private LinkedHashMap<String, Class<?>> getParameterTypes(Connection conn, String vdbName, String procedureName)
-            throws SQLException {
+    private LinkedHashMap<String, Class<?>> getParameterTypes(Connection conn, String vdbName, String procedureName) {
         String schemaName = procedureName.substring(0, procedureName.lastIndexOf('.')).replace('\"', ' ').trim();
         String procName = procedureName.substring(procedureName.lastIndexOf('.') + 1).replace('\"', ' ').trim();
         LinkedHashMap<String, Class<?>> expectedTypes = new LinkedHashMap<String, Class<?>>();
@@ -255,43 +279,41 @@ public abstract class TeiidRSProvider {
             }
             rs.close();
             return expectedTypes;
-        } catch (ClassNotFoundException e) {
-            throw new SQLException(e);
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
-    private OpenApiInputStream handleResult(String charSet, Object result) throws SQLException {
+    private InputStream handleResult(String charSet, Object result) {
         if (result == null) {
             return null; // or should this be an empty result?
         }
-
-        if (result instanceof SQLXML) {
-            if (charSet != null) {
-                XMLSerialize serialize = new XMLSerialize();
-                serialize.setTypeString("blob"); //$NON-NLS-1$
-                serialize.setDeclaration(true);
-                serialize.setEncoding(charSet);
-                serialize.setDocument(true);
-                try {
-                    return new OpenApiInputStream(
-                            ((BlobType) XMLSystemFunctions.serialize(serialize, new XMLType((SQLXML) result)))
-                            .getBinaryStream());
-                } catch (TransformationException e) {
-                    throw new SQLException(e);
+        try {
+            if (result instanceof SQLXML) {
+                if (charSet != null) {
+                    XMLSerialize serialize = new XMLSerialize();
+                    serialize.setTypeString("blob"); //$NON-NLS-1$
+                    serialize.setDeclaration(true);
+                    serialize.setEncoding(charSet);
+                    serialize.setDocument(true);
+                    return ((BlobType) XMLSystemFunctions.serialize(serialize, new XMLType((SQLXML) result)))
+                            .getBinaryStream();
                 }
+                return ((SQLXML) result).getBinaryStream();
+            } else if (result instanceof Blob) {
+                return ((Blob) result).getBinaryStream();
+            } else if (result instanceof Clob) {
+                return new ReaderInputStream(((Clob) result).getCharacterStream(),
+                        charSet == null ? Charset.defaultCharset() : Charset.forName(charSet));
             }
-            return new OpenApiInputStream(((SQLXML) result).getBinaryStream());
-        } else if (result instanceof Blob) {
-            return new OpenApiInputStream(((Blob) result).getBinaryStream());
-        } else if (result instanceof Clob) {
-            return new OpenApiInputStream(new ReaderInputStream(((Clob) result).getCharacterStream(),
-                    charSet == null ? Charset.defaultCharset() : Charset.forName(charSet)));
+            return new ByteArrayInputStream(
+                    result.toString().getBytes(charSet == null ? Charset.defaultCharset() : Charset.forName(charSet)));
+        } catch (SQLException | TransformationException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
-        return new OpenApiInputStream(new ByteArrayInputStream(
-                result.toString().getBytes(charSet == null ? Charset.defaultCharset() : Charset.forName(charSet))));
     }
 
-    public OpenApiInputStream executeQuery(final String sql, boolean json, final boolean passthroughAuth)
+    public ResponseEntity<InputStreamResource> executeQuery(final String sql, boolean json, final boolean passthroughAuth)
             throws SQLException {
         Connection conn = null;
         try {
@@ -304,10 +326,13 @@ public abstract class TeiidRSProvider {
                 if (rs.next()) {
                     result = rs.getObject(1);
                 } else {
-                    throw new SQLException("Only result producing procedures are allowed");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Only result producing procedures are allowed");
                 }
             }
-            return handleResult(Charset.defaultCharset().name(), result);
+            InputStream is = handleResult(Charset.defaultCharset().name(), result);
+            InputStreamResource inputStreamResource = new InputStreamResource(is);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            return new ResponseEntity<InputStreamResource>(inputStreamResource, httpHeaders, HttpStatus.OK);
         } finally {
             try {
                 if (conn != null) {
@@ -318,8 +343,12 @@ public abstract class TeiidRSProvider {
         }
     }
 
-    private Connection getConnection() throws SQLException {
-        return buildConnection(server.getDriver(), vdb.getName(), vdb.getVersion(), new Properties());
+    private Connection getConnection() {
+        try {
+            return buildConnection(server.getDriver(), vdb.getName(), vdb.getVersion(), new Properties());
+        } catch (SQLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
     }
 
     static ConnectionImpl buildConnection(TeiidDriver driver, String vdbName, String version, Properties props)

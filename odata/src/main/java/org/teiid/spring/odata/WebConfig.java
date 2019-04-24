@@ -100,7 +100,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         ArrayList<String> exclude = new ArrayList<String>();
-        exclude.add("/static/**");
+        exclude.add("/odata/static/**");
         if (this.alternatePaths != null) {
             for(int i = 0; i < alternatePaths.length; i++) {
                 exclude.add(this.alternatePaths[i]+"/**");
@@ -114,7 +114,7 @@ public class WebConfig implements WebMvcConfigurer {
         .excludePathPatterns(excludes);
 
         registry.addInterceptor(getOdataFilter())
-        .addPathPatterns("/**")
+        .addPathPatterns("/odata/**")
         .excludePathPatterns(excludes);
     }
 

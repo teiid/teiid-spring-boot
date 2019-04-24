@@ -137,6 +137,7 @@ public class VdbMojo extends AbstractMojo {
             HashMap<String, String> parentMap = new HashMap<String, String>();
             parentMap.put("packageName", this.packageName);
             parentMap.put("vdbName", database.getName());
+            parentMap.put("vdbDescription", database.getAnnotation());
             parentMap.put("openapi", generateOpenApiScoffolding()?"true":"false");
             if (this.generateApplicationClass) {
                 createApplication(cfg, javaSrcDir, database, parentMap);
@@ -186,6 +187,14 @@ public class VdbMojo extends AbstractMojo {
             throws Exception {
         Template template = cfg.getTemplate("Application.java");
         Writer out = new FileWriter(new File(javaSrcDir, "Application.java"));
+        template.process(props, out);
+        out.close();
+    }
+
+    private void createSwaggerConfig(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> props)
+            throws Exception {
+        Template template = cfg.getTemplate("SwaggerConfig.java");
+        Writer out = new FileWriter(new File(javaSrcDir, "SwaggerConfig.java"));
         template.process(props, out);
         out.close();
     }
@@ -311,6 +320,11 @@ public class VdbMojo extends AbstractMojo {
 
     private void createOpenApi(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> parentMap)
             throws Exception {
+
+        // create swagger config file.
+        createSwaggerConfig(cfg, javaSrcDir, database, parentMap);
+
+        // create api
         for (Schema schema : database.getSchemas()) {
             if (schema.isPhysical()) {
                 continue;
@@ -324,10 +338,10 @@ public class VdbMojo extends AbstractMojo {
             template.process(replacementMap, out);
 
             String servicePattern =
-                    "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = {${contentType}} <#if consumes??>, consumes = ${consumes} </#if>)\n" +
+                    "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = {\"${contentType}\"} <#if consumes??>, consumes = \"${consumes}\" </#if>)\n" +
                             "    @ResponseBody\n" +
-                            "    @ApiOperation(value=\"${description}\", <#if responseClass??>response=${responseClass}</#if>)\n" +
-                            "    public OpenApiInputStream ${procedureName}(${paramSignature}) throws SQLException {\n" +
+                            "    @ApiOperation(value=\"${description}\"<#if responseClass??>, response=${responseClass}</#if>)\n" +
+                            "    public ResponseEntity<InputStreamResource> ${procedureName}(${paramSignature}) {\n" +
                             "        setServer(this.server);\n"+
                             "        setVdb(this.vdb);\n"+
                             "        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();\n" +
@@ -435,7 +449,7 @@ public class VdbMojo extends AbstractMojo {
         replacementMap.put("paramMapping", paramMapper.toString());
 
         //TODO: this needs to be fixed, such that correct return is done
-        replacementMap.put("responseClass", "OpenApiInputStream.class");
+        //replacementMap.put("responseClass", "OpenApiInputStream.class");
 
         Template template = cfg.getTemplate("service");
         template.process(replacementMap, out);
@@ -487,9 +501,9 @@ public class VdbMojo extends AbstractMojo {
         }
         contentType = contentType.toLowerCase().trim();
         if (contentType.equals("xml")) {
-            contentType = "MediaType.APPLICATION_XML_VALUE";
+            contentType = "application/xml";
         } else if (contentType.equals("json")) {
-            contentType = "MediaType.APPLICATION_JSON_UTF8_VALUE";
+            contentType = "application/json;charset=UTF-8";
         } else if (contentType.equals("plain")) {
             contentType = "text/plain";
         }

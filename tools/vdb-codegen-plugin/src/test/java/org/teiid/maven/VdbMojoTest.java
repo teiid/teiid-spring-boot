@@ -60,6 +60,7 @@ public class VdbMojoTest {
         testMongoGeneration(outputDirectory);
         testSalesforceGeneration(outputDirectory);
         testRestGeneration(outputDirectory);
+        testSwaggerConfig(outputDirectory);
     }
 
 
@@ -87,6 +88,14 @@ public class VdbMojoTest {
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 
+    public void testSwaggerConfig(File outputDirectory)throws Exception {
+        File file = new File(outputDirectory, "com/example/SwaggerConfig.java");
+        assertTrue( file.exists() );
+        //System.out.println(FileUtils.readFileToString(file, "utf-8"));
+        assertEquals("The files differ!",
+                FileUtils.readFileToString(new File( "target/test-classes/swaggerconfig.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(file, "utf-8").trim());
+    }
 
     public void testRestGeneration(File outputDirectory)throws Exception {
         File file = new File(outputDirectory, "com/example/portfolio.java");

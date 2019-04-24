@@ -59,7 +59,7 @@ public class TestExample {
 
     @Test
     public void test() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/CUSTOMER", String.class);
+        ResponseEntity<String> response = web.getForEntity(url()+"/CUSTOMER", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
@@ -85,44 +85,47 @@ public class TestExample {
         assertThat(entity.getProperty("FIRSTNAME").getValue().asPrimitive().toValue(), equalTo("Joseph"));
     }
 
+    private String url() {
+        return "http://localhost:" + port+"/odata";
+    }
+
     @Test
     public void testMetadata() throws Exception {
-        olingoClient("http://localhost:" + port);
-        olingoClient("http://localhost:" + port+"/accounts");
+        olingoClient(url());
+        olingoClient(url()+"/accounts");
     }
 
     @Test
     public void testRoot() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/", String.class);
+        ResponseEntity<String> response = web.getForEntity(url(), String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        response = web.getForEntity("http://localhost:" + port+"/$metadata", String.class);
-        assertTrue(response.getBody().contains("http://localhost:" + port+"/static/org.teiid.v1.xml"));
+        response = web.getForEntity(url()+"/$metadata", String.class);
+        assertTrue(response.getBody().contains(url()+"/static/org.teiid.v1.xml"));
     }
 
     @Test
     public void testWithModelName() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/accounts/CUSTOMER",
+        ResponseEntity<String> response = web.getForEntity(url()+"/accounts/CUSTOMER",
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testWithModelName2() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/accounts2/CUSTOMER",
+        ResponseEntity<String> response = web.getForEntity(url()+"/accounts2/CUSTOMER",
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testOpenAPI() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/swagger.json",
-                String.class);
+        ResponseEntity<String> response = web.getForEntity(url()+"/swagger.json", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testStaticContent() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/static/org.teiid.v1.xml",
+        ResponseEntity<String> response = web.getForEntity(url()+"/static/org.teiid.v1.xml",
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
@@ -141,7 +144,7 @@ public class TestExample {
                 "    \"PHONE\": \"(314)555-1212\"\n" +
                 "}";
 
-        String entityResponse = "{\"@odata.context\":\"http://localhost:"+port+"/$metadata#CUSTOMER\","
+        String entityResponse = "{\"@odata.context\":\"http://localhost:"+port+"/odata/$metadata#CUSTOMER\","
                 + "\"SSN\":\"35712\","
                 + "\"FIRSTNAME\":\"John\",\"LASTNAME\":\"Doe\",\"ST_ADDRESS\":\"5544 Monroe st\","
                 + "\"APT_NUMBER\":null,\"CITY\":\"LA\",\"STATE\":\"CA\",\"ZIPCODE\":\"55555\","
@@ -153,7 +156,7 @@ public class TestExample {
 
         HttpEntity<String> entity = new HttpEntity<>(payload, headers);
 
-        ResponseEntity<String> response = web.postForEntity("http://localhost:" + port + "/CUSTOMER",
+        ResponseEntity<String> response = web.postForEntity(url()+"/CUSTOMER",
                 entity, String.class);
 
         assertThat(response.getStatusCode(), equalTo(HttpStatus.CREATED));
