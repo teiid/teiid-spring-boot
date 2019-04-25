@@ -13,3 +13,5 @@ m2e-wtp
 *.tlog
 ObjectStore
 transaction-logs
+.vscode
+.factorypath

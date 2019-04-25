@@ -92,10 +92,6 @@ public class VdbMojo extends AbstractMojo {
     @Parameter
     private Boolean generateApplicationClass = true;
 
-    // A list of folders or files to be included in the final artifact archive.
-    @Parameter
-    private File[] includes;
-
     public File getOutputDirectory() {
         return outputDirectory;
     }
