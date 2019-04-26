@@ -22,15 +22,17 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>vdb-maven-plugin</artifactId>
+  <artifactId>vdb-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <name>vdb-maven-plugin Maven Plugin</name>
+  <name>vdb-plugin Maven Plugin</name>
   <description>A maven plug in that helps to build -vdb.ddl to .vdb</description>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.version>3.6.0</maven.version>
     <plexus.version>3.2.0</plexus.version>
+    <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>
+    <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>    
   </properties>
 
   <dependencies>
@@ -82,6 +84,18 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-testing</groupId>
+      <artifactId>maven-plugin-testing-harness</artifactId>
+      <version>3.3.0</version>
+      <scope>test</scope>
+    </dependency> 
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-compat</artifactId>
+      <version>${maven.version}</version>
+      <scope>test</scope>
+    </dependency>      
   </dependencies>
   
   <build>

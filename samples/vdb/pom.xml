@@ -46,7 +46,7 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-    </dependency>
+    </dependency>   
   </dependencies>
 
   <build>
@@ -55,7 +55,6 @@
         <groupId>org.teiid</groupId>
         <artifactId>vdb-codegen-plugin</artifactId>
         <configuration>
-          <vdbFile>src/main/resources/customer-vdb.ddl</vdbFile>
           <packageName>org.teiid.spring.example</packageName>
           <generateApplicationClass>false</generateApplicationClass>
         </configuration>

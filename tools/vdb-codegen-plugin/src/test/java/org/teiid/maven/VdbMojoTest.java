@@ -48,7 +48,7 @@ public class VdbMojoTest {
         assertNotNull( pom );
         assertTrue( pom.exists() );
 
-        VdbMojo myMojo = ( VdbMojo ) rule.lookupConfiguredMojo( pom, "vdb-codegen" );
+        VdbCodeGeneratorMojo myMojo = ( VdbCodeGeneratorMojo ) rule.lookupConfiguredMojo( pom, "vdb-codegen" );
         assertNotNull( myMojo );
         myMojo.execute();
 

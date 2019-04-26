@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid;
+package org.teiid.maven;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -45,25 +43,22 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.teiid.core.util.ObjectConverterUtil;
-import org.teiid.metadata.Database;
-import org.teiid.metadata.Datatype;
+import org.teiid.maven.PluginDatabaseStore.VdbImport;
 import org.teiid.metadata.Grant;
+import org.teiid.metadata.Server;
 import org.teiid.query.metadata.DDLStringVisitor;
-import org.teiid.query.metadata.DatabaseStore;
-import org.teiid.query.metadata.DatabaseStore.Mode;
-import org.teiid.query.metadata.SystemMetadata;
-import org.teiid.query.parser.QueryParser;
 
 /**
  * https://stackoverflow.com/questions/1427722/how-do-i-create-a-new-packaging-type-for-maven
  * http://softwaredistilled.blogspot.com/2015/07/how-to-create-custom-maven-packaging.html
  */
-@Mojo(name = "vdb", requiresDependencyResolution = ResolutionScope.COMPILE)
+@Mojo(name = "vdb", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class VdbMojo extends AbstractMojo {
     private static final String SLASH = "/";
 
@@ -79,25 +74,6 @@ public class VdbMojo extends AbstractMojo {
     @Parameter(property = "project.build.finalName", readonly = true)
     private String finalName;
 
-    //A list of folders or files to be included in the final artifact archive.
-    @Parameter
-    private File[] includes;
-
-    @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
-    private File classesDirectory;
-
-    private static class VdbImport {
-        String dbName;
-        String version;
-        boolean importPolicies;
-    }
-
-    private static class DbWithImports {
-        Database database;
-        List<VdbImport> vdbImports;
-        DatabaseStore store;
-    }
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -111,78 +87,57 @@ public class VdbMojo extends AbstractMojo {
             this.project.getArtifact().setFile(artifact);
 
             try (ArchiveOutputStream archive = getStream(artifact)) {
-                File vdbFile = this.getVDBFile();
+                File vdbFile = this.getMainVDBFile();
                 if (vdbFile == null) {
-                    throw new MojoExecutionException("No VDB File found in directory" + this.vdbFolder);
+                    throw new MojoExecutionException("No \"vdb.ddl\" File found in directory" + this.vdbFolder);
                 }
 
                 // add config, classes, lib and META-INF directories
                 Set<File> directories = new LinkedHashSet<>();
-                gatherContents(this.classesDirectory, directories);
                 gatherContents(this.vdbFolder, directories);
 
-                DbWithImports top = getDatabase(vdbFile);
+                PluginDatabaseStore top = getDatabaseStore(vdbFile);
 
                 // check if the VDB has any vdb imports, if yes, then check the dependencies
-                if (!top.vdbImports.isEmpty()) {
-                    top.store.startEditing(false);
+                if (!top.getVdbImports().isEmpty()) {
+                    try {
+                        top.startEditing(false);
+                        top.databaseSwitched(top.db().getName(), top.db().getVersion());
 
-                    // read import vdbs
-                    Set<Artifact> dependencies = project.getArtifacts();
-                    for (Artifact d : dependencies) {
-
-                        if (d.getFile() == null || !d.getFile().getName().endsWith(".vdb")) {
-                            continue;
-                        }
-
-                        File vdbDir = unzipContents(d);
-                        File childFile = new File(vdbDir, "vdb.ddl");
-                        getLog().info("Merging VDB " + childFile.getCanonicalPath());
-                        DbWithImports child = getDatabase(childFile);
-
-                        if (!child.vdbImports.isEmpty()) {
-                            throw new MojoExecutionException("Nested VDB imports are not supported" + d.getArtifactId());
-                        }
-
-                        VdbImport matched = null;
-                        for (VdbImport importee : top.vdbImports) {
-                            if (child.database.getName().equals(importee.dbName)
-                                    && child.database.getVersion().equals(importee.version)) {
-
-                                gatherContents(vdbDir, directories);
-
-                                child.database.getSchemas().forEach((v) -> {
-                                    top.store.schemaCreated(v, new ArrayList<String>());
-                                    /*
-                                    String visibilityOverride = top.database.getProperty(v.getName() + ".visible", false); //$NON-NLS-1$
-                                    if (visibilityOverride != null) {
-                                        boolean visible = Boolean.valueOf(visibilityOverride);
-                                        top.store.addOrSetOption(top.database.getName(), Database.ResourceType.DATABASE,
-                                                v.getName() + ".visible", Boolean.toString(visible), false);
-                                    }
-                                     */
-                                });
-
-                                if (importee.importPolicies) {
-                                    for (Grant grant : child.database.getGrants()) {
-                                        top.store.grantCreated(grant);
-                                    }
-                                }
-                                matched = importee;
-                                break;
+                        // read import vdbs from files in folder
+                        File[] dependencyFiles = getVDBFiles();
+                        if (dependencyFiles != null && dependencyFiles.length > 0) {
+                            for (File childFile : dependencyFiles) {
+                                mergeVDB(top, childFile, childFile.getName());
                             }
                         }
-                        if (matched != null) {
-                            top.vdbImports.remove(matched);
+                        // read import vdbs from dependencies
+                        Set<Artifact> dependencies = project.getArtifacts();
+                        for (Artifact d : dependencies) {
+                            if (d.getFile() == null || !d.getFile().getName().endsWith(".vdb")) {
+                                continue;
+                            }
+                            File vdbDir = unzipContents(d);
+                            File childFile = new File(vdbDir, "vdb.ddl");
+                            gatherContents(vdbDir, directories);
+                            mergeVDB(top, childFile, d.getArtifactId());
                         }
+                    } finally {
+                        top.stopEditing();
                     }
                 }
-                add(archive, "", directories.toArray(new File[0]));
 
+                if (!top.getVdbImports().isEmpty()) {
+                    throw new MojoExecutionException("VDB import for " + top.getVdbImports().get(0).dbName
+                            + " is not resolved. Either provide the -vdb.ddl file in " + this.vdbFolder.getName()
+                            + "folder, or define the dependency for the vdb in the pom.xml");
+                }
+
+                add(archive, "", directories.toArray(new File[0]));
                 File finalVDB = new File(this.outputDirectory.getPath(), "vdb.ddl");
                 finalVDB.getParentFile().mkdirs();
-                top.store.stopEditing();
-                String vdbDDL = DDLStringVisitor.getDDLString(top.store.getDatabases().get(0));
+
+                String vdbDDL = DDLStringVisitor.getDDLString(top.db());
                 getLog().debug(vdbDDL);
                 ObjectConverterUtil.write(new StringReader(vdbDDL),  finalVDB);
                 addFile(archive, "vdb.ddl", finalVDB);
@@ -190,51 +145,70 @@ public class VdbMojo extends AbstractMojo {
                 throw new MojoExecutionException("Exception when creating artifact archive.", e);
             }
         } catch (MojoExecutionException e) {
-            throw new MojoExecutionException("Error running the vdb-maven-plugin.", e);
+            throw new MojoExecutionException("Error running the vdb-plugin.", e);
         } finally {
             Thread.currentThread().setContextClassLoader(oldCL);
         }
     }
 
-    private DbWithImports getDatabase(File vdbfile) throws IOException {
-        List<VdbImport> vdbImports = new ArrayList<>();
-        DatabaseStore store = new DatabaseStore() {
-            @Override
-            public Map<String, Datatype> getRuntimeTypes() {
-                return SystemMetadata.getInstance().getRuntimeTypeMap();
-            }
-            @Override
-            public void importSchema(String schemaName, String serverType, String serverName, String foreignSchemaName,
-                    List<String> includeTables, List<String> excludeTables, Map<String, String> properties) {
-                // ignore
-            }
-            @Override
-            public void importDatabase(String dbName, String version, boolean importPolicies) {
-                VdbImport vdb = new VdbImport();
-                vdb.dbName = dbName;
-                vdb.version = version;
-                vdb.importPolicies = importPolicies;
-                vdbImports.add(vdb);
-            }
-        };
+    private void mergeVDB(PluginDatabaseStore top, File childFile, String childName)
+            throws MojoExecutionException, IOException {
 
-        Database db = null;
-        String vdbStr = ObjectConverterUtil.convertToString(new FileInputStream(vdbfile));
-        StringReader reader = new StringReader(vdbStr);
-        try {
-            store.startEditing(false);
-            store.setMode(Mode.ANY);
-            QueryParser.getQueryParser().parseDDL(store, new BufferedReader(reader));
-            db = store.getDatabases().get(0);
-        } finally {
-            reader.close();
-            store.stopEditing();
+        VdbImport matched = null;
+
+        getLog().info("Merging VDB " + childFile.getCanonicalPath());
+        PluginDatabaseStore child = getDatabaseStore(childFile);
+
+        if (!child.getVdbImports().isEmpty()) {
+            throw new MojoExecutionException("Nested VDB imports are not supported" + childName);
         }
-        DbWithImports dbwi = new DbWithImports();
-        dbwi.database = db;
-        dbwi.vdbImports = vdbImports;
-        dbwi.store = store;
-        return dbwi;
+
+        for (VdbImport importee : top.getVdbImports()) {
+            if (child.db().getName().equals(importee.dbName)
+                    && child.db().getVersion().equals(importee.version)) {
+
+                child.db().getSchemas().forEach((v) -> {
+                    if (v.isPhysical()) {
+                        for (Server s: v.getServers()) {
+                            if (top.getServer(s.getName()) == null) {
+                                String dw = s.getDataWrapper();
+                                if (top.getCurrentDatabase().getDataWrapper(dw) == null) {
+                                    top.dataWrapperCreated(child.db().getDataWrapper(dw));
+                                }
+                                top.serverCreated(s);
+                            }
+                        }
+                    }
+
+                    top.schemaCreated(v, new ArrayList<String>());
+                    /*
+                    String visibilityOverride = top.database.getProperty(v.getName() + ".visible", false); //$NON-NLS-1$
+                    if (visibilityOverride != null) {
+                        boolean visible = Boolean.valueOf(visibilityOverride);
+                        top.store.addOrSetOption(top.database.getName(), Database.ResourceType.DATABASE,
+                                v.getName() + ".visible", Boolean.toString(visible), false);
+                    }
+                     */
+                });
+
+                if (importee.importPolicies) {
+                    for (Grant grant : child.db().getGrants()) {
+                        top.grantCreated(grant);
+                    }
+                }
+                matched = importee;
+                break;
+            }
+        }
+        if (matched != null) {
+            top.getVdbImports().remove(matched);
+        }
+    }
+
+    private PluginDatabaseStore getDatabaseStore(File vdbfile) throws IOException {
+        PluginDatabaseStore store = new PluginDatabaseStore();
+        store.parse(vdbfile);
+        return store;
     }
 
     private void gatherContents(File f, Set<File> directories) {
@@ -279,7 +253,17 @@ public class VdbMojo extends AbstractMojo {
         return f;
     }
 
-    private File getVDBFile() {
+    private File getMainVDBFile() {
+        if (this.vdbFolder.exists() && this.vdbFolder.isDirectory()) {
+            File f = new File(this.vdbFolder, "vdb.ddl");
+            if (f.exists()) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    private File[] getVDBFiles() {
         if (this.vdbFolder.exists() && this.vdbFolder.isDirectory()) {
             File[] list = this.vdbFolder.listFiles(new FilenameFilter() {
                 @Override
@@ -289,7 +273,7 @@ public class VdbMojo extends AbstractMojo {
             });
             if ((list != null ? list.length : 0) != 0) {
                 getLog().info("Found VDB = " + list[0].getName());
-                return list[0];
+                return list;
             }
         }
         return null;

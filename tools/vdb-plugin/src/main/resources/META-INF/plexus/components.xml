@@ -31,7 +31,7 @@
                    org.apache.maven.plugins:maven-resources-plugin:resources
                  </process-resources>
                  <package>
-                   org.teiid:vdb-maven-plugin:vdb
+                   org.teiid:vdb-plugin:vdb
                  </package>
                  <install>
                    org.apache.maven.plugins:maven-install-plugin:install

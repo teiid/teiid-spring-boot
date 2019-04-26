@@ -30,7 +30,7 @@
 
   <modules>
     <module>vdb-codegen-plugin</module>
-    <module>vdb-maven-plugin</module>
+    <module>vdb-plugin</module>
   </modules>
 
 </project>

@@ -20,8 +20,8 @@ import static org.teiid.deployers.RestWarGenerator.REST_NAMESPACE;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
@@ -35,7 +35,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -71,14 +75,11 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
 @Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
-public class VdbMojo extends AbstractMojo {
+public class VdbCodeGeneratorMojo extends AbstractMojo {
     public static final SystemFunctionManager SFM = SystemMetadata.getInstance().getSystemFunctionManager();
 
     @Parameter(defaultValue = "${basedir}/src/main/resources/teiid-vdb.ddl")
     private File vdbFile;
-
-    @Parameter(defaultValue = "${basedir}/src/main/resources/vdb")
-    private File vdbFolder;
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
@@ -263,25 +264,54 @@ public class VdbMojo extends AbstractMojo {
         }
     }
 
-    private File getVDBFile() throws MojoExecutionException {
+    private File getVDBFile() throws MojoExecutionException, IOException {
         if (this.vdbFile.exists()) {
             getLog().info("Found VDB = " + this.vdbFile);
             return this.vdbFile;
-        } else {
-            if (this.vdbFolder.exists() && this.vdbFolder.isDirectory()) {
-                File[] list = this.vdbFolder.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return name.endsWith("-vdb.ddl");
-                    }
-                });
-                if ((list != null ? list.length : 0) != 0) {
-                    getLog().info("Found VDB = " + list[0].getName());
-                    return list[0];
-                }
-            }
         }
-        throw new MojoExecutionException("No VDB File found in directory " + this.vdbFile);
+
+        // read import vdbs from dependencies
+        Set<Artifact> dependencies = project.getArtifacts();
+        for (Artifact d : dependencies) {
+            if (d.getFile() == null || !d.getFile().getName().endsWith(".vdb")) {
+                continue;
+            }
+            File vdbDir = unzipContents(d);
+            File childFile = new File(vdbDir, "vdb.ddl");
+            return childFile;
+        }
+
+        throw new MojoExecutionException(
+                "No VDB File found at location " + this.vdbFile + " or no VDB dependencies defined");
+    }
+
+
+
+    private File unzipContents(Artifact d) throws IOException {
+        File f = new File(this.project.getBuild().getDirectory(), d.getArtifactId());
+        f.mkdirs();
+        getLog().info("unzipping " + d.getArtifactId() + " to directory " + f.getCanonicalPath());
+
+        byte[] buffer = new byte[1024];
+        ZipInputStream zis = new ZipInputStream(new FileInputStream(d.getFile()));
+        ZipEntry ze = zis.getNextEntry();
+        while (ze != null) {
+            String fileName = ze.getName();
+            getLog().info("\t" + fileName);
+            File newFile = new File(f, fileName);
+            new File(newFile.getParent()).mkdirs();
+            FileOutputStream fos = new FileOutputStream(newFile);
+            int len;
+            while ((len = zis.read(buffer)) > 0) {
+                fos.write(buffer, 0, len);
+            }
+            fos.close();
+
+            zis.closeEntry();
+            ze = zis.getNextEntry();
+        }
+        zis.close();
+        return f;
     }
 
     private ClassLoader getClassLoader() throws MojoExecutionException {
@@ -295,7 +325,7 @@ public class VdbMojo extends AbstractMojo {
             getLog().debug("urls for URLClassLoader: " + Arrays.asList(urlsForClassLoader));
 
             // need to define parent classloader which knows all dependencies of the plugin
-            return new URLClassLoader(urlsForClassLoader, VdbMojo.class.getClassLoader());
+            return new URLClassLoader(urlsForClassLoader, VdbCodeGeneratorMojo.class.getClassLoader());
         } catch (Exception e) {
             throw new MojoExecutionException("Couldn't create a classloader.", e);
         }
