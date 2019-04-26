@@ -43,52 +43,52 @@ public class TestExampleWithContext {
     @LocalServerPort
     private int port;
 
+    private String url() {
+        return "http://localhost:" + port+"/foo/odata";
+    }
+
     @Test
     public void test() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/CUSTOMER", String.class);
+        ResponseEntity<String> response = web.getForEntity(url()+"/CUSTOMER", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testRoot() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/odata/", String.class);
+        ResponseEntity<String> response = web.getForEntity(url(), String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        response = web.getForEntity("http://localhost:" + port+"/odata/$metadata", String.class);
-        assertTrue(response.getBody().contains("http://localhost:" + port+"/odata/static/org.teiid.v1.xml"));
+        response = web.getForEntity(url()+"/$metadata", String.class);
+        assertTrue(response.getBody().contains(url()+"/static/org.teiid.v1.xml"));
     }
 
     @Test
     public void testMetadata() throws Exception {
-        TestExample.olingoClient("http://localhost:" + port+"/odata");
-        TestExample.olingoClient("http://localhost:" + port+"/odata/accounts");
+        TestExample.olingoClient(url());
+        TestExample.olingoClient(url()+"/accounts");
     }
 
     @Test
     public void testWithModelName() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/accounts/CUSTOMER",
-                String.class);
+        ResponseEntity<String> response = web.getForEntity(url()+"/accounts/CUSTOMER", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testWithModelName2() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/accounts2/CUSTOMER",
-                String.class);
+        ResponseEntity<String> response = web.getForEntity(url()+"/accounts2/CUSTOMER", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
     public void testAPI() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/api/hi",
-                String.class);
+        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port+"/foo/api/hi", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
         assertThat(response.getBody(), equalTo("hello"));
     }
 
     @Test
     public void testOpenAPI() throws Exception{
-        ResponseEntity<String> response = web.getForEntity("http://localhost:" + port + "/odata/swagger.json",
-                String.class);
+        ResponseEntity<String> response = web.getForEntity(url()+"/swagger.json", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 }

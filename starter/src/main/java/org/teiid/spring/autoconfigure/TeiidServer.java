@@ -94,6 +94,7 @@ import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.TextTable;
 import org.teiid.spring.annotations.UserDefinedFunctions;
+import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.views.EntityBaseView;
 import org.teiid.spring.views.ExcelTableView;

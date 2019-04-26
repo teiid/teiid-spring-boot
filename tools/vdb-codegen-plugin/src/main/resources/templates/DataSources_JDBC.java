@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.example;
+/*
+ * GENERATED CODE - DO NOT EDIT
+ */
+
+package ${packageName};
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class DataSources {
-    @ConfigurationProperties(prefix = "spring.datasource.mydb")
+public class DataSources${dsName} {
+
+    @ConfigurationProperties(prefix = "spring.datasource.${dsName}")
     @Bean
-    public DataSource mydb() {
+    public DataSource ${dsName}() {
         return DataSourceBuilder.create().build();
     }
 }

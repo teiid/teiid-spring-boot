@@ -16,36 +16,12 @@
 
 package org.teiid.spring.example;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootApplication
-public class Application implements CommandLineRunner {
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
+public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-    }
-
-    @Override
-    public void run(String... args) throws Exception {
-
-        System.out.println("\n\nFrom JDBC Template");
-
-        jdbcTemplate
-        .query("SELECT id, ssn, name FROM customer",
-                (rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("name"), rs.getString("ssn")))
-        .forEach(customer -> System.out.println(customer));
-
-        List<Customer> result = jdbcTemplate.query("SELECT id, ADDSALUTATION(name) as name, repeat(ssn, 2) as ssn FROM customer",
-                (rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("name"), rs.getString("ssn")));
-        System.out.println(result);
     }
 }

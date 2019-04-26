@@ -75,13 +75,26 @@ public class SpringODataFilter implements HandlerInterceptor {
         HttpServletResponse httpResponse = response;
 
         String uri = request.getRequestURI();
-        boolean root = uri.equals("/");
         String fullURL = request.getRequestURL().toString();
 
-        // possible vdb and model names
+        //        // filer is already mapped to "/odata" pattern, but just double check
+        //        if ((!uri.equals("/odata") && !uri.startsWith("/odata/"))) {
+        //            return false;
+        //        }
+        //        uri = uri.substring(6);
+        //        if (uri.isEmpty()) {
+        //            uri = "/";
+        //        }
         String contextPath = httpRequest.getContextPath();
+        contextPath = contextPath + "/odata";
+
+        // possible vdb and model names
+        boolean root = uri.equals(contextPath);
         if (!contextPath.isEmpty() && uri.startsWith(contextPath)) {
             uri = uri.substring(contextPath.length());
+            if (uri.isEmpty()) {
+                uri = "/";
+            }
         }
         String subContext = null;
         // if model name is defined in the URL

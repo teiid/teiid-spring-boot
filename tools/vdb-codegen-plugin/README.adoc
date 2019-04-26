@@ -1,0 +1,73 @@
+= Code Generation Plugin
+
+A Maven PlugIn to generate the java code needed based on the given build a VDB file. In a Spring Boot based Teiid project, in order to write an application, the user need to provide the vdb file, the plugin will introspect that and generate needed classes automatically. 
+
+This plugin will generate following files.
+
+*  For every `SERVER` definition in the VDB file, a corresponding Datasource.java file is generated. If the dependencies like JDBC driver modules are missing the plugin will fail with instructions for providing the dependency.
+
+* The plugin generates the `Application.java` file which is main application for a spring boot project. See below configuration, on how to turn this off.
+
+* This plugin also generates the required scaffolding java classes that required to expose a OpenAPI/Rest based interface if the VDB contained the REST specific metadata on the procedures. However, to generate the OpenAPi specific classes you MUST include the following dependency in your `pom.xml` file.
+
+----
+<dependency>
+  <groupId>org.teiid</groupId>
+  <artifactId>spring-openapi</artifactId>
+</dependency>
+----
+
+All the generated classes will be automatically attached to compile phase of the build.
+
+== Usage
+The below shows maven pom.xml fragment that you can add to enable this plugin.
+
+----
+<build>
+  <plugins>
+      <plugin>
+        <groupId>org.teiid</groupId>
+        <artifactId>vdb-codegen-plugin</artifactId>
+        <version>${plugin.version}</version>
+        <configuration>
+          <vdbFile>src/main/resources/customer-vdb.ddl</vdbFile>
+          <packageName>org.teiid.spring.example</packageName>
+          <generateApplicationClass>false</generateApplicationClass>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>vdb-codegen</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+  </plugins>
+</build>
+----
+
+The default `vdbFile` is set to "${basedir}/src/main/resources/teiid-vdb.ddl", if this file is available, then it this file is used as the VDB file. If the property is set this file will be used.
+
+Alternatively, you can also define the VDB as a maven dependency. For example, if your VDB imports other VDBs or have multiple files in VDB then use `vdb-plugin` to convert a DDL based into maven artifact, then use that artifact here as the VDB. For example, you can define a VDB as dependency here by defining the dependency as below in your `pom.xml` file. 
+
+----
+<dependency>
+  <groupId>com.example</groupId>
+  <artifactId>my-vdb</artifactId>
+  <version>1.0</version>
+  <type>vdb</type>
+</dependency> 
+----
+
+== Plugin Configuration Properties
+The below are all the properties that are supported by this plugin for further customization.
+
+[Attributes]
+|===
+|Property name |Description|Required |Default Value
+
+|vdbFile |Path to the VDB file|no | ${basedir}/src/main/resources/teiid-vdb.ddl
+|outputDirectory|Location where the code will be generated|no|${project.build.directory}/generated-sources/teiid-sb
+|generateApplicationClass|Flag to create Spring Boot's Application.java file|no|yes
+|packageName|Package Name to be used for the generated Java classes|no|${project.groupId}
+|===

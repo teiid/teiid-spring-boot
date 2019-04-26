@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.teiid.olingo.web.ODataServlet;
 
 @Controller
-@RequestMapping(value = "/")
+@RequestMapping(value = "/odata")
 public class ODataController {
     private ODataServlet servlet = new ODataServlet();
 
