@@ -36,10 +36,12 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.teiid.PreParser;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.identity.SpringSecurityHelper;
 import org.teiid.translator.ExecutionFactory;
 
 /**
@@ -122,6 +124,11 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         } else if (bean instanceof PreParser) {
             TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             server.setPreParser((PreParser)bean);
+        } else if (bean instanceof AuthenticationManager) {
+            SpringSecurityHelper springSecurityHelper = this.beanFactory.getBean(SpringSecurityHelper.class);
+            if (springSecurityHelper != null) {
+                springSecurityHelper.setAuthenticationManager((AuthenticationManager)bean);
+            }
         }
         return bean;
     }

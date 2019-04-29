@@ -17,19 +17,23 @@ package org.teiid.spring.identity;
 
 import javax.security.auth.Subject;
 
+import org.springframework.security.core.Authentication;
+
 public class TeiidSecurityContext {
     private Subject subject;
     private String securityDomain;
     private String userName;
+    private Authentication authentication;
 
     public String getUserName() {
         return userName;
     }
 
-    public TeiidSecurityContext(Subject s, String user, String securityDomain) {
+    public TeiidSecurityContext(Subject s, String user, String securityDomain, Authentication authentication) {
         this.subject = s;
         this.userName = user;
         this.securityDomain = securityDomain;
+        this.authentication = authentication;
     }
 
     public Subject getSubject() {
@@ -38,5 +42,9 @@ public class TeiidSecurityContext {
 
     public String getSecurityDomain() {
         return securityDomain;
+    }
+
+    public Authentication getAuthentication() {
+        return authentication;
     }
 }

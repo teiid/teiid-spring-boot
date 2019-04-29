@@ -20,8 +20,10 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.teiid.security.Credentials;
@@ -29,14 +31,19 @@ import org.teiid.security.GSSResult;
 import org.teiid.security.SecurityHelper;
 
 public class SpringSecurityHelper implements SecurityHelper {
+    private static final String ANONYMOUS = "anonymous";
     private static ThreadLocal<TeiidSecurityContext> securityContext = new ThreadLocal<TeiidSecurityContext>();
     private static final Log logger = LogFactory.getLog(SpringSecurityHelper.class);
+
+    private AuthenticationManager authenticationManager;
 
     @Override
     public TeiidSecurityContext associateSecurityContext(Object newContext) {
         TeiidSecurityContext context = securityContext.get();
         if (newContext != context) {
-            securityContext.set((TeiidSecurityContext)newContext);
+            TeiidSecurityContext tsc = (TeiidSecurityContext)newContext;
+            securityContext.set(tsc);
+            SecurityContextHolder.getContext().setAuthentication(tsc!=null?tsc.getAuthentication():null);
         }
         return context;
     }
@@ -44,6 +51,7 @@ public class SpringSecurityHelper implements SecurityHelper {
     @Override
     public void clearSecurityContext() {
         securityContext.remove();
+        SecurityContextHolder.getContext().setAuthentication(null);
     }
 
     @Override
@@ -73,18 +81,28 @@ public class SpringSecurityHelper implements SecurityHelper {
     public Object authenticate(String securityDomain, String baseUserName,
             Credentials credentials, String applicationName) throws LoginException {
         Subject s = null;
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            s = buildSubject(authentication);
+        if (authenticationManager != null) {
+            //if authentication is not null, we'll logically treat as caller identity
+            if (authentication == null) {
+                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(baseUserName,
+                        credentials == null ? null
+                                : new String(credentials.getCredentialsAsCharArray()));
+                try {
+                    authentication = authenticationManager.authenticate(token);
+                } catch (AuthenticationException e) {
+                    throw new LoginException(e.getMessage());
+                }
+            }
             baseUserName = authentication.getName();
-        } else {
-            s = new Subject();
-            s.getPrincipals().add(new SimplePrincipal(baseUserName));
         }
+        s = buildSubject(authentication);
+
         if (logger.isTraceEnabled()) {
             logger.trace("Logged in user: " + s);
         }
-        TeiidSecurityContext tsc =  new TeiidSecurityContext(s, baseUserName, securityDomain);
+        TeiidSecurityContext tsc =  new TeiidSecurityContext(s, baseUserName, securityDomain, authentication);
         associateSecurityContext(tsc);
         return tsc;
     }
@@ -94,9 +112,10 @@ public class SpringSecurityHelper implements SecurityHelper {
         return null;
     }
 
+    //TODO: need to discuss the spring role mapping ROLE_
     private Subject buildSubject(final Authentication authentication) {
         Subject s = new Subject();
-        s.getPrincipals().add(new SimplePrincipal(authentication == null ? "anonymous":authentication.getName()));
+        s.getPrincipals().add(new SimplePrincipal(authentication == null ? ANONYMOUS:authentication.getName()));
         if (authentication != null) {
             SimpleGroup g = new SimpleGroup("Roles");
             for (GrantedAuthority ga : authentication.getAuthorities()) {
@@ -110,4 +129,9 @@ public class SpringSecurityHelper implements SecurityHelper {
         }
         return s;
     }
+
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
 }
