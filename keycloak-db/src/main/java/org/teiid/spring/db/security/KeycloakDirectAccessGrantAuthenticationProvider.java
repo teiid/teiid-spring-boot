@@ -157,7 +157,8 @@ public class KeycloakDirectAccessGrantAuthenticationProvider extends KeycloakAut
         final Set<String> roles = AdapterUtils.getRolesFromSecurityContext(skSession);
         final KeycloakAccount account = new SimpleKeycloakAccount(principal, roles, skSession);
         KeycloakAuthenticationToken newAuth = new KeycloakAuthenticationToken(account, false);
-        return newAuth;
+        //call to the super logic to map authorities
+        return super.authenticate(newAuth);
     }
 
 }

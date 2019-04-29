@@ -28,6 +28,7 @@ import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
+import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 
 @Configuration
 @EnableGlobalAuthentication
@@ -42,6 +43,7 @@ public class SecurityConfig {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         KeycloakDirectAccessGrantAuthenticationProvider authProvider = new KeycloakDirectAccessGrantAuthenticationProvider(
                 new KeycloakSpringBootConfigResolver());
+        authProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
         auth.authenticationProvider(authProvider);
     }
 
