@@ -57,6 +57,7 @@
         <configuration>
           <packageName>org.teiid.spring.example</packageName>
           <generateApplicationClass>false</generateApplicationClass>
+          <vdbFile>src/main/resources/customer-vdb.ddl</vdbFile>
         </configuration>
         <executions>
           <execution>
