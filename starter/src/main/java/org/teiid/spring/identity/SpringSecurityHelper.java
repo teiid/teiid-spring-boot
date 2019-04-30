@@ -112,7 +112,6 @@ public class SpringSecurityHelper implements SecurityHelper {
         return null;
     }
 
-    //TODO: need to discuss the spring role mapping ROLE_
     private Subject buildSubject(final Authentication authentication) {
         Subject s = new Subject();
         s.getPrincipals().add(new SimplePrincipal(authentication == null ? ANONYMOUS:authentication.getName()));
@@ -120,10 +119,7 @@ public class SpringSecurityHelper implements SecurityHelper {
             SimpleGroup g = new SimpleGroup("Roles");
             for (GrantedAuthority ga : authentication.getAuthorities()) {
                 String role = ga.getAuthority();
-                if (role.startsWith("ROLE_")) {
-                    role = role.substring(5);
-                    g.addMember(new SimplePrincipal(role));
-                }
+                g.addMember(new SimplePrincipal(role));
             }
             s.getPrincipals().add(g);
         }
