@@ -535,6 +535,7 @@
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak-odata</module>
+        <module>keycloak-db</module>
       </modules>
       <build>
         <plugins>
