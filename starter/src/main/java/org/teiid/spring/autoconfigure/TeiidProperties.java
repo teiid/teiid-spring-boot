@@ -27,6 +27,15 @@ public class TeiidProperties {
     private int jdbcPort = 31000;
     private boolean odbcEnable = false;
     private int odbcPort = 35432;
+    private boolean allowAlter = false;
+
+    public boolean isAllowAlter() {
+        return allowAlter;
+    }
+
+    public void setAllowAlter(boolean allowAlter) {
+        this.allowAlter = allowAlter;
+    }
 
     public String getVdbFile() {
         return vdbFile;

@@ -60,7 +60,6 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.embedded.ConnectionProperties;
 import org.springframework.jdbc.datasource.embedded.DataSourceFactory;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
 import org.teiid.cache.Cache;
@@ -238,6 +237,7 @@ public class TeiidAutoConfiguration implements Ordered {
         // turning off PostgreSQL support
         System.setProperty("org.teiid.addPGMetadata", Boolean.toString(this.properties.isOdbcEnable()));
         System.setProperty("org.teiid.hiddenMetadataResolvable", "false");
+        System.setProperty("org.teiid.allowAlter", Boolean.toString(this.properties.isAllowAlter()));
 
         final TeiidServer server = new TeiidServer();
 

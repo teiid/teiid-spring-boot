@@ -28,6 +28,7 @@ CREATE SERVER fakeSource3 TYPE 'NONE' FOREIGN DATA WRAPPER fake3 OPTIONS ("jndi-
 CREATE SCHEMA accounts SERVER fakeSource;
 CREATE SCHEMA accounts2 SERVER fakeSource2;
 CREATE SCHEMA accounts3 SERVER fakeSource3;
+CREATE VIRTUAL SCHEMA viewaccount;
 
 SET SCHEMA accounts;
 IMPORT FOREIGN SCHEMA public FROM SERVER fakeSource INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
@@ -37,3 +38,8 @@ IMPORT FOREIGN SCHEMA public FROM SERVER fakeSource2 INTO accounts2 OPTIONS("imp
 
 SET SCHEMA accounts3;
 IMPORT FOREIGN SCHEMA public FROM SERVER fakeSource3 INTO accounts3 OPTIONS("importer.useFullSchemaName" 'false');
+
+SET SCHEMA viewaccount;
+CREATE VIEW a2 as select mycolumn from "accounts.mytable";
+
+ 
