@@ -35,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.teiid.adminapi.VDB.Status;
 import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.jdbc.TeiidSQLException;
 import org.teiid.spring.autoconfigure.TeiidAutoConfiguration;
 import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.spring.configuration.TestConfiguration;
@@ -107,5 +108,13 @@ public class TeiidAutoConfigurationTest {
         assertTrue(rs.next());
         assertEquals("foo", rs.getString(1));
         close(rs, stmt, conn);
+    }
+
+    @Test(expected=TeiidSQLException.class)
+    public void testDisableAllowAlter() throws SQLException {
+        Connection conn = datasource.getConnection();
+        Statement stmt = conn.createStatement();
+        assertNotNull(stmt);
+        stmt.execute("ALTER VIEW a2 AS select * from \"accounts2.mytable\";");
     }
 }
