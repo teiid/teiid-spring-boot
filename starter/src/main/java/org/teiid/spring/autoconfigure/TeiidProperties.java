@@ -25,8 +25,8 @@ public class TeiidProperties {
     private int metadataLoadWaitTimeInMillis = 30000;
     private boolean jdbcEnable = false;
     private int jdbcPort = 31000;
-    private boolean odbcEnable = false;
-    private int odbcPort = 35432;
+    private boolean pgEnable = false;
+    private int pgPort = 35432;
     private boolean allowAlter = false;
 
     public boolean isAllowAlter() {
@@ -69,19 +69,19 @@ public class TeiidProperties {
         this.jdbcPort = jdbcPort;
     }
 
-    public boolean isOdbcEnable() {
-        return odbcEnable;
+    public boolean isPgEnable() {
+        return pgEnable;
     }
 
-    public void setOdbcEnable(boolean odbcEnable) {
-        this.odbcEnable = odbcEnable;
+    public void setPgEnable(boolean pgEnable) {
+        this.pgEnable = pgEnable;
     }
 
-    public int getOdbcPort() {
-        return odbcPort;
+    public int getPgPort() {
+        return pgPort;
     }
 
-    public void setOdbcPort(int odbcPort) {
-        this.odbcPort = odbcPort;
+    public void setPgPort(int pgPort) {
+        this.pgPort = pgPort;
     }
 }

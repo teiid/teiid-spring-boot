@@ -235,7 +235,7 @@ public class TeiidAutoConfiguration implements Ordered {
         logger.info("Starting Teiid Server.");
 
         // turning off PostgreSQL support
-        System.setProperty("org.teiid.addPGMetadata", Boolean.toString(this.properties.isOdbcEnable()));
+        System.setProperty("org.teiid.addPGMetadata", Boolean.toString(this.properties.isPgEnable()));
         System.setProperty("org.teiid.hiddenMetadataResolvable", "false");
         System.setProperty("org.teiid.allowAlter", Boolean.toString(this.properties.isAllowAlter()));
 
@@ -252,9 +252,9 @@ public class TeiidAutoConfiguration implements Ordered {
                 embeddedConfiguration.addTransport(sc);
             }
 
-            if (this.properties.isOdbcEnable()) {
+            if (this.properties.isPgEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
-                sc.setPortNumber(this.properties.getOdbcPort());
+                sc.setPortNumber(this.properties.getPgPort());
                 sc.setProtocol(WireProtocol.pg);
                 embeddedConfiguration.addTransport(sc);
             }
