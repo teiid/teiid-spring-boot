@@ -18,30 +18,17 @@ package org.teiid.spring.odata;
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.teiid.olingo.web.ODataServlet;
 
 @RestController
-@RequestMapping(value = "/odata")
-public class ODataController {
-    private ODataServlet servlet = new ODataServlet();
+public class SimpleErrorController {
 
     @RequestMapping(value = "**")
-    public void process(HttpServletRequest request, HttpServletResponse response) throws IOException{
-        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
-            @Override
-            public String getServletPath() {
-                return "";
-            }
-            @Override
-            public String getContextPath() {
-                return (String)request.getAttribute(SpringODataFilter.CONTEXT_PATH);
-            }
-        };
-        servlet.service(wrapper, response);
+    public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        StaticContentController.writeError(request, "404", request.getServletPath() + " - not found", response, 404);
     }
+
 }

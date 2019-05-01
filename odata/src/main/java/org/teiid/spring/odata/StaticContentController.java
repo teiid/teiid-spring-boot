@@ -60,7 +60,7 @@ public class StaticContentController {
             }
             throw new TeiidProcessingException(ODataPlugin.Util.gs(ODataPlugin.Event.TEIID16055, pathInfo));
         } catch (TeiidProcessingException e) {
-            writeError(request, e, response, 404);
+            writeError(request, e.getCode(), e.getMessage(), response, 404);
         }
     }
 
@@ -68,7 +68,7 @@ public class StaticContentController {
         ObjectConverterUtil.write(response.getOutputStream(), contents, -1);
     }
 
-    static void writeError(ServletRequest request, TeiidProcessingException e,
+    static void writeError(ServletRequest request, String code, String message,
             HttpServletResponse httpResponse, int statusCode) throws IOException {
         httpResponse.setStatus(statusCode);
         String format = request.getParameter("$format"); //$NON-NLS-1$
@@ -82,8 +82,12 @@ public class StaticContentController {
             }
         }
         PrintWriter writer = httpResponse.getWriter();
-        String code = e.getCode()==null?"":e.getCode(); //$NON-NLS-1$
-        String message = e.getMessage()==null?"":e.getMessage(); //$NON-NLS-1$
+        if (code == null) {
+            code = "";
+        }
+        if (message == null) {
+            message = "";
+        }
         if (format.equalsIgnoreCase("json")) { //$NON-NLS-1$
             httpResponse.setHeader(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_JSON.toContentTypeString());
             writer.write("{ \"error\": { \"code\": \""); //$NON-NLS-1$
