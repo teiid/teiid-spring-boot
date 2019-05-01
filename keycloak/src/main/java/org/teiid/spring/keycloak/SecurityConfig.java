@@ -43,9 +43,6 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 @Order(99)
 public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
-    @Value("${spring.teiid.odata.secure.role:odata}")
-    private String odataRole;
-
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
@@ -80,7 +77,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .antMatchers("/odata/actuator/health", "/odata/$metadata", "/odata/swagger.json", "/odata/openapi.json")
                 .permitAll()
                 .and()
-                .authorizeRequests().anyRequest().hasAuthority(odataRole);
+                .authorizeRequests().anyRequest().authenticated();
     }
 
 }
