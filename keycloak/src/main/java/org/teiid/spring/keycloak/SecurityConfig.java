@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.spring.odata.security;
+package org.teiid.spring.keycloak;
 
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
@@ -32,7 +32,6 @@ import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
@@ -50,8 +49,10 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
-        keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
         auth.authenticationProvider(keycloakAuthenticationProvider);
+        KeycloakDirectAccessGrantAuthenticationProvider authProvider = new KeycloakDirectAccessGrantAuthenticationProvider(
+                keycloakConfigResolver());
+        auth.authenticationProvider(authProvider);
     }
 
     @Bean
@@ -76,11 +77,10 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         super.configure(http);
         http.authorizeRequests()
-        .antMatchers("/actuator/health").permitAll()
-        .antMatchers("/$metadata").permitAll()
-        .antMatchers("/swagger.json").permitAll()
-        .antMatchers("/openapi.json").permitAll()
-        .anyRequest().hasRole(odataRole);
+                .antMatchers("/odata/actuator/health", "/odata/$metadata", "/odata/swagger.json", "/odata/openapi.json")
+                .permitAll()
+                .and()
+                .authorizeRequests().anyRequest().hasAuthority(odataRole);
     }
 
 }

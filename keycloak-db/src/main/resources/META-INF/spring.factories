@@ -1,4 +1,0 @@
-# Configurations
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.teiid.spring.db.security.SecurityConfig
-
-# Listeners

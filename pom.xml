@@ -413,12 +413,7 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>spring-keycloak-odata</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>spring-keycloak-db</artifactId>
+        <artifactId>spring-keycloak</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -514,8 +509,7 @@
         <module>data/salesforce</module>
         <module>odata</module>
         <module>openapi</module>
-        <module>keycloak-odata</module>
-        <module>keycloak-db</module>
+        <module>keycloak</module>
         <module>samples</module>
       </modules>
     </profile>
@@ -534,8 +528,7 @@
         <module>data/salesforce</module>
         <module>odata</module>
         <module>openapi</module>
-        <module>keycloak-odata</module>
-        <module>keycloak-db</module>
+        <module>keycloak</module>
       </modules>
       <build>
         <plugins>

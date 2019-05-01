@@ -22,16 +22,12 @@
     <version>1.1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>spring-keycloak-odata</artifactId>
-  <name>spring-keycloak-odata</name>
-  <description>Expose OData interface and Secure using the Keycloak</description>
+  <artifactId>spring-keycloak</artifactId>
+  <name>spring-keycloak</name>
+  <description>Secure OData, and Teiid pg/JDBC with Keycloak</description>
   <packaging>jar</packaging>
 
   <dependencies>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>spring-odata</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-core</artifactId>
