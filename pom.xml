@@ -99,6 +99,22 @@
     <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
     <basepom.release.push-changes>true</basepom.release.push-changes>
 
+    <!-- some modules, especially on a build server will exceed the 30 second default -->
+    <basepom.test.timeout>600</basepom.test.timeout>
+
+    <!-- we don't separate out full launches of an app as integration, so everything
+         needs more memory-->
+    <basepom.test.memory>512m</basepom.test.memory>
+
+    <!-- the tests under java 11 fail with the default version -->
+    <dep.plugin.jacoco.version>0.8.3</dep.plugin.jacoco.version>
+
+    <!-- from syndesis.io -->
+    <!-- Don't fork based on cores, doesn't work nicely in the cloud -->
+    <basepom.test.fork-count>1</basepom.test.fork-count>
+    <basepom.failsafe.fork-count>1</basepom.failsafe.fork-count>
+    <basepom.failsafe.reuse-vm>true</basepom.failsafe.reuse-vm>
+
     <!-- Project Dependencies -->
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
     <spring-social.version>1.1.6.RELEASE</spring-social.version>
