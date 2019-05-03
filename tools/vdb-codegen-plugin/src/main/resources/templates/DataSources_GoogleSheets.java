@@ -14,30 +14,25 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.data.rest;
+package org.teiid.spring.example;
 
-
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.web.client.RestTemplate;
-import org.teiid.spring.data.BaseConnectionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.teiid.spring.data.google.SpreadSheetConfiguration;
+import org.teiid.spring.data.google.SpreadsheetConnectionFactory;
 
-@ConfigurationProperties(prefix="spring.teiid.ws")
-public class RestConnectionFactory extends BaseConnectionFactory<RestConnection> {
+@Configuration
+public class DataSources {
 
-    @Autowired
-    RestTemplate template;
-
-    @Autowired
-    private BeanFactory beanFactory;
-
-    public RestConnectionFactory() {
-        super("rest");
+    @Bean
+    public SpreadsheetConnectionFactory source(SpreadSheetConfiguration config) {
+        return new SpreadsheetConnectionFactory(config);
     }
 
-    @Override
-    public RestConnection getConnection() throws Exception {
-        return new RestConnection(template, beanFactory);
+    @Bean
+    @ConfigurationProperties("spring.teiid.data.google.sheets")
+    public SpreadSheetConfiguration sheetsConfig() {
+        return new SpreadSheetConfiguration();
     }
 }

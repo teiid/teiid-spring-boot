@@ -251,6 +251,11 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
                 template.process(tempMap, out);
                 out.close();
+            } else if (translator.equals(ExternalSource.GOOGLESHEETS.getTranslatorName())) {
+                Template template = cfg.getTemplate("DataSources_GoogleSheets.java");
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                template.process(tempMap, out);
+                out.close();
             } else if (translator.equals(ExternalSource.FILE.getTranslatorName())) {
                 // ignore as by default it is created
             } else if (translator.equals(ExternalSource.REST.getTranslatorName())) {

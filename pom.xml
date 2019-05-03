@@ -114,6 +114,7 @@
     <olingo.version>4.5.0</olingo.version>
     <narayana.version>2.1.0</narayana.version> <!-- me.snowdrop version, not narayana -->
     <version.springfox>2.9.2</version.springfox>
+    <google-sheets.version>v4-rev574-1.24.1</google-sheets.version>
   </properties>
 
   <build>
@@ -189,7 +190,7 @@
         <groupId>org.teiid</groupId>
         <artifactId>teiid-common-core</artifactId>
         <version>${teiid.version}</version>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>teiid-api</artifactId>
@@ -308,6 +309,21 @@
             <artifactId>commons-beanutils</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-google</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>google-api</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.apis</groupId>
+        <artifactId>google-api-services-sheets</artifactId>
+        <version>${google-sheets.version}</version>
       </dependency>
       <dependency>
         <groupId>org.hibernate</groupId>
@@ -437,6 +453,11 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-google</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
         <version>${version.org.mockito}</version>
@@ -507,6 +528,7 @@
         <module>data/excel</module>
         <module>data/mongodb</module>
         <module>data/salesforce</module>
+        <module>data/google</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>
@@ -526,6 +548,7 @@
         <module>data/excel</module>
         <module>data/mongodb</module>
         <module>data/salesforce</module>
+        <module>data/google</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>

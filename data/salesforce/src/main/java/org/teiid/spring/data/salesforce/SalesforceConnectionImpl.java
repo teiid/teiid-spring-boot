@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.logging.LogConstants;
 import org.teiid.logging.LogManager;
@@ -84,7 +86,7 @@ import com.sforce.ws.ConnectionException;
 import com.sforce.ws.transport.JdkHttpTransport;
 
 public class SalesforceConnectionImpl extends BaseConnection implements SalesforceConnection {
-
+    private static final Log logger = LogFactory.getLog(SalesforceConnectionImpl.class);
     private static final String ID_FIELD_NAME = "id"; //$NON-NLS-1$
     private static final String PK_CHUNKING_HEADER = "Sforce-Enable-PKChunking"; //$NON-NLS-1$
     private static final int MAX_CHUNK_SIZE = 100000;
@@ -147,7 +149,7 @@ public class SalesforceConnectionImpl extends BaseConnection implements Salesfor
             throw new Exception(e);
         }
 
-        LogManager.logTrace(LogConstants.CTX_CONNECTOR, "Login was successful"); //$NON-NLS-1$
+        logger.trace("Login was successful"); //$NON-NLS-1$
     }
 
     @Override
@@ -218,7 +220,7 @@ public class SalesforceConnectionImpl extends BaseConnection implements Salesfor
                 partnerConnection.getServerTimestamp();
                 return true;
             } catch (Throwable t) {
-                LogManager.logTrace(LogConstants.CTX_CONNECTOR, "Caught Throwable in isAlive", t); //$NON-NLS-1$
+                logger.trace("Caught Throwable in isAlive", t); //$NON-NLS-1$
             }
         }
         return false;
@@ -229,7 +231,7 @@ public class SalesforceConnectionImpl extends BaseConnection implements Salesfor
 
         if(batchSize > 2000) {
             batchSize = 2000;
-            LogManager.logDetail(LogConstants.CTX_CONNECTOR, "reduced.batch.size"); //$NON-NLS-1$
+            logger.trace("reduced.batch.size"); //$NON-NLS-1$
         }
 
         QueryResult qr = null;
@@ -266,7 +268,7 @@ public class SalesforceConnectionImpl extends BaseConnection implements Salesfor
     public QueryResult queryMore(String queryLocator, int batchSize) throws TranslatorException {
         if(batchSize > 2000) {
             batchSize = 2000;
-            LogManager.logDetail(LogConstants.CTX_CONNECTOR, "reduced.batch.size"); //$NON-NLS-1$
+            logger.trace("reduced.batch.size"); //$NON-NLS-1$
         }
 
         partnerConnection.setQueryOptions(batchSize);
@@ -631,7 +633,7 @@ public class SalesforceConnectionImpl extends BaseConnection implements Salesfor
 
     private void throwDataNotAvailable(BatchResultInfo info) {
         int waitCount = info.incrementAndGetWaitCount();
-        LogManager.logTrace(LogConstants.CTX_CONNECTOR, "Waiting on queued/inprogress, wait number", waitCount); //$NON-NLS-1$
+        logger.trace("Waiting on queued/inprogress, wait number " + waitCount); //$NON-NLS-1$
         throw new DataNotAvailableException(this.sfConfig.getPollingInterval() * Math.min(8, waitCount));
     }
 
@@ -749,5 +751,4 @@ public class SalesforceConnectionImpl extends BaseConnection implements Salesfor
     public String getVersion() {
         return apiVersion;
     }
-
 }

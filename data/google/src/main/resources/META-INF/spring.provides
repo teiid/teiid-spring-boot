@@ -1,0 +1,1 @@
+provides: teiid-spring-boot-common, translator-google, teiid-api, google-api, google-api-services-sheets, spring-web
