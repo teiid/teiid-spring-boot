@@ -19,20 +19,20 @@ package org.teiid.spring.data.salesforce;
 
 import java.lang.reflect.Field;
 
-import org.teiid.logging.LogConstants;
-import org.teiid.logging.LogManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.teiid.spring.data.BaseConnectionFactory;
-import org.teiid.translator.salesforce.SalesForcePlugin;
 
 import com.sforce.soap.partner.Connector;
 
-
 public class SalesforceConnectionFactory extends BaseConnectionFactory<SalesforceConnectionImpl> {
+    private static final Log logger = LogFactory.getLog(SalesforceConnectionFactory.class);
+
     private SalesforceConfiguration config;
     private SalesforceConnectionImpl connection;
 
     public SalesforceConnectionFactory(SalesforceConfiguration config) {
-        setTranslatorName("salesforce");
+        super("salesforce");
         this.config = config;
         checkVersion(config);
     }
@@ -44,11 +44,12 @@ public class SalesforceConnectionFactory extends BaseConnectionFactory<Salesforc
             String apiVersion = url.substring(url.lastIndexOf('/') + 1, url.length());
             Field f = Connector.class.getDeclaredField("END_POINT"); //$NON-NLS-1$
             f.setAccessible(true);
-            if(f.isAccessible()){
+            if (f.isAccessible()) {
                 String endPoint = (String) f.get(null);
                 String javaApiVersion = endPoint.substring(endPoint.lastIndexOf('/') + 1, endPoint.length());
                 if (!javaApiVersion.equals(apiVersion)) {
-                    LogManager.logWarning(LogConstants.CTX_CONNECTOR, SalesForcePlugin.Util.gs(SalesForcePlugin.Event.TEIID13009, apiVersion, javaApiVersion));
+                    logger.warn("Accessing remote API version" + apiVersion + "with Java API version " + javaApiVersion
+                            + "may not be compatible");
                 }
             }
         } catch (Exception e) {
@@ -59,7 +60,7 @@ public class SalesforceConnectionFactory extends BaseConnectionFactory<Salesforc
     @Override
     public SalesforceConnectionImpl getConnection() throws Exception {
         if (connection == null || !connection.isValid()) {
-            this.connection =  new SalesforceConnectionImpl(config);
+            this.connection = new SalesforceConnectionImpl(config);
         }
         return this.connection;
     }

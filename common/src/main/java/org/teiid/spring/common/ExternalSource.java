@@ -82,7 +82,9 @@ public enum ExternalSource {
     MONGODB("mongodb", new String[] { "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" }, new String[] {},
             "mongodb", null, "org.teiid:spring-data-mongodb"),
     SALESFORCE("salesforce", new String[] { "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" },
-            new String[] {}, "salesforce", null, "org.teiid:spring-data-salesforce");
+            new String[] {}, "salesforce", null, "org.teiid:spring-data-salesforce"),
+    GOOGLESHEETS("google-spreadsheet", new String[] { "org.teiid.spring.data.google.SpreadsheetConnectionFactory" },
+            new String[] {}, "google-spreadsheet", null, "org.teiid:spring-data-google");
 
     private String name;
     private String[] driverNames;

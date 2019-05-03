@@ -1,0 +1,158 @@
+= Reading/Writing Data from Google Sheets
+
+This article shows an example to read/write data from Google Spreadsheet using Teiid. Teiid provides SQL based interface to interact with Goole Spreadsheet. i.e. you can issue queries against it or join the entities with another entities to integrate data using Teiid.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 11 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies Spring Boot
+
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter,spring-data-google*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>spring-data-google</artifactId>
+</dependency>
+----
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file. 
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+.Properties that one can configure to connect to the Google Spreadsheet. All the below properties have a prefix `spring.teiid.data.google.sheets`
+[options="header,footer"]
+|==========================================================
+|Property Name     | Description        |Default
+|spread-sheet-name |Name of the Google Spreadsheet| N/A
+|spread-sheet-id   |Spread Sheet Id     | Sheet Id, Look in URL of the Spreadsheet. For more info see https://developers.google.com/sheets/api/guides/concepts#spreadsheet_id
+|client-id    |Client ID  |OAuth2 Client ID
+|client-secret   |Client Secret  | OAuth2 Client Secret
+|refresh-token          |OAuth2 RefreshToken |N/A
+|==========================================================    
+
+CAUTION: Your connection properties will be different from what shown as example below.
+
+== OAuth2 SetUp
+Before you can access the Google Spreadsheet using Teiid, one needs to provide OAuth2 specific credentials to Teiid. To provide the access, use instructions from https://developers.google.com/identity/protocols/OAuth2InstalledApp and create project ad select the "Google Spreadsheets API" as library you want to access. Then create a "OAuth Client ID" Credential using the UI. At the end of this exercise, you will have a "Client ID" and "Client Secret". Then using the Google's OAuth2.0 Playground https://developers.google.com/oauthplayground/ select the "Google Sheet API v4" option and select "drive" and "spreadsheets" endpoints as allowable scopes. Then Authorize APIs, you will end up with a "RefreshToken". Then use all these properties for further configuration.
+
+You can also use following to steps, instead of above
+
+*Get Authentication Code*
+----
+https://accounts.google.com/o/oauth2/auth?access_type=offline&scope=https://www.googleapis.com/auth/drive+https://www.googleapis.com/auth/spreadsheets&response_type=code&client_id=<client-id>&redirect_uri=https://localhost
+----
+
+*Get Refresh Token*
+
+once you give authentication details, and get a auth code, use below to get a refresh token
+----
+curl -d "client_id=<client-id>&client_secret=<client-secret>&redirect_uri=<redirect-uti>&grant_type=authorization_code&code=<auth-code-from-last-step>" https://www.googleapis.com/oauth2/v4/token
+----
+
+==== Connect using RefreshToken
+.*src/main/resources/application.properties*
+----
+spring.teiid.data.google.sheets.spread-sheet-name=Stock Analysis
+spring.teiid.data.google.sheets.spread-sheet-id = 1cwmB_nmOQyvkmAC13PsWsatbQM
+spring.teiid.data.google.sheets.refresh-token = 1/tUJBlr6Ld2SyKeuEy2FrDs_WTILTjDm0
+spring.teiid.data.google.sheets.client-id = 393996695774-bhqrpr915mhfs543u17f3t.apps.googleusercontent.com
+spring.teiid.data.google.sheets.client-secret = pF9ABF5R_bmsaoaa
+----
+
+=== Create a class that Teiid can recognize as Data Source
+This class akin to the resource-adapter, which provides the access to data source
+
+----
+@Configuration
+public class DataSources {
+
+    @Bean
+    public SpreadsheetConnectionFactory accounts(SpreadSheetConfiguration config) {
+        return new SpreadsheetConnectionFactory(config);
+    }
+
+    @Bean
+    @ConfigurationProperties("spring.teiid.data.google.sheets")
+    public SpreadSheetConfiguration sheetsConfig() {
+        return new SpreadSheetConfiguration();
+    }
+}
+----
+
+The above class defines a "accounts" bean which Teiid recognizes as data source and reads the metadata upon creation and makes internal model out of it. Now using this model, Teiid can read/write to it. 
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT *  FROM Sheet1");
+        System.out.println(list);
+    }
+}
+----
+
+=== Build 
+
+You can build the application now using maven 
+
+----
+mvn clean install
+----
+
+and execute your application 
+
+----
+java -jar target/spring-google-example-{version}.jar
+----
+
+If you want to expose Google Spreadsheets through OData API, add following dependency to your `pom.xml` file.
+
+----
+<dependency>
+    <groupId>org.teiid</groupId>
+    <artifactId>spring-odata</artifactId>
+</dependency> 
+----
+
+and re-run the build, and then run, after that on port 8080 the OData REST API can be queried at context `http://<host>:8080/odata`

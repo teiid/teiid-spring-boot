@@ -37,7 +37,7 @@ public class TestConfiguration {
     @SuppressWarnings("rawtypes")
     @Bean("fakeSource")
     public ConnectionFactory fakeSource() {
-        return new BaseConnectionFactory() {
+        return new BaseConnectionFactory("fake") {
             @Override
             public Connection getConnection() throws Exception {
                 return new Connection() {
@@ -52,7 +52,7 @@ public class TestConfiguration {
     @SuppressWarnings("rawtypes")
     @Bean("fakeSource3")
     public ConnectionFactory fakeSource3() {
-        return new BaseConnectionFactory() {
+        return new BaseConnectionFactory("fake") {
             @Override
             public Connection getConnection() throws Exception {
                 return new Connection() {
@@ -68,7 +68,7 @@ public class TestConfiguration {
     @Bean("fakeSource2")
     @DependsOn({"fake2"})
     public ConnectionFactory fakeSource2() {
-        return new BaseConnectionFactory() {
+        return new BaseConnectionFactory("fake2") {
             @Override
             public Connection getConnection() throws Exception {
                 return new Connection() {

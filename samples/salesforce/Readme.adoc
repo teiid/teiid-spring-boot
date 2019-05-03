@@ -1,4 +1,4 @@
-= Reading/Writing Data from Salesforce Based Source
+= Reading/Writing Data from Salesforce
 
 This article shows an example to read/write data from Salesforce using Teiid. Teiid provides SQL based interface to interact with Salesforce. i.e. you can issue queries against it or join the entities with another entities to integrate data using Teiid.
 

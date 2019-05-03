@@ -62,6 +62,7 @@
     <module>vdb</module>
     <module>mongodb</module>
     <module>salesforce</module>
+    <module>google</module>
   </modules>
 
 </project>

@@ -24,11 +24,11 @@ public abstract class BaseConnectionFactory<T extends BaseConnection> implements
 
     private String translatorName;
 
-    public String getTranslatorName() {
-        return translatorName;
+    public BaseConnectionFactory(String translatorName) {
+        this.translatorName = translatorName;
     }
 
-    public void setTranslatorName(String name) {
-        this.translatorName = name;
+    public String getTranslatorName() {
+        return translatorName;
     }
 }

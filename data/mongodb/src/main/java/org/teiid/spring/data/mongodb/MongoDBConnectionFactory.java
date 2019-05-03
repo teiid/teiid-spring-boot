@@ -24,7 +24,7 @@ public class MongoDBConnectionFactory extends BaseConnectionFactory<MongoDBConne
     private MongoTemplate mongoTemplate;
 
     public MongoDBConnectionFactory(MongoTemplate template) {
-        setTranslatorName("mongodb");
+        super("mongodb");
         this.mongoTemplate = template;
     }
 

@@ -29,7 +29,7 @@ public class FileConnectionFactory extends BaseConnectionFactory<FileConnection>
     private boolean allowParentPaths = true;
 
     public FileConnectionFactory() {
-        super.setTranslatorName("file");
+        super("file");
     }
 
     @Override
