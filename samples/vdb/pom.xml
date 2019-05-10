@@ -54,6 +54,7 @@
       <plugin>
         <groupId>org.teiid</groupId>
         <artifactId>vdb-codegen-plugin</artifactId>
+        <version>${project.version}</version>
         <configuration>
           <packageName>org.teiid.spring.example</packageName>
           <generateApplicationClass>false</generateApplicationClass>
