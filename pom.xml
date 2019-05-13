@@ -99,19 +99,38 @@
     <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
     <basepom.release.push-changes>true</basepom.release.push-changes>
 
+    <!-- some modules, especially on a build server will exceed the 30 second default -->
+    <basepom.test.timeout>600</basepom.test.timeout>
+
+    <!-- we don't separate out full launches of an app as integration, so everything
+         needs more memory-->
+    <basepom.test.memory>512m</basepom.test.memory>
+
+    <!-- the tests under java 11 fail with the default version -->
+    <dep.plugin.jacoco.version>0.8.3</dep.plugin.jacoco.version>
+
+    <!-- from syndesis.io -->
+    <!-- Don't fork based on cores, doesn't work nicely in the cloud -->
+    <basepom.test.fork-count>1</basepom.test.fork-count>
+    <basepom.failsafe.fork-count>1</basepom.failsafe.fork-count>
+    <basepom.failsafe.reuse-vm>true</basepom.failsafe.reuse-vm>
+
     <!-- Project Dependencies -->
-    <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
+    <spring-boot.version>2.1.3.RELEASE</spring-boot.version>
     <spring-social.version>1.1.6.RELEASE</spring-social.version>
-    <teiid.version>12.2.0-SNAPSHOT</teiid.version>
+    <teiid.version>12.2.0</teiid.version>
     <version.xml-apis>1.4.01</version.xml-apis>
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
-    <hibernate.version>5.3.7.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
+    <hibernate.version>5.3.9.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
     <hibernate.tools.version>5.3.7.Final</hibernate.tools.version>
+    <version.commons-codec>1.12</version.commons-codec>
+    <version.commons-lang3>3.9</version.commons-lang3>
+    <version.httpclient>4.5.8</version.httpclient>
     <version.javax.annotation>1.3.2</version.javax.annotation>
     <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
     <version.org.mockito>1.10.19</version.org.mockito>
     <version.org.keycloak>4.8.3.Final</version.org.keycloak>
-    <olingo.version>4.5.0</olingo.version>
+    <olingo.version>4.6.0</olingo.version>
     <narayana.version>2.1.0</narayana.version> <!-- me.snowdrop version, not narayana -->
     <version.springfox>2.9.2</version.springfox>
     <google-sheets.version>v4-rev574-1.24.1</google-sheets.version>
@@ -214,11 +233,6 @@
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>teiid-hibernate-dialect</artifactId>
-        <version>${teiid.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
-        <artifactId>teiid-api</artifactId>
         <version>${teiid.version}</version>
       </dependency>
       <dependency>
@@ -469,7 +483,28 @@
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
         <version>2.9.8</version>
-      </dependency>      
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${version.commons-codec}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${version.commons-lang3}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.8</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
 
     </dependencies>
