@@ -78,9 +78,14 @@ public class GoogleDataProtocolAPI {
      *
      * [1] https://developers.google.com/chart/interactive/docs/querylanguage
      *
+     * @param info      The google spreadsheetInfo
+     * @param worksheetTitle  The spreadsheet title
      * @param query     The query defined in [1]
      * @param batchSize How big portions of data should be returned by one roundtrip
      *                  to Google.
+     * @param offset    The offset to use, if not null
+     * @param limit     The limit to use, if not null
+     *
      * @return Iterable RowsResult that will actually perform the roundtrips to
      *         Google for data
      */
