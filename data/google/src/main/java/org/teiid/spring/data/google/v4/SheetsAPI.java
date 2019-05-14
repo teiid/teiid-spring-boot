@@ -55,7 +55,7 @@ public class SheetsAPI {
     /**
      * Insert row into spreadsheet
      *
-     * @param spreadsheetKey key that identifies spreadsheet
+     * @param spreadsheetId key that identifies spreadsheet
      * @param pairs          key that identifies worksheet
      * @param worksheet      name - value pair that should be inserted into
      *                       spreadsheet
