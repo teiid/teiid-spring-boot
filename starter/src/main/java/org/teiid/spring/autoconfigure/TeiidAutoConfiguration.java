@@ -252,10 +252,26 @@ public class TeiidAutoConfiguration implements Ordered {
                 embeddedConfiguration.addTransport(sc);
             }
 
+            if (this.properties.isJdbcSecureEnable()) {
+                SocketConfiguration sc = new SocketConfiguration();
+                sc.setPortNumber(this.properties.getJdbcSecurePort());
+                sc.setProtocol(WireProtocol.teiid);
+                sc.setSSLConfiguration(this.properties.getSsl());
+                embeddedConfiguration.addTransport(sc);
+            }
+
             if (this.properties.isPgEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
                 sc.setPortNumber(this.properties.getPgPort());
                 sc.setProtocol(WireProtocol.pg);
+                embeddedConfiguration.addTransport(sc);
+            }
+
+            if (this.properties.isPgSecureEnable()) {
+                SocketConfiguration sc = new SocketConfiguration();
+                sc.setPortNumber(this.properties.getPgSecurePort());
+                sc.setProtocol(WireProtocol.pg);
+                sc.setSSLConfiguration(this.properties.getSsl());
                 embeddedConfiguration.addTransport(sc);
             }
         }
