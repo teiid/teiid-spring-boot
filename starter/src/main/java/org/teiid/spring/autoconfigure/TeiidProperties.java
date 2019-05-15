@@ -17,6 +17,7 @@
 package org.teiid.spring.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.teiid.transport.SSLConfiguration;
 
 @ConfigurationProperties(prefix = "teiid")
 public class TeiidProperties {
@@ -24,10 +25,19 @@ public class TeiidProperties {
     private String vdbFile;
     private int metadataLoadWaitTimeInMillis = 30000;
     private boolean jdbcEnable = false;
+    private boolean jdbcSecureEnable = false;
     private int jdbcPort = 31000;
+    private int jdbcSecurePort = 31443;
     private boolean pgEnable = false;
+    private boolean pgSecureEnable = false;
     private int pgPort = 35432;
+    private int pgSecurePort = 35443;
     private boolean allowAlter = false;
+    private SSLConfiguration ssl = new SSLConfiguration();
+
+    public TeiidProperties() {
+        this.ssl.setMode(SSLConfiguration.ENABLED);
+    }
 
     public boolean isAllowAlter() {
         return allowAlter;
@@ -84,4 +94,45 @@ public class TeiidProperties {
     public void setPgPort(int pgPort) {
         this.pgPort = pgPort;
     }
+
+    public boolean isJdbcSecureEnable() {
+        return jdbcSecureEnable;
+    }
+
+    public void setJdbcSecureEnable(boolean jdbcSecureEnable) {
+        this.jdbcSecureEnable = jdbcSecureEnable;
+    }
+
+    public boolean isPgSecureEnable() {
+        return pgSecureEnable;
+    }
+
+    public void setPgSecureEnable(boolean pgSecureEnable) {
+        this.pgSecureEnable = pgSecureEnable;
+    }
+
+    public int getJdbcSecurePort() {
+        return jdbcSecurePort;
+    }
+
+    public void setJdbcSecurePort(int jdbcSecurePort) {
+        this.jdbcSecurePort = jdbcSecurePort;
+    }
+
+    public int getPgSecurePort() {
+        return pgSecurePort;
+    }
+
+    public void setPgSecurePort(int pgSecurePort) {
+        this.pgSecurePort = pgSecurePort;
+    }
+
+    public SSLConfiguration getSsl() {
+        return ssl;
+    }
+
+    public void setSsl(SSLConfiguration ssl) {
+        this.ssl = ssl;
+    }
+
 }

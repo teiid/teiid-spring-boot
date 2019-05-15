@@ -140,10 +140,6 @@ public class SpringODataFilter implements HandlerInterceptor {
         }
 
         VDBKey key = new VDBKey(vdbName, vdbVersion);
-        TeiidSecurityContext tsc = securityHelper.getSecurityContext();
-        if (tsc != null && tsc.getSubject() != null) {
-            this.connectionProperties.setProperty(TeiidURL.CONNECTION.USER_NAME, tsc.getUserName());
-        }
         Client client = buildClient(vdbName, vdbVersion, this.connectionProperties);
         client.open();
 
