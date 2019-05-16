@@ -8,18 +8,30 @@ This is document shows how to use `teiid-spring-boot-starter` run Teiid with you
 == What is Teiid Spring Boot?
 Teiid Spring Boot is a framework for developing Spring applications, that are looking to utilize Data Virtualization features. Data Virtualization technology provides seamless integration with multiple hetrogenious data sources. For example, you can combine data from Oracle database with data from Microsoft SQL Server, REST Service, Flat File etc. You not only integrate the data, you can also create your own Views of that integrated data. The Data Virtualization technology is based on link:http://teiid.org[Teiid]
 
-Teiid Spring Boot is a new bootstapping mechanism of Teiid that is developed in keeping up with developers and their usage of Annotations with Spring application at its core. If you are familiar with using the JPA or JDBC template model in a Spring application, then most of learning is already done.
+Teiid Spring Boot is a new bootstapping mechanism of Teiid for rapid development - including the optional use of Annotations and the Spring ecosystem. If you are familiar with Spring, and in particular the JPA or JDBC template model, then most of learning is already done.
 
 == How is Teiid Spring Boot different from Teiid?
-If you are familiar with Teiid or Teiid Embedded, all the functionality you are after in using Teiid is still there. However they are provided and utilized differently in Teiid Spring Boot.
+If you are familiar with Teiid or Teiid Embedded, most of the functionality you are after in using Teiid is still there. However it requires new Spring paradigms to utilize.
 
-* In the regular Teiid development, Teiid is always accessed as a external database. You connect to it using a JDBC connection, or layer a JPA on top of the JDBC connection. In Teiid Spring Boot, it is more a framework/library to join the data. Teiid engine is bootstrapped as implicit embedded database, on your application start, which user doesn't really need to know about.
+Teiid Spring Boot has two flavors.  One that is purely code driven, and another that supports a DDL VDB.
 
-* There is NO VDB. You read it correct! OK, we lied there is no user facing VDB. In the regular Teiid development one needs to use tooling like Teiid Designer or use DDL based files and build Virtual Database (VDB), then deploy that into a server environment and data sources need to be configured before you can use virtual views in your application. With Teiid Spring Boot, there is no need to use the any tooling, your application layer and View definition layer become one. The virtual View construction happens with Annotations in your Java code. It is exactly same steps as to defining Entity using JPA framework with couple extra annotations that are specific to Teiid.
+=== VDB-less Development
 
-* Teiid Spring Boot is not really designed if you are looking for running third party BI tools like Tableau, Business Objects etc to some business reports. This is designed specifically for its usage with Microservices and Spring based Java applications.
+There is NO VDB. You read it correct! OK, we lied there is no user facing VDB. In the regular Teiid development one needs to use tooling like Teiid Designer or use DDL based files and build Virtual Database (VDB), then deploy that into a server environment. Data sources need to be configured before you can use virtual views in your application. 
 
-* Since this is Spring Boot, this only supports Java language.
+With Teiid Spring Boot there is no need to use the any tooling - your application layer and View definition layer become one. The virtual View construction happens with Annotations in your Java code. It is exactly the same steps as defining an Entity using JPA framework with couple extra annotations that are specific to Teiid.
+
+In the regular Teiid development, Teiid is typically accessed as a external database. You connect to it using a JDBC connection, or layer a JPA on top of the JDBC connection. In VDB-less Teiid Spring Boot, it is more a framework/library to join the data. The Teiid engine is bootstrapped as implicit embedded database on your application start, which user doesn't really need to know about. The VDB is used via JPA and other Spring constructs without the need for exposing a socket based server for database connections.
+
+VDB-less Teiid Spring Boot is not really designed for running third party BI tools like Tableau, Business Objects etc to some business reports. This is designed specifically for its usage with Microservices and Spring based Java applications.
+
+Since this is Spring Boot, this only supports Java language.
+
+=== VDB Based Development
+
+Most of the user guide addresses the VDB-less case.  However if you need traditional Teiid features, such as utilizing a DDL file and exposing that explicit database via JDBC, pg, OData, then VDB based development is for you.
+
+Please refer to the link:../samples/vdb/Readme.adoc[sample].
 
 == Your First Example, Join Data From Two Postgres Databases
 
@@ -259,28 +271,5 @@ If you need to do insert/update/delete with above example you would need to defi
 
 
 == Available Examples
-There are many more examples, that show different capabilities of Data Virtualization technology
 
-|===
-|*Name* |*Features Demonstrated* |*Description* |*Prerequisites*
-
-|link:../samples/rdbms/Readme.md[Database]
-|Data Federation
-|Shows how to expose multiple data sources for data federation
-|None
-
-|link:../samples/json/Readme.adoc[JSON]
-|@JsonTable
-|Shows how to convert JSON data from a file or REST endpoint into Entity
-|None
-
-|link:../samples/rdbms-file/Readme.adoc[DB and File]
-|Database and CSV based Table using @TextTable
-|Shows how to convert CSV data into a Entity and combine with a Entity from relational database.
-|None
-
-|link:../samples/odata/Readme.adoc[OData Access]
-|OData
-|Shows how to enable a OData REST interface on top of any Entity model defined using Teiid
-|None
-|===
+See the link:../samples/Readme.adoc[samples].
