@@ -15,8 +15,6 @@
  */
 package org.teiid.maven;
 
-import static org.teiid.deployers.RestWarGenerator.REST_NAMESPACE;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,12 +25,9 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,16 +44,10 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.teiid.core.types.DataTypeManager;
 import org.teiid.core.util.ObjectConverterUtil;
-import org.teiid.metadata.Column;
-import org.teiid.metadata.ColumnSet;
 import org.teiid.metadata.DataWrapper;
 import org.teiid.metadata.Database;
 import org.teiid.metadata.Datatype;
-import org.teiid.metadata.Procedure;
-import org.teiid.metadata.ProcedureParameter;
-import org.teiid.metadata.Schema;
 import org.teiid.metadata.Server;
 import org.teiid.query.function.SystemFunctionManager;
 import org.teiid.query.metadata.DatabaseStore;
@@ -68,7 +57,6 @@ import org.teiid.query.parser.QueryParser;
 import org.teiid.spring.common.ExternalSource;
 
 import freemarker.cache.ClassTemplateLoader;
-import freemarker.cache.StringTemplateLoader;
 import freemarker.core.PlainTextOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -92,6 +80,12 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
     @Parameter
     private Boolean generateApplicationClass = true;
+
+    @Parameter
+    private Boolean generateDataSourceClasses = true;
+
+    @Parameter(defaultValue = "${basedir}/src/main/resources/swagger.json")
+    private File openApiFile;
 
     public File getOutputDirectory() {
         return outputDirectory;
@@ -139,10 +133,13 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (this.generateApplicationClass) {
                 createApplication(cfg, javaSrcDir, database, parentMap);
             }
-            createDataSources(cfg, javaSrcDir, database, parentMap);
+            if (this.generateDataSourceClasses) {
+                createDataSources(cfg, javaSrcDir, database, parentMap);
+            }
             verifyTranslatorDependencies(database);
             if (generateOpenApiScoffolding()) {
-                createOpenApi(cfg, javaSrcDir, database, parentMap);
+                OpenApiGenerator generator = new OpenApiGenerator(openApiFile, outputDirectory, getLog());
+                generator.generate(cfg, javaSrcDir, database, parentMap);
             }
             this.project.addCompileSourceRoot(javaSrcDir.getAbsolutePath());
 
@@ -184,14 +181,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             throws Exception {
         Template template = cfg.getTemplate("Application.java");
         Writer out = new FileWriter(new File(javaSrcDir, "Application.java"));
-        template.process(props, out);
-        out.close();
-    }
-
-    private void createSwaggerConfig(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> props)
-            throws Exception {
-        Template template = cfg.getTemplate("SwaggerConfig.java");
-        Writer out = new FileWriter(new File(javaSrcDir, "SwaggerConfig.java"));
         template.process(props, out);
         out.close();
     }
@@ -347,197 +336,5 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         }
         getLog().info("No OpenAPI dependency is found in the pom.xml");
         return false;
-    }
-
-    private void createOpenApi(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> parentMap)
-            throws Exception {
-
-        // create swagger config file.
-        createSwaggerConfig(cfg, javaSrcDir, database, parentMap);
-
-        // create api
-        for (Schema schema : database.getSchemas()) {
-            if (schema.isPhysical()) {
-                continue;
-            }
-
-            HashMap<String, String> replacementMap = new HashMap<String, String>(parentMap);
-            replacementMap.put("modelName", schema.getName());
-
-            Template template = cfg.getTemplate("Controller.java");
-            FileWriter out = new FileWriter(new File(javaSrcDir, schema.getName() + ".java"));
-            template.process(replacementMap, out);
-
-            String servicePattern =
-                    "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = {\"${contentType}\"} <#if consumes??>, consumes = \"${consumes}\" </#if>)\n" +
-                            "    @ResponseBody\n" +
-                            "    @ApiOperation(value=\"${description}\"<#if responseClass??>, response=${responseClass}</#if>)\n" +
-                            "    public ResponseEntity<InputStreamResource> ${procedureName}(${paramSignature}) {\n" +
-                            "        setServer(this.server);\n"+
-                            "        setVdb(this.vdb);\n"+
-                            "        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();\n" +
-                            "        ${paramMapping}\n" +
-                            "        return execute(\"${procedureFullName}\", parameters, \"${charset}\", ${usingReturn});\n" +
-                            "    }\n";
-            StringTemplateLoader stl = new StringTemplateLoader();
-            stl.putTemplate("service", servicePattern);
-            cfg.setTemplateLoader(stl);
-
-            Collection<Procedure> procedures = schema.getProcedures().values();
-            for (Procedure procedure : procedures) {
-                String uri = procedure.getProperty(REST_NAMESPACE + "URI", false);
-                String method = procedure.getProperty(REST_NAMESPACE + "METHOD", false);
-                if (uri != null && method != null) {
-                    buildRestService(procedure, replacementMap, cfg, out);
-                }
-            }
-            out.write("}");
-            out.flush();
-            out.close();
-        }
-    }
-
-    private void buildRestService(Procedure procedure, HashMap<String, String> replacementMap, Configuration cfg,
-            FileWriter out) throws Exception {
-        String uri = procedure.getProperty(REST_NAMESPACE + "URI", false);
-        String method = procedure.getProperty(REST_NAMESPACE + "METHOD", false);
-
-        String contentType = procedure.getProperty(REST_NAMESPACE + "PRODUCES", false);
-        if (contentType == null) {
-            contentType = findContentType(procedure);
-        }
-
-        String charSet = procedure.getProperty(REST_NAMESPACE + "CHARSET", false);
-        if (charSet == null) {
-            charSet = Charset.defaultCharset().name();
-        }
-
-        List<ProcedureParameter> params = new ArrayList<ProcedureParameter>(procedure.getParameters().size());
-        boolean usingReturn = false;
-        boolean hasLobInput = false;
-        for (ProcedureParameter p : procedure.getParameters()) {
-            if (p.getType() == ProcedureParameter.Type.In || p.getType() == ProcedureParameter.Type.InOut) {
-                params.add(p);
-            } else if (p.getType() == ProcedureParameter.Type.ReturnValue && procedure.getResultSet() == null) {
-                usingReturn = true;
-            }
-            if (!hasLobInput) {
-                String runtimeType = p.getRuntimeType();
-                hasLobInput = DataTypeManager.isLOB(runtimeType);
-            }
-        }
-
-        boolean useMultipart = false;
-        if (method.toUpperCase().equals("POST") && hasLobInput) {
-            useMultipart = true;
-        }
-
-        replacementMap.put("contentType", contentType);
-        replacementMap.put("uri", uri);
-        replacementMap.put("method", method);
-        replacementMap.put("charset", charSet);
-        replacementMap.put("description", procedure.getAnnotation() == null ? "" : procedure.getAnnotation());
-        replacementMap.put("procedureName", procedure.getName());
-        replacementMap.put("procedureFullName", procedure.getFullName());
-        replacementMap.put("usingReturn", usingReturn?"true":"false");
-
-        // handle parameters
-        StringBuilder paramSignature = new StringBuilder();
-        StringBuilder paramMapper = new StringBuilder();
-        int paramsSize = params.size();
-
-        if (useMultipart) {
-            replacementMap.put("consumes", "multipart/form-data");
-        } else {
-            // post only accepts Form inputs, not path params
-            boolean get = method.toUpperCase().equals("GET");
-
-            if (paramsSize > 0 && !get) {
-                replacementMap.put("consumes", "application/x-www-form-urlencoded");
-            }
-        }
-
-        HashSet<String> pathParms = getPathParameters(uri);
-        for (int i = 0; i < paramsSize; i++) {
-            String runtimeType = params.get(i).getRuntimeType();
-            String paramType = "@RequestParam(name=\"" + params.get(i).getName() + "\")";
-            if (pathParms.contains(params.get(i).getName())) {
-                paramType = "@PathVariable(name=\"" + params.get(i).getName() + "\")";
-            }
-            if (i > 0) {
-                paramSignature.append(", ");
-            }
-            String type = params.get(i).getJavaType().getName();
-            if (DataTypeManager.isLOB(runtimeType)) {
-                type = "MultipartFile";
-            }
-            paramSignature.append(paramType).append(" ").append(type).append(" ")
-            .append(params.get(i).getName());
-            paramMapper.append("parameters.put(\"").append(params.get(i).getName()).append("\",")
-            .append(params.get(i).getName()).append(");\n    ");
-        }
-        replacementMap.put("paramSignature", paramSignature.toString());
-        replacementMap.put("paramMapping", paramMapper.toString());
-
-        //TODO: this needs to be fixed, such that correct return is done
-        //replacementMap.put("responseClass", "OpenApiInputStream.class");
-
-        Template template = cfg.getTemplate("service");
-        template.process(replacementMap, out);
-        out.write("\n");
-    }
-
-    private static HashSet<String> getPathParameters(String uri ) {
-        HashSet<String> pathParams = new HashSet<String>();
-        String param;
-        if (uri.contains("{")) {
-            while (uri.indexOf("}") > -1) {
-                int start = uri.indexOf("{");
-                int end = uri.indexOf("}");
-                param = uri.substring(start + 1, end);
-                uri = uri.substring(end + 1);
-                pathParams.add(param);
-            }
-        }
-        return pathParams;
-    }
-
-    private String findContentType(Procedure procedure) {
-        String contentType = "plain";
-        ColumnSet<Procedure> rs = procedure.getResultSet();
-        if (rs != null) {
-            Column returnColumn = rs.getColumns().get(0);
-            String type = returnColumn.getDatatype().getRuntimeTypeName();
-            if (type.equals(DataTypeManager.DefaultDataTypes.XML)) {
-                contentType = "xml"; //$NON-NLS-1$
-            }
-            else if (type.equals(DataTypeManager.DefaultDataTypes.CLOB)
-                    || type.equals(DataTypeManager.DefaultDataTypes.JSON)) {
-                contentType = "json";
-            }
-        }
-        else {
-            for (ProcedureParameter pp:procedure.getParameters()) {
-                if (pp.getType().equals(ProcedureParameter.Type.ReturnValue)) {
-                    String type = pp.getDatatype().getRuntimeTypeName();
-                    if (type.equals(DataTypeManager.DefaultDataTypes.XML)) {
-                        contentType = "xml"; //$NON-NLS-1$
-                    }
-                    else if (type.equals(DataTypeManager.DefaultDataTypes.CLOB)
-                            || type.equals(DataTypeManager.DefaultDataTypes.JSON)) {
-                        contentType = "json"; //$NON-NLS-1$
-                    }
-                }
-            }
-        }
-        contentType = contentType.toLowerCase().trim();
-        if (contentType.equals("xml")) {
-            contentType = "application/xml";
-        } else if (contentType.equals("json")) {
-            contentType = "application/json;charset=UTF-8";
-        } else if (contentType.equals("plain")) {
-            contentType = "text/plain";
-        }
-        return contentType;
     }
 }
