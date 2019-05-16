@@ -1,0 +1,67 @@
+== Samples
+
+There are many more examples, that show different capabilities of Data Virtualization technology
+
+|===
+|*Name* |*Features Demonstrated* |*Description* |*Prerequisites*
+
+|link:excel/Readme.md[Excel]
+|@ExcelTable
+|Shows how to virtualize an excel spreadsheet
+|None
+
+|link:google/Readme.md[Google Spreadsheet]
+|Google spreadsheet connectivity
+|Shows how to virtualize a Google spreadsheet
+|None
+
+|link:mongodb/Readme.md[MongoDB]
+|MongoDB connectivity
+|Shows how to virtualize a MongoDB instance
+|None
+
+|link:rdbms/Readme.md[Database]
+|Data Federation
+|Shows how to expose multiple data sources for data federation
+|None
+
+|link:redirection/Readme.md[Redirection]
+|Redirection of Updates
+|Shows how to use Teiid to automatically redirect updates to a different source, but still federate the updates.
+|None
+
+|link:rest/Readme.md[REST]
+|REST
+|Shows how to enable a REST interface on top of any Entity model defined using Teiid
+|None
+
+|link:salesforce/Readme.md[Salesforce]
+|Salesforce
+|Shows how to virtualize a Salesforce instance
+|None
+
+|link:udf/Readme.md[UDF]
+|User Defined Function
+|Shows how to use a Java function in Teiid
+|None
+
+|link:vdb/Readme.md[VDB]
+|Virtual Database
+|Shows how to use a Teiid DDL VDB to define the virtualization
+|None
+
+|link:json/Readme.adoc[JSON]
+|@JsonTable
+|Shows how to convert JSON data from a file or REST endpoint into Entity
+|None
+
+|link:rdbms-file/Readme.adoc[DB and File]
+|Database and CSV based Table using @TextTable
+|Shows how to convert CSV data into a Entity and combine with a Entity from relational database.
+|None
+
+|link:odata/Readme.adoc[OData Access]
+|OData
+|Shows how to enable a OData REST interface on top of any Entity model defined using Teiid
+|None
+|===

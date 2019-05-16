@@ -1,11 +1,12 @@
 = Reference Guide
+:toc: manual
+:toc-placement: preamble
 
 Teiid is relational data integration engine that can combine the data from multiple heterogeneous sources.
 
 This is a Reference guide for Teiid Spring Boot, for general Teiid Reference Guide consult link:http://teiid.github.io/teiid-documents/master/content/
 
-Please Read User Guide to understand the problem this library is solving, this guide is more about description of the annotations in play.
-
+Please read the link:UserGuide.adoc[User Guide] to understand the problem this library is solving, this guide is more about description of the annotations in play.
 
 == Teiid Annotations
 
@@ -47,30 +48,65 @@ When working with REST based sources with entities like @JsonTable or @TextTable
 
 == Teiid Properties
 
-== General Properties
+=== General Properties
 [options="header"]
 |=======================
 |Property|Description|Default Value
-|spring.teiid.model.package|This property defines the package name, where the @Entity classes are defined in the application. This will be used to scan the classes and generate necessary metadata. In absense of this property whole classpath will be scanned which can lead very slow start up |* (all classpath)
-|logging.level.org.teiid.{context}|Defines the logging lvel for Teiid specific code. "spring" is context where spring boot specific log messages are defined. example: *logging.level.org.teiid.spring=DEBUG*|n/a
-|spring.teiid.file.parent-directory|When using the "file"based resources such as @TextTable, @ExcelTable this property defines a parent directory where files exist. | ${user.dir} system property.
+|spring.teiid.model.package|This property defines the package name, where the @Entity classes are defined in the application. This will be used to scan the classes and generate necessary metadata. In absence of this property whole classpath will be scanned which can lead very slow start up |* (all classpath)
+|logging.level.org.teiid.{context}|Defines the logging level for Teiid specific code. "spring" is context where spring boot specific log messages are defined. example: *logging.level.org.teiid.spring=DEBUG*|n/a
+|spring.teiid.file.parent-directory|When using the "file" based resources such as @TextTable, @ExcelTable this property defines a parent directory where files exist. | ${user.dir} system property.
 |=======================
 
-== JDBC Data Source Properties
+=== JDBC Data Source Properties
 
 For configuring the JDBC data sources please see https://docs.spring.io/spring-boot/docs/current/reference/html/howto-data-access.html[Data Access]
 [options="header"]
 |=======================
 |Property|Description|Default Value
-|spring.datasource.{dsname}.platfrom|Name of the platform, where when init SQL queries for the database are provided this will be used ad postfix. See rdbms-file-example for example.|n/a|
+|spring.datasource.{dsname}.platfrom|Name of the platform, where when init SQL queries for the database are provided this will be used ad postfix. See rdbms-file-example for example.|n/a
 |spring.datasource.{dsname}.importer.{property-name}|Translator importer properties to control the type and amount of metadata to import. See for more information about http://teiid.github.io/teiid-documents/master/content/reference/JDBC_Translators.html[importer properties]
 |=======================
 
-== OData Properties
+=== OData Properties
 
 [options="header"]
 |=======================
 |Property|Description|Default Value
-|spring.teiid.odata.xxx|Any connection properties. ex:batch-size,skiptoken-cache-time,|n/a|
-|spring.teiid.odata.alt.paths|Comma separated context paths that should be redirected from OData context handler. This will be useful when user wants handle custom paths in addition to OData. ex: /api,/foo  where when a request comes for these paths they will redirected to registered servlet. To Register a servlet see https://www.baeldung.com/register-servlet|n/a|
+|spring.teiid.odata.xxx|Any connection properties. ex:batch-size,skiptoken-cache-time,|n/a
+|spring.teiid.odata.alt.paths|Comma separated context paths that should be redirected from OData context handler. This will be useful when user wants handle custom paths in addition to OData. ex: /api,/foo  where when a request comes for these paths they will redirected to registered servlet. To Register a servlet see https://www.baeldung.com/register-servlet|n/a
 |=======================
+
+=== PG/JDBC Transport Properties
+
+[options="header"]
+|=======================
+|Property|Description|Default Value
+|teiid.jdbc-enable|Enable the non-secure Teiid JDBC transport.  By default login and other secure traffic will be encrypted with an ssl like protocol based upon 128 AES encryption based upon a DH key exchange.|false
+|teiid.jdbc-port|Teiid JDBC port|31000
+|teiid.jdbc-secure-enable|Enable the SSL Teiid JDBC transport.  See the SSL properties for more.|false
+|teiid.jdbc-secure-port|Teiid JDBC secure port|31443
+|teiid.pg-enable|Enable the non-secure PG transport.  Currently only cleartext username/password authentication is supported, so you should consider instead using the secure pg transport|false
+|teiid.pg-port|PG port|35432
+|teiid.pg-secure-enable|Enable the SSL PG transport.  See the SSL properties for more.|false
+|teiid.pg-secure-port|PG secure port|35443
+|=======================
+
+==== SSL Properties
+
+By default a secure transport will use the system options (javax.ssl...) to create secure sockets.  If you cannot utilize the system properties, you may use a Teiid specific SSL configuration, which is shared by both PG and Teiid JDBC secure transports.
+
+|=======================
+|Property|Description|Default Value
+|teiid.ssl.ssl-protocol|The SSL/TLS protocol|TLSv1.2
+|teiid.ssl.enabled-cipher-suites|A comma separated list of cipher suites that are allowed
+|teiid.ssl.keystore-password|The keystore password
+|teiid.ssl.keystore-type|The keystore type|JKS
+|teiid.ssl.keystore-key-alias|The keystore key alias
+|teiid.ssl.keystore-key-password|The keystore key password
+|teiid.ssl.keymanagement-algorithm|The key management factory algorithm|System default
+|teiid.ssl.authentication-mode|1-way or 2-way, 2-way requires the system truststore or a configured truststore to authenticate the client certificate|1-way
+|teiid.ssl.truststore-filename|The truststore file name
+|teiid.ssl.truststore-password|The truststore password
+|teiid.ssl.truststore-check-expired|If client certificates should be checked for expiration|false
+|=======================
+
