@@ -1,0 +1,7 @@
+setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        {{#allParams}}
+        parameters.put("{{paramName}}",{{paramName}});
+        {{/allParams}}
+        return execute("{{operationId}}", parameters, "UTF-8", !"{{{returnType}}}".contentEquals("Void"));        

@@ -19,7 +19,6 @@ import static org.teiid.deployers.RestWarGenerator.REST_NAMESPACE;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,13 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.maven.plugin.logging.Log;
-import org.openapitools.codegen.ClientOptInput;
-import org.openapitools.codegen.DefaultGenerator;
-import org.openapitools.codegen.config.CodegenConfigurator;
 import org.teiid.core.types.DataTypeManager;
-import org.teiid.metadata.Column;
-import org.teiid.metadata.ColumnSet;
-import org.teiid.metadata.Database;
 import org.teiid.metadata.Procedure;
 import org.teiid.metadata.ProcedureParameter;
 import org.teiid.metadata.Schema;
@@ -51,33 +44,15 @@ import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.FormParameter;
+import io.swagger.models.parameters.Parameter;
+import io.swagger.models.parameters.PathParameter;
+import io.swagger.models.parameters.QueryParameter;
+import io.swagger.models.parameters.RefParameter;
 
-public class OpenApiGenerator {
-    private File openApiFile;
-    private File outputDirectory;
+class OpenApiGenerator {
     private Log log;
-
-    public OpenApiGenerator(File openApiFile, File outputDirectory, Log log) {
-        this.openApiFile = openApiFile;
-        this.outputDirectory = outputDirectory;
-        this.log = log;
-    }
-
-    protected boolean isOpenApiDefinitionExists(Swagger swagger, Procedure p) {
-        if (swagger == null) {
-            return false;
-        }
-        for(Entry<String, Path> entry : swagger.getPaths().entrySet()) {
-            Map<HttpMethod, Operation> operations = getOperationMap(entry.getValue());
-            for (Operation op : operations.values()) {
-                if (op.getOperationId().contentEquals(p.getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     static class ApiOperation {
         HttpMethod method;
@@ -85,85 +60,42 @@ public class OpenApiGenerator {
         Operation op;
     }
 
-    protected ApiOperation getOpenApiDefinition(Swagger swagger, Procedure p) {
-        if (swagger == null) {
-            return null;
-        }
-        for(Entry<String, Path> entry : swagger.getPaths().entrySet()) {
-            Map<HttpMethod, Operation> operations = getOperationMap(entry.getValue());
-            for (Entry<HttpMethod, Operation> e : operations.entrySet()) {
-                if (e.getValue().getOperationId().contentEquals(p.getName())) {
-                    ApiOperation oper = new ApiOperation();
-                    oper.method = e.getKey();
-                    oper.op = e.getValue();
-                    oper.path = entry.getKey();
-                    log.info("OpenApi definition found for procedure " + p.getFullName() );
-                    return oper;
-                }
-            }
-        }
-        return null;
+    public OpenApiGenerator(Log log) {
+        this.log = log;
     }
 
-    protected void generate(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> parentMap)
+    public void generate(Swagger swagger, Configuration cfg, File javaSrcDir, HashMap<String, String> map, Schema schema)
             throws Exception {
+        Template template = cfg.getTemplate("OpenApiController.java");
+        File outFile = new File(javaSrcDir, map.get("modelName") + "Api.java");
+        FileWriter out = new FileWriter(outFile);
+        template.process(map, out);
 
-        Swagger swagger = null;
-        if (this.openApiFile.exists()) {
-            log.info("OpenApi definition file found: " + this.openApiFile.getCanonicalPath());
-            SwaggerParser parser = new SwaggerParser();
-            swagger =  parser.read(this.openApiFile.getAbsolutePath(), null, true);
-            generateModels(this.openApiFile, parentMap.get("packageName"), outputDirectory.getAbsolutePath());
-        } else {
-            log.warn("No OpenApi definition file configured. Return types may be be defined in user friendly way");
+        String servicePattern =
+                "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = {\"${contentType}\"} <#if consumes??>, consumes = \"${consumes}\" </#if>)\n" +
+                        "    @ResponseBody\n" +
+                        "    @ApiOperation(value=\"${description}\"<#if responseClass??>, response=${responseClass}</#if>)\n" +
+                        "    public ResponseEntity<${returnClass}> ${procedureName}(${paramSignature}) {\n" +
+                        "        setServer(this.server);\n"+
+                        "        setVdb(this.vdb);\n"+
+                        "        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();\n" +
+                        "        ${paramMapping}\n" +
+                        "        return execute(\"${procedureFullName}\", parameters, \"${charset}\", ${usingReturn});\n" +
+                        "    }\n";
+        StringTemplateLoader stl = new StringTemplateLoader();
+        stl.putTemplate("service", servicePattern);
+        cfg.setTemplateLoader(stl);
+
+        Collection<Procedure> procedures = schema.getProcedures().values();
+        for (Procedure procedure : procedures) {
+            buildOpenApiService(swagger, procedure, map, cfg, out);
         }
-
-        // create swagger config file.
-        createSwaggerConfig(cfg, javaSrcDir, database, parentMap);
-
-        // create api
-        for (Schema schema : database.getSchemas()) {
-            if (schema.isPhysical()) {
-                continue;
-            }
-
-            HashMap<String, String> replacementMap = new HashMap<String, String>(parentMap);
-            replacementMap.put("modelName", schema.getName());
-
-            Template template = cfg.getTemplate("Controller.java");
-            FileWriter out = new FileWriter(new File(javaSrcDir, schema.getName() + ".java"));
-            template.process(replacementMap, out);
-
-            String servicePattern =
-                    "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = {\"${contentType}\"} <#if consumes??>, consumes = \"${consumes}\" </#if>)\n" +
-                            "    @ResponseBody\n" +
-                            "    @ApiOperation(value=\"${description}\"<#if responseClass??>, response=${responseClass}</#if>)\n" +
-                            "    public ResponseEntity<InputStreamResource> ${procedureName}(${paramSignature}) {\n" +
-                            "        setServer(this.server);\n"+
-                            "        setVdb(this.vdb);\n"+
-                            "        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();\n" +
-                            "        ${paramMapping}\n" +
-                            "        return execute(\"${procedureFullName}\", parameters, \"${charset}\", ${usingReturn});\n" +
-                            "    }\n";
-            StringTemplateLoader stl = new StringTemplateLoader();
-            stl.putTemplate("service", servicePattern);
-            cfg.setTemplateLoader(stl);
-
-            Collection<Procedure> procedures = schema.getProcedures().values();
-            for (Procedure procedure : procedures) {
-                String uri = procedure.getProperty(REST_NAMESPACE + "URI", false);
-                String method = procedure.getProperty(REST_NAMESPACE + "METHOD", false);
-                if ((uri != null && method != null) || isOpenApiDefinitionExists(swagger, procedure)) {
-                    buildRestService(swagger, procedure, replacementMap, cfg, out);
-                }
-            }
-            out.write("}");
-            out.flush();
-            out.close();
-        }
+        out.write("}");
+        out.flush();
+        out.close();
     }
 
-    private void buildRestService(Swagger swagger, Procedure procedure, HashMap<String, String> replacementMap,
+    private void buildOpenApiService(Swagger swagger, Procedure procedure, HashMap<String, String> replacementMap,
             Configuration cfg, FileWriter out) throws Exception {
 
         ApiOperation api = getOpenApiDefinition(swagger, procedure);
@@ -179,7 +111,7 @@ public class OpenApiGenerator {
 
         String contentType = procedure.getProperty(REST_NAMESPACE + "PRODUCES", false);
         if (contentType == null) {
-            contentType = findContentType(procedure);
+            contentType = ApiGenerator.findContentType(procedure);
         }
 
         String charSet = procedure.getProperty(REST_NAMESPACE + "CHARSET", false);
@@ -190,6 +122,7 @@ public class OpenApiGenerator {
         List<ProcedureParameter> params = new ArrayList<ProcedureParameter>(procedure.getParameters().size());
         boolean usingReturn = false;
         boolean hasLobInput = false;
+        String lobType = null;
         for (ProcedureParameter p : procedure.getParameters()) {
             if (p.getType() == ProcedureParameter.Type.In || p.getType() == ProcedureParameter.Type.InOut) {
                 params.add(p);
@@ -197,8 +130,8 @@ public class OpenApiGenerator {
                 usingReturn = true;
             }
             if (!hasLobInput) {
-                String runtimeType = p.getRuntimeType();
-                hasLobInput = DataTypeManager.isLOB(runtimeType);
+                lobType = p.getRuntimeType();
+                hasLobInput = DataTypeManager.isLOB(lobType);
             }
         }
 
@@ -223,7 +156,13 @@ public class OpenApiGenerator {
         int paramsSize = params.size();
 
         if (useMultipart) {
-            replacementMap.put("consumes", "multipart/form-data");
+            if (DataTypeManager.DefaultDataTypes.XML.equals(lobType)) {
+                replacementMap.put("consumes", "application/xml");
+            } else if (DataTypeManager.DefaultDataTypes.JSON.equals(lobType)) {
+                replacementMap.put("consumes", "application/json");
+            } else {
+                replacementMap.put("consumes", "multipart/form-data");
+            }
         } else {
             // post only accepts Form inputs, not path params
             boolean get = method.toUpperCase().equals("GET");
@@ -233,32 +172,54 @@ public class OpenApiGenerator {
             }
         }
 
-        HashSet<String> pathParms = getPathParameters(uri);
+        HashSet<String> pathParms = ApiGenerator.getPathParameters(uri);
         for (int i = 0; i < paramsSize; i++) {
             String runtimeType = params.get(i).getRuntimeType();
-            String paramType = "@RequestParam(name=\"" + params.get(i).getName() + "\")";
-            if (pathParms.contains(params.get(i).getName())) {
+
+            Parameter param = api.op.getParameters().get(i);
+            String apiDescription = "@ApiParam(value=\""+param.getDescription()+"\",required="+param.getRequired()+") ";
+
+            String paramType = null;
+            if (param instanceof QueryParameter) {
+                paramType = "@RequestParam(name=\"" + params.get(i).getName() + "\")";
+            } else if (param instanceof PathParameter) {
                 paramType = "@PathVariable(name=\"" + params.get(i).getName() + "\")";
+            } else if (param instanceof BodyParameter) {
+                paramType = "@RequestBody";
+            } else if (param instanceof FormParameter) {
+                // TODO:??
+                paramType = "";
             }
+
             if (i > 0) {
                 paramSignature.append(", ");
             }
+
             String type = params.get(i).getJavaType().getName();
             if (DataTypeManager.isLOB(runtimeType)) {
-                type = "MultipartFile";
+                if (param.getIn().contentEquals("body")) {
+                    if (param instanceof RefParameter) {
+                        type = ((RefParameter)param).get$ref();
+                    }
+                } else {
+                    type = "MultipartFile";
+                }
             }
-            paramSignature.append(paramType).append(" ").append(type).append(" ")
-            .append(params.get(i).getName());
-            paramMapper.append("parameters.put(\"").append(params.get(i).getName()).append("\",")
-            .append(params.get(i).getName()).append(");\n    ");
+
+            paramSignature.append(apiDescription).append(paramType).append(" ").append(type).append(" ").append(params.get(i).getName());
+            paramMapper.append("parameters.put(\"").append(params.get(i).getName()).append("\",").append(params.get(i).getName()).append(");\n    ");
         }
         replacementMap.put("paramSignature", paramSignature.toString());
         replacementMap.put("paramMapping", paramMapper.toString());
 
         // return type
         String responseClass = createResponseClass(api);
-        if (!responseClass.isEmpty()) {
-            replacementMap.put("responseClass", responseClass);
+        if (responseClass.isEmpty()) {
+            replacementMap.put("returnClass", "Void");
+            replacementMap.put("responseClass", "Void.class");
+        } else {
+            replacementMap.put("returnClass", responseClass);
+            replacementMap.put("responseClass", responseClass+".class");
         }
 
         Template template = cfg.getTemplate("service");
@@ -266,66 +227,39 @@ public class OpenApiGenerator {
         out.write("\n");
     }
 
-    private void createSwaggerConfig(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> props)
-            throws Exception {
-        Template template = cfg.getTemplate("SwaggerConfig.java");
-        Writer out = new FileWriter(new File(javaSrcDir, "SwaggerConfig.java"));
-        template.process(props, out);
-        out.close();
-    }
-
-    private static HashSet<String> getPathParameters(String uri ) {
-        HashSet<String> pathParams = new HashSet<String>();
-        String param;
-        if (uri.contains("{")) {
-            while (uri.indexOf("}") > -1) {
-                int start = uri.indexOf("{");
-                int end = uri.indexOf("}");
-                param = uri.substring(start + 1, end);
-                uri = uri.substring(end + 1);
-                pathParams.add(param);
-            }
+    protected ApiOperation getOpenApiDefinition(Swagger swagger, Procedure p) {
+        if (swagger == null) {
+            return null;
         }
-        return pathParams;
-    }
-
-    private String findContentType(Procedure procedure) {
-        String contentType = "plain";
-        ColumnSet<Procedure> rs = procedure.getResultSet();
-        if (rs != null) {
-            Column returnColumn = rs.getColumns().get(0);
-            String type = returnColumn.getDatatype().getRuntimeTypeName();
-            if (type.equals(DataTypeManager.DefaultDataTypes.XML)) {
-                contentType = "xml"; //$NON-NLS-1$
-            }
-            else if (type.equals(DataTypeManager.DefaultDataTypes.CLOB)
-                    || type.equals(DataTypeManager.DefaultDataTypes.JSON)) {
-                contentType = "json";
-            }
-        }
-        else {
-            for (ProcedureParameter pp:procedure.getParameters()) {
-                if (pp.getType().equals(ProcedureParameter.Type.ReturnValue)) {
-                    String type = pp.getDatatype().getRuntimeTypeName();
-                    if (type.equals(DataTypeManager.DefaultDataTypes.XML)) {
-                        contentType = "xml"; //$NON-NLS-1$
-                    }
-                    else if (type.equals(DataTypeManager.DefaultDataTypes.CLOB)
-                            || type.equals(DataTypeManager.DefaultDataTypes.JSON)) {
-                        contentType = "json"; //$NON-NLS-1$
-                    }
+        for(Entry<String, Path> entry : swagger.getPaths().entrySet()) {
+            Map<HttpMethod, Operation> operations = getOperationMap(entry.getValue());
+            for (Entry<HttpMethod, Operation> e : operations.entrySet()) {
+                if (e.getValue().getOperationId().contentEquals(p.getName())) {
+                    ApiOperation oper = new ApiOperation();
+                    oper.method = e.getKey();
+                    oper.op = e.getValue();
+                    oper.path = entry.getKey();
+                    log.info("OpenApi definition found for procedure " + p.getFullName() );
+                    return oper;
                 }
             }
         }
-        contentType = contentType.toLowerCase().trim();
-        if (contentType.equals("xml")) {
-            contentType = "application/xml";
-        } else if (contentType.equals("json")) {
-            contentType = "application/json;charset=UTF-8";
-        } else if (contentType.equals("plain")) {
-            contentType = "text/plain";
+        return null;
+    }
+
+    private boolean isOpenApiDefinitionExists(Swagger swagger, Procedure p) {
+        if (swagger == null) {
+            return false;
         }
-        return contentType;
+        for(Entry<String, Path> entry : swagger.getPaths().entrySet()) {
+            Map<HttpMethod, Operation> operations = getOperationMap(entry.getValue());
+            for (Operation op : operations.values()) {
+                if (op.getOperationId().contentEquals(p.getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private String createResponseClass(ApiOperation api) {
@@ -363,21 +297,7 @@ public class OpenApiGenerator {
         return "";
     }
 
-    private void generateModels(File file, String packageName, String outputDir) {
-        CodegenConfigurator configurator = new CodegenConfigurator();
-        configurator.setPackageName(packageName);
-        configurator.setModelPackage(packageName);
-        configurator.addSystemProperty("models", "");
-        configurator.setInputSpec(file.getAbsolutePath());
-        configurator.setGeneratorName("org.openapitools.codegen.languages.JavaUndertowServerCodegen");
-
-        final ClientOptInput input = configurator.toClientOptInput();
-        configurator.setOutputDir(outputDir);
-        new DefaultGenerator().opts(input).generate();
-
-    }
-
-    public static Map<HttpMethod, Operation> getOperationMap(Path path) {
+    private static Map<HttpMethod, Operation> getOperationMap(Path path) {
         Map<HttpMethod, Operation> result = new LinkedHashMap<HttpMethod, Operation>();
 
         if (path.getGet() != null) {

@@ -52,7 +52,8 @@ public class VdbMojoTest {
         assertNotNull( myMojo );
         myMojo.execute();
 
-        File outputDirectory = ( File ) rule.getVariableValueFromObject( myMojo, "outputDirectory" );
+        File out = ( File ) rule.getVariableValueFromObject( myMojo, "outputDirectory" );
+        File outputDirectory = new File(out, "src/main/java");
         assertNotNull( outputDirectory );
         assertTrue( outputDirectory.exists() );
 

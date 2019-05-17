@@ -66,6 +66,9 @@ import org.teiid.query.sql.symbol.XMLSerialize;
 import org.teiid.query.sql.visitor.SQLStringVisitor;
 import org.teiid.spring.autoconfigure.TeiidServer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public abstract class TeiidRSProvider {
     private static final Pattern charsetPattern = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
@@ -190,9 +193,11 @@ public abstract class TeiidRSProvider {
                     } else if (DataTypeManager.DefaultDataClasses.VARBINARY.isAssignableFrom(runtimeType)) {
                         value = Base64.decode((String) value);
                     } else {
+                        ObjectMapper mapper = new ObjectMapper();
+                        String in = mapper.writeValueAsString(value);
                         if (DataTypeManager.isTransformable(String.class, runtimeType)) {
                             Transform t = DataTypeManager.getTransform(String.class, runtimeType);
-                            value = t.transform(value.toString(), runtimeType);
+                            value = t.transform(in, runtimeType);
                         }
                     }
                 }
@@ -200,6 +205,9 @@ public abstract class TeiidRSProvider {
             }
             return expectedValues;
         } catch (TransformationException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Failed to convert input into runtime types required by the engine", e);
+        } catch (JsonProcessingException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Failed to convert input into runtime types required by the engine", e);
         }

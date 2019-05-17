@@ -117,7 +117,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             String codeDirectory = this.packageName.replace('.', '/');
 
             // where to keep source files
-            File javaSrcDir = new File(getOutputDirectory(), codeDirectory);
+            File javaSrcDir = new File(getOutputDirectory()+"/src/main/java", codeDirectory);
             if (!javaSrcDir.exists()) {
                 javaSrcDir.mkdirs();
             }
@@ -138,7 +138,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             }
             verifyTranslatorDependencies(database);
             if (generateOpenApiScoffolding()) {
-                OpenApiGenerator generator = new OpenApiGenerator(openApiFile, outputDirectory, getLog());
+                ApiGenerator generator = new ApiGenerator(openApiFile, outputDirectory, getLog());
                 generator.generate(cfg, javaSrcDir, database, parentMap);
             }
             this.project.addCompileSourceRoot(javaSrcDir.getAbsolutePath());
