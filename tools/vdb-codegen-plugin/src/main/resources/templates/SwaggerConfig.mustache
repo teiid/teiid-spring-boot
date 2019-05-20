@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package ${packageName};
+package {{packageName}};
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,7 +42,7 @@ public class SwaggerConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2).select()
                 .apis(Predicates.and(RequestHandlerSelectors.withClassAnnotation(RestController.class),
-                        RequestHandlerSelectors.basePackage("${packageName}")))
+                        RequestHandlerSelectors.basePackage("{{packageName}}")))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(metadata());
@@ -50,8 +50,8 @@ public class SwaggerConfig {
 
     private ApiInfo metadata() {
         return new ApiInfoBuilder()
-                .title("${vdbName}")
-                .description("${vdbDescription}")
+                .title("{{vdbName}}")
+                .description("{{vdbDescription}}")
                 .build();
     }
 }

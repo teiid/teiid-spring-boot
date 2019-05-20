@@ -52,13 +52,16 @@ public class OpenApiTest {
         assertNotNull( myMojo );
         myMojo.execute();
 
-        File outputDirectory = ( File ) rule.getVariableValueFromObject( myMojo, "outputDirectory" );
+        File out = ( File ) rule.getVariableValueFromObject( myMojo, "outputDirectory" );
+        File outputDirectory = new File(out, "src/main/java");
         assertNotNull( outputDirectory );
         assertTrue( outputDirectory.exists() );
 
-        testDataSourceGeneration(outputDirectory);
-    }
 
+        testDataSourceGeneration(outputDirectory);
+
+        testDelegate(outputDirectory);
+    }
 
     public void testDataSourceGeneration(File outputDirectory)throws Exception {
         File dsFile = new File(outputDirectory, "com/example/DataSourcessampledb.java");
@@ -66,5 +69,12 @@ public class OpenApiTest {
         assertEquals("The files differ!",
                 FileUtils.readFileToString(new File( "target/test-classes/datasource.txt"), "utf-8").trim(),
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
+    }
+
+    public void testDelegate(File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/PetApiDelegate.java");
+        assertTrue(dsFile.exists());
+        assertTrue(FileUtils.readFileToString(dsFile, "utf-8").trim().contains(
+                FileUtils.readFileToString(new File("target/test-classes/PetApiDelegate.txt"), "utf-8").trim()));
     }
 }

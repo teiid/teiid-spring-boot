@@ -41,17 +41,17 @@ import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("/portfolio")
-public class portfolio extends TeiidRSProvider {
+public class Portfolio extends TeiidRSProvider {
     
     @Autowired
     private TeiidServer server;
     
     @Autowired
     private VDB vdb;
-    
+
     @RequestMapping(value = "g1/{p1}", method = RequestMethod.GET, produces = {"application/xml"} )
     @ResponseBody
-    @ApiOperation(value="")
+    @ApiOperation(value="", nickname="g1Table")
     public ResponseEntity<InputStreamResource> g1Table(@PathVariable(name="p1") java.lang.Integer p1, @RequestParam(name="p2") java.lang.String p2) {
         setServer(this.server);
         setVdb(this.vdb);
@@ -64,7 +64,7 @@ public class portfolio extends TeiidRSProvider {
 
     @RequestMapping(value = "g2", method = RequestMethod.GET, produces = {"text/plain"} )
     @ResponseBody
-    @ApiOperation(value="")
+    @ApiOperation(value="", nickname="g2Table")
     public ResponseEntity<InputStreamResource> g2Table() {
         setServer(this.server);
         setVdb(this.vdb);
@@ -75,7 +75,7 @@ public class portfolio extends TeiidRSProvider {
 
     @RequestMapping(value = "g3", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"} , consumes = "multipart/form-data" )
     @ResponseBody
-    @ApiOperation(value="")
+    @ApiOperation(value="", nickname="g3Table")
     public ResponseEntity<InputStreamResource> g3Table(@RequestParam(name="p1") java.lang.Integer p1, @RequestParam(name="p2") MultipartFile p2) {
         setServer(this.server);
         setVdb(this.vdb);

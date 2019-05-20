@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
@@ -56,11 +57,9 @@ import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.spring.common.ExternalSource;
 
-import freemarker.cache.ClassTemplateLoader;
-import freemarker.core.PlainTextOutputFormat;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateExceptionHandler;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 
 @Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
 public class VdbCodeGeneratorMojo extends AbstractMojo {
@@ -95,13 +94,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
         try {
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
-            cfg.setTemplateLoader(new ClassTemplateLoader(getClassLoader(), "templates"));
-            cfg.setDefaultEncoding("UTF-8");
-            cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-            cfg.setLogTemplateExceptions(false);
-            cfg.setWrapUncheckedExceptions(true);
-            cfg.setOutputFormat(PlainTextOutputFormat.INSTANCE);
+            MustacheFactory mf = new DefaultMustacheFactory();
 
             ClassLoader pluginClassloader = getClassLoader();
             Thread.currentThread().setContextClassLoader(pluginClassloader);
@@ -131,15 +124,15 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             parentMap.put("vdbDescription", database.getAnnotation());
             parentMap.put("openapi", generateOpenApiScoffolding()?"true":"false");
             if (this.generateApplicationClass) {
-                createApplication(cfg, javaSrcDir, database, parentMap);
+                createApplication(mf, javaSrcDir, database, parentMap);
             }
             if (this.generateDataSourceClasses) {
-                createDataSources(cfg, javaSrcDir, database, parentMap);
+                createDataSources(mf, javaSrcDir, database, parentMap);
             }
             verifyTranslatorDependencies(database);
             if (generateOpenApiScoffolding()) {
                 ApiGenerator generator = new ApiGenerator(openApiFile, outputDirectory, getLog());
-                generator.generate(cfg, javaSrcDir, database, parentMap);
+                generator.generate(mf, javaSrcDir, database, parentMap);
             }
             this.project.addCompileSourceRoot(javaSrcDir.getAbsolutePath());
 
@@ -177,11 +170,13 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         return db;
     }
 
-    private void createApplication(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> props)
+    private void createApplication(MustacheFactory mf, File javaSrcDir, Database database, HashMap<String, String> props)
             throws Exception {
-        Template template = cfg.getTemplate("Application.java");
+        Mustache mustache = mf.compile(
+                new InputStreamReader(this.getClass().getResourceAsStream("/templates/Application.mustache")),
+                "application");
         Writer out = new FileWriter(new File(javaSrcDir, "Application.java"));
-        template.process(props, out);
+        mustache.execute(out, props);
         out.close();
     }
 
@@ -218,7 +213,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private void createDataSources(Configuration cfg, File javaSrcDir, Database database,
+    private void createDataSources(MustacheFactory mf, File javaSrcDir, Database database,
             HashMap<String, String> parentMap) throws Exception {
 
         for (Server server : database.getServers()) {
@@ -231,28 +226,35 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             // when application is built
             String translator = server.getDataWrapper();
             if (translator.equals(ExternalSource.MONGODB.getTranslatorName())) {
-                Template template = cfg.getTemplate("DataSources_MongoDB.java");
+                Mustache mustache = mf.compile(
+                        new InputStreamReader(this.getClass().getResourceAsStream("/templates/MongoDB.mustache")),
+                        "mongodb");
                 Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                template.process(tempMap, out);
+                mustache.execute(out, tempMap);
                 out.close();
             } else if (translator.equals(ExternalSource.SALESFORCE.getTranslatorName())) {
-                Template template = cfg.getTemplate("DataSources_Salesforce.java");
+                Mustache mustache = mf.compile(
+                        new InputStreamReader(getClass().getResourceAsStream("/templates/Salesforce.mustache")),
+                        "salesforce");
                 Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                template.process(tempMap, out);
+                mustache.execute(out, tempMap);
                 out.close();
             } else if (translator.equals(ExternalSource.GOOGLESHEETS.getTranslatorName())) {
-                Template template = cfg.getTemplate("DataSources_GoogleSheets.java");
+                Mustache mustache = mf.compile(
+                        new InputStreamReader(getClass().getResourceAsStream("/templates/GoogleSheets.mustache")),
+                        "googlesheets");
                 Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                template.process(tempMap, out);
+                mustache.execute(out, tempMap);
                 out.close();
             } else if (translator.equals(ExternalSource.FILE.getTranslatorName())) {
                 // ignore as by default it is created
             } else if (translator.equals(ExternalSource.REST.getTranslatorName())) {
                 // ignore as by default it is created
             } else {
-                Template template = cfg.getTemplate("DataSources_JDBC.java");
+                Mustache mustache = mf.compile(
+                        new InputStreamReader(getClass().getResourceAsStream("/templates/Jdbc.mustache")), "jdbc");
                 Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                template.process(tempMap, out);
+                mustache.execute(out, tempMap);
                 out.close();
             }
         }

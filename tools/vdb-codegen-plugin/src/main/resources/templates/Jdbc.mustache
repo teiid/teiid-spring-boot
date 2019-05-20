@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * GENERATED CODE - DO NOT EDIT
  */
-package ${packageName};
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-<#if openapi??>
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
-</#if>
+package {{packageName}};
 
-@SpringBootApplication
-<#if openapi??>
-@EnableAutoConfiguration(exclude = {ErrorMvcAutoConfiguration.class})
-</#if>
-public class Application {
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+import javax.sql.DataSource;
+
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class DataSources{{dsName}} {
+
+    @ConfigurationProperties(prefix = "spring.datasource.{{dsName}}")
+    @Bean
+    public DataSource {{dsName}}() {
+        return DataSourceBuilder.create().build();
     }
 }

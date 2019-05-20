@@ -20,6 +20,8 @@
 
 package com.example;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,11 +32,13 @@ import org.teiid.spring.data.salesforce.SalesforceConnectionFactory;
 public class DataSourcessamplesf {
 
     @Bean
+    @Autowired
+    @Qualifier("samplesf")
     public SalesforceConnectionFactory samplesf(SalesforceConfiguration config) {
         return new SalesforceConnectionFactory(config);
     }
 
-    @Bean
+    @Bean(name="samplesf")
     @ConfigurationProperties("spring.teiid.data.salesforce.samplesf")
     public SalesforceConfiguration salesforceConfig() {
         return new SalesforceConfiguration();

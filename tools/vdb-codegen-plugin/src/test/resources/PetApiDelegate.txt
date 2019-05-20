@@ -1,0 +1,102 @@
+@Configuration
+public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
+
+    @Autowired
+    private org.teiid.spring.autoconfigure.TeiidServer server;
+    
+    @Autowired
+    private org.teiid.adminapi.VDB vdb;
+
+
+    default Optional<NativeWebRequest> getRequest() {
+        return Optional.empty();
+    }
+
+    /**
+     * @see PetApi#addPet
+     */
+    public ResponseEntity<Void> addPet(Pet body) {
+        setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("body",body);
+        return execute("addPet", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+    }
+
+    /**
+     * @see PetApi#deletePet
+     */
+    public ResponseEntity<Void> deletePet(Long petId,
+        String apiKey) {
+        setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("petId",petId);
+        parameters.put("apiKey",apiKey);
+        return execute("deletePet", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+    }
+
+    /**
+     * @see PetApi#findPetsByStatus
+     */
+    public ResponseEntity<List<Pet>> findPetsByStatus(List<String> status) {
+        setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("status",status);
+        return execute("findPetsByStatus", parameters, "UTF-8", !"Pet".contentEquals("Void"));        
+    }
+
+    /**
+     * @see PetApi#getPetById
+     */
+    public ResponseEntity<Pet> getPetById(Long petId) {
+        setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("petId",petId);
+        return execute("getPetById", parameters, "UTF-8", !"Pet".contentEquals("Void"));        
+    }
+
+    /**
+     * @see PetApi#updatePet
+     */
+    public ResponseEntity<Void> updatePet(Pet body) {
+        setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("body",body);
+        return execute("updatePet", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+    }
+
+    /**
+     * @see PetApi#updatePetWithForm
+     */
+    public ResponseEntity<Void> updatePetWithForm(Long petId,
+        String name,
+        String status) {
+        setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("petId",petId);
+        parameters.put("name",name);
+        parameters.put("status",status);
+        return execute("updatePetWithForm", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+    }
+
+    /**
+     * @see PetApi#uploadFile
+     */
+    public ResponseEntity<ModelApiResponse> uploadFile(Long petId,
+        String additionalMetadata,
+        MultipartFile file) {
+        setServer(this.server);
+        setVdb(this.vdb);
+        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
+        parameters.put("petId",petId);
+        parameters.put("additionalMetadata",additionalMetadata);
+        parameters.put("file",file);
+        return execute("uploadFile", parameters, "UTF-8", !"ModelApiResponse".contentEquals("Void"));        
+    }
+
+}

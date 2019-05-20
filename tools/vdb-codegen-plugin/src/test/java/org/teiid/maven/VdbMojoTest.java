@@ -99,7 +99,7 @@ public class VdbMojoTest {
     }
 
     public void testRestGeneration(File outputDirectory)throws Exception {
-        File file = new File(outputDirectory, "com/example/portfolio.java");
+        File file = new File(outputDirectory, "com/example/Portfolio.java");
         assertTrue( file.exists() );
         //System.out.println(FileUtils.readFileToString(file, "utf-8"));
         assertEquals("The files differ!",

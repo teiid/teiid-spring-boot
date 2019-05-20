@@ -19,6 +19,7 @@ import static org.teiid.deployers.RestWarGenerator.REST_NAMESPACE;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,9 +33,8 @@ import org.teiid.metadata.Procedure;
 import org.teiid.metadata.ProcedureParameter;
 import org.teiid.metadata.Schema;
 
-import freemarker.cache.StringTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 
 class CustomApiGenerator {
     private Log log;
@@ -43,27 +43,16 @@ class CustomApiGenerator {
         this.log = log;
     }
 
-    void generate(Configuration cfg, File javaSrcDir, HashMap<String, String> map, Schema schema)
+    void generate(MustacheFactory mf, File javaSrcDir, HashMap<String, String> map, Schema schema)
             throws Exception {
-        Template template = cfg.getTemplate("Controller.java");
+        Mustache mustache = mf.compile(
+                new InputStreamReader(getClass().getResourceAsStream("/templates/Controller.mustache")), "controller");
         File outFile = new File(javaSrcDir, map.get("modelName") + ".java");
         FileWriter out = new FileWriter(outFile);
-        template.process(map, out);
+        mustache.execute(out, map);
 
-        String servicePattern =
-                "    @RequestMapping(value = \"${uri}\", method = RequestMethod.${method}, produces = {\"${contentType}\"} <#if consumes??>, consumes = \"${consumes}\" </#if>)\n" +
-                        "    @ResponseBody\n" +
-                        "    @ApiOperation(value=\"${description}\", nickname=\"${procedureName}\"<#if responseClass??>, response=${responseClass}</#if>)\n" +
-                        "    public ResponseEntity<InputStreamResource> ${procedureName}(${paramSignature}) {\n" +
-                        "        setServer(this.server);\n"+
-                        "        setVdb(this.vdb);\n"+
-                        "        LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();\n" +
-                        "        ${paramMapping}\n" +
-                        "        return execute(\"${procedureFullName}\", parameters, \"${charset}\", ${usingReturn});\n" +
-                        "    }\n";
-        StringTemplateLoader stl = new StringTemplateLoader();
-        stl.putTemplate("service", servicePattern);
-        cfg.setTemplateLoader(stl);
+        mustache = mf.compile(new InputStreamReader(getClass().getResourceAsStream("/templates/api.mustache")),
+                "service");
 
         boolean found = false;
         Collection<Procedure> procedures = schema.getProcedures().values();
@@ -71,7 +60,7 @@ class CustomApiGenerator {
             String uri = procedure.getProperty(REST_NAMESPACE + "URI", false);
             String method = procedure.getProperty(REST_NAMESPACE + "METHOD", false);
             if ((uri != null && method != null)) {
-                buildCustomRestService(procedure, map, cfg, out);
+                buildCustomRestService(procedure, map, mustache, out);
                 found = true;
             }
         }
@@ -85,7 +74,7 @@ class CustomApiGenerator {
     }
 
     private void buildCustomRestService(Procedure procedure, HashMap<String, String> replacementMap,
-            Configuration cfg, FileWriter out) throws Exception {
+            Mustache mustache, FileWriter out) throws Exception {
 
         String uri = procedure.getProperty(REST_NAMESPACE + "URI", false);
         String method = procedure.getProperty(REST_NAMESPACE + "METHOD", false);
@@ -167,10 +156,8 @@ class CustomApiGenerator {
         replacementMap.put("paramSignature", paramSignature.toString());
         replacementMap.put("paramMapping", paramMapper.toString());
 
-        Template template = cfg.getTemplate("service");
-        template.process(replacementMap, out);
+        mustache.execute(out, replacementMap);
         out.write("\n");
     }
-
 }
 

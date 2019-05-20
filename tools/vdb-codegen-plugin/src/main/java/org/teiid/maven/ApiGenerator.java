@@ -17,6 +17,7 @@ package org.teiid.maven;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,8 +34,9 @@ import org.teiid.metadata.Procedure;
 import org.teiid.metadata.ProcedureParameter;
 import org.teiid.metadata.Schema;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
+
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 
@@ -49,7 +51,7 @@ public class ApiGenerator {
         this.log = log;
     }
 
-    protected void generate(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> parentMap)
+    protected void generate(MustacheFactory mf, File javaSrcDir, Database database, HashMap<String, String> parentMap)
             throws Exception {
 
         Swagger swagger = null;
@@ -64,7 +66,7 @@ public class ApiGenerator {
 
         // create swagger config file.
         if (swagger == null) {
-            createSwaggerConfig(cfg, javaSrcDir, database, parentMap);
+            createSwaggerConfig(mf, javaSrcDir, database, parentMap);
         }
 
         // create api
@@ -82,13 +84,12 @@ public class ApiGenerator {
 
             // try building the custom api
             CustomApiGenerator custom = new CustomApiGenerator(this.log);
-            custom.generate(cfg, javaSrcDir, replacementMap, schema);
+            custom.generate(mf, javaSrcDir, replacementMap, schema);
 
             // try swagger based building now
             if (swagger != null) {
                 //OpenApiGenerator openApi = new OpenApiGenerator(this.log);
                 //openApi.generate(swagger, cfg, javaSrcDir, replacementMap, schema);
-
             }
         }
 
@@ -98,13 +99,12 @@ public class ApiGenerator {
         }
     }
 
-
-
-    private void createSwaggerConfig(Configuration cfg, File javaSrcDir, Database database, HashMap<String, String> props)
-            throws Exception {
-        Template template = cfg.getTemplate("SwaggerConfig.java");
+    private void createSwaggerConfig(MustacheFactory mf, File javaSrcDir, Database database,
+            HashMap<String, String> props) throws Exception {
+        Mustache mustache = mf.compile(
+                new InputStreamReader(getClass().getResourceAsStream("/templates/SwaggerConfig.mustache")), "config");
         Writer out = new FileWriter(new File(javaSrcDir, "SwaggerConfig.java"));
-        template.process(props, out);
+        mustache.execute(out, props);
         out.close();
     }
 

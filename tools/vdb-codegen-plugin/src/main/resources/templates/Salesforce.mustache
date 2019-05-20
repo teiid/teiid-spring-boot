@@ -18,8 +18,10 @@
  * GENERATED CODE - DO NOT EDIT
  */
 
-package ${packageName};
+package {{packageName}};
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,15 +29,17 @@ import org.teiid.spring.data.salesforce.SalesforceConfiguration;
 import org.teiid.spring.data.salesforce.SalesforceConnectionFactory;
 
 @Configuration
-public class DataSources${dsName} {
+public class DataSources{{dsName}} {
 
     @Bean
-    public SalesforceConnectionFactory ${dsName}(SalesforceConfiguration config) {
+    @Autowired
+    @Qualifier("{{dsName}}")
+    public SalesforceConnectionFactory {{dsName}}(SalesforceConfiguration config) {
         return new SalesforceConnectionFactory(config);
     }
 
-    @Bean
-    @ConfigurationProperties("spring.teiid.data.salesforce.${dsName}")
+    @Bean(name="{{dsName}}")
+    @ConfigurationProperties("spring.teiid.data.salesforce.{{dsName}}")
     public SalesforceConfiguration salesforceConfig() {
         return new SalesforceConfiguration();
     }
