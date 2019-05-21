@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.basepom</groupId>
     <artifactId>basepom-oss</artifactId>
-    <version>25</version>
+    <version>28</version>
   </parent>
 
   <groupId>org.teiid</groupId>
@@ -88,15 +88,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <version.deploy.plugin>2.8.2</version.deploy.plugin>
-
+	<project.build.targetJdk>1.8</project.build.targetJdk>
     <basepom.check.skip-dependency>false</basepom.check.skip-dependency>
     <basepom.check.fail-dependency>false</basepom.check.fail-dependency>
     <basepom.check.skip-duplicate-finder>false</basepom.check.skip-duplicate-finder>
     <basepom.check.skip-dependency-versions-check>false</basepom.check.skip-dependency-versions-check>
-    <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
+    <basepom.check.skip-spotbugs>true</basepom.check.skip-spotbugs>
     <basepom.release.push-changes>true</basepom.release.push-changes>
 
     <!-- some modules, especially on a build server will exceed the 30 second default -->
