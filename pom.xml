@@ -93,7 +93,6 @@
     <basepom.check.skip-dependency>false</basepom.check.skip-dependency>
     <basepom.check.fail-dependency>false</basepom.check.fail-dependency>
     <basepom.check.skip-duplicate-finder>false</basepom.check.skip-duplicate-finder>
-    <basepom.check.skip-dependency-versions-check>false</basepom.check.skip-dependency-versions-check>
     <basepom.check.skip-spotbugs>true</basepom.check.skip-spotbugs>
     <basepom.release.push-changes>true</basepom.release.push-changes>
 
@@ -112,6 +111,8 @@
     <basepom.test.fork-count>1</basepom.test.fork-count>
     <basepom.failsafe.fork-count>1</basepom.failsafe.fork-count>
     <basepom.failsafe.reuse-vm>true</basepom.failsafe.reuse-vm>
+     <!-- takes a really long time, disable for travis -->
+    <basepom.check.skip-dependency-versions-check>false</basepom.check.skip-dependency-versions-check>
 
     <!-- Project Dependencies -->
     <spring-boot.version>2.1.3.RELEASE</spring-boot.version>
