@@ -235,7 +235,7 @@ public class TeiidAutoConfiguration implements Ordered {
         logger.info("Starting Teiid Server.");
 
         // turning off PostgreSQL support
-        System.setProperty("org.teiid.addPGMetadata", Boolean.toString(this.properties.isPgEnable()));
+        System.setProperty("org.teiid.addPGMetadata", Boolean.toString(this.properties.isPgEnable() || this.properties.isPgSecureEnable()));
         System.setProperty("org.teiid.hiddenMetadataResolvable", "false");
         System.setProperty("org.teiid.allowAlter", Boolean.toString(this.properties.isAllowAlter()));
 
