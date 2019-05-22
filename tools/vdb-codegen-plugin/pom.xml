@@ -88,7 +88,7 @@
     <dependency>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator</artifactId>
-    </dependency>       
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

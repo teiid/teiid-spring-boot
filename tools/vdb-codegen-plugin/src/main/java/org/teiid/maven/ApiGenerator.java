@@ -182,6 +182,7 @@ public class ApiGenerator {
         configurator.addDynamicProperty("delegatePattern", "true");
         configurator.setIgnoreFileOverride(null);
 
+
         final ClientOptInput input = configurator.toClientOptInput();
         new DefaultGenerator().opts(input).generate();
     }

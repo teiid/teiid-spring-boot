@@ -4,4 +4,10 @@ setServer(this.server);
         {{#allParams}}
         parameters.put("{{paramName}}",{{paramName}});
         {{/allParams}}
-        return execute("{{operationId}}", parameters, "UTF-8", !"{{{returnType}}}".contentEquals("Void"));        
+        {{#hasReturn}}
+            execute("{{operationId}}", parameters, "UTF-8", {{hasReturn}});
+            return new ResponseEntity<>(HttpStatus.OK);        
+        {{/hasReturn}}
+        {{^hasReturn}}
+            return execute("{{operationId}}", parameters, "UTF-8", {{hasReturn}});
+        {{/hasReturn}}

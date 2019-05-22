@@ -63,6 +63,7 @@
     <module>mongodb</module>
     <module>salesforce</module>
     <module>google</module>
+    <module>openapi</module>
   </modules>
 
 </project>
