@@ -60,7 +60,7 @@ public class TeiidPreParserTest {
         assertEquals("customer", vdbMetaData.getName());
         assertEquals("1", vdbMetaData.getVersion());
 
-        Connection conn = teiidServer.getDriver().connect("jdbc:teiid:spring", null);
+        Connection conn = teiidServer.getDriver().connect("jdbc:teiid:customer", null);
         testConnection(conn);
     }
 
