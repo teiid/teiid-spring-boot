@@ -208,7 +208,7 @@ public class TeiidServer extends EmbeddedServer {
     void addTranslator(String translatorname, ApplicationContext context) {
         try {
             if (this.getExecutionFactory(translatorname) == null) {
-                String basePackage = getBasePackage(context);
+                String basePackage = getBasePackage(context, true);
                 Class<? extends ExecutionFactory<?, ?>> clazz = ExternalSource.translatorClass(translatorname,
                         basePackage);
                 if (clazz != null) {
@@ -422,7 +422,7 @@ public class TeiidServer extends EmbeddedServer {
         provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
         provider.addIncludeFilter(new AnnotationTypeFilter(UserDefinedFunctions.class));
 
-        String basePackage = getBasePackage(context);
+        String basePackage = getBasePackage(context, false);
 
         // check to add any source models first based on the annotations
         boolean load = false;
@@ -559,14 +559,24 @@ public class TeiidServer extends EmbeddedServer {
         return load;
     }
 
-    private String getBasePackage(ApplicationContext context) {
+    private String getBasePackage(ApplicationContext context, boolean translator) {
         String basePackage = context.getEnvironment().getProperty(TeiidConstants.ENTITY_SCAN_DIR);
         if (basePackage == null) {
-            logger.warn("***************************************************************");
-            logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
-                    + "\" is NOT set, scanning entire classpath for @Entity classes.");
-            logger.warn("consider setting this property to avoid time consuming scanning");
-            logger.warn("***************************************************************");
+            if (translator) {
+                logger.warn("***************************************************************");
+                logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
+                        + "\" is NOT set, If you are using any custom translators, it is advised "
+                        + "to that this property is set. ");
+                logger.warn("consider setting this property to avoid time consuming scanning");
+                logger.warn("***************************************************************");
+
+            } else {
+                logger.warn("***************************************************************");
+                logger.warn("\"" + TeiidConstants.ENTITY_SCAN_DIR
+                        + "\" is NOT set, scanning entire classpath for @Entity classes.");
+                logger.warn("consider setting this property to avoid time consuming scanning");
+                logger.warn("***************************************************************");
+            }
             basePackage = "*";
         }
         return basePackage;
