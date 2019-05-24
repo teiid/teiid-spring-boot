@@ -51,7 +51,7 @@
 
   <build>
     <plugins>
-      <plugin>
+<!--       <plugin>
         <groupId>org.teiid</groupId>
         <artifactId>vdb-codegen-plugin</artifactId>
         <version>${project.version}</version>
@@ -67,7 +67,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
