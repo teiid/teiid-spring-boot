@@ -89,6 +89,10 @@ public class TestExample {
         return "http://localhost:" + port+"/odata";
     }
 
+    private String baseurl() {
+        return "http://localhost:" + port;
+    }
+
     @Test
     public void testMetadata() throws Exception {
         olingoClient(url());
@@ -100,7 +104,7 @@ public class TestExample {
         ResponseEntity<String> response = web.getForEntity(url(), String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
         response = web.getForEntity(url()+"/$metadata", String.class);
-        assertTrue(response.getBody().contains(url()+"/static/org.teiid.v1.xml"));
+        assertTrue(response.getBody().contains(baseurl()+"/static/org.teiid.v1.xml"));
     }
 
     @Test
@@ -125,7 +129,7 @@ public class TestExample {
 
     @Test
     public void testStaticContent() throws Exception{
-        ResponseEntity<String> response = web.getForEntity(url()+"/static/org.teiid.v1.xml",
+        ResponseEntity<String> response = web.getForEntity(baseurl()+"/static/org.teiid.v1.xml",
                 String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
