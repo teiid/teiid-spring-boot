@@ -73,7 +73,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         super.configure(http);
         http.authorizeRequests()
-        .antMatchers("/actuator/health", "/odata/$metadata", "/odata/swagger.json", "/odata/openapi.json")
+        .antMatchers("/static/**", "/actuator/health", "/odata/$metadata", "/odata/swagger.json", "/odata/openapi.json")
         .permitAll()
         .and()
         .authorizeRequests().anyRequest().authenticated();
