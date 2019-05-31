@@ -15,14 +15,12 @@
  */
 package org.teiid.spring.odata;
 
-import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,9 +59,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     SpringSecurityHelper securityHelper;
 
-    @Value("${spring.teiid.odata.alt.paths:#{null}}")
-    private String[] alternatePaths;
-
     private Properties props = new Properties();
 
     @PostConstruct
@@ -79,7 +74,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     SpringODataFilter getOdataFilter() {
-        return new SpringODataFilter(this.props, this.server, this.vdb, this.servletContext, this.securityHelper);
+        return new SpringODataFilter(this.props, this.server, this.vdb, this.servletContext);
     }
 
     @Bean
@@ -92,30 +87,10 @@ public class WebConfig implements WebMvcConfigurer {
         return loggingFilter;
     }
 
-    @Bean
-    AuthenticationInterceptor getAuthInterceptor() {
-        return new AuthenticationInterceptor(securityHelper);
-    }
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        ArrayList<String> exclude = new ArrayList<String>();
-        exclude.add("/odata/static/**");
-        if (this.alternatePaths != null) {
-            for(int i = 0; i < alternatePaths.length; i++) {
-                exclude.add(this.alternatePaths[i]+"/**");
-            }
-        }
-
-        String[] excludes = exclude.toArray(new String[exclude.size()]);
-
-        registry.addInterceptor(getAuthInterceptor())
-        .addPathPatterns("/**")
-        .excludePathPatterns(excludes);
-
         registry.addInterceptor(getOdataFilter())
-        .addPathPatterns("/odata/**")
-        .excludePathPatterns(excludes);
+        .addPathPatterns("/odata/**");
     }
 
     @Override

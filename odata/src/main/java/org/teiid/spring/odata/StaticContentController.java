@@ -36,27 +36,21 @@ import org.teiid.json.simple.JSONParser;
 import org.teiid.olingo.ODataPlugin;
 
 @RestController
-@RequestMapping("/odata/static")
+@RequestMapping("/static")
 public class StaticContentController {
 
-    @RequestMapping(value = "**")
+    @RequestMapping(value = {"org.apache.olingo.v1.xml", "org.teiid.v1.xml"})
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getRequestURI();
 
         try {
-            if (pathInfo.endsWith(".xml") //$NON-NLS-1$
-                    && !pathInfo.endsWith("pom.xml") //$NON-NLS-1$
-                    && !pathInfo.contains("META-INF") //$NON-NLS-1$
-                    && !pathInfo.contains("WEB-INF") //$NON-NLS-1$
-                    && pathInfo.contains("/static")) { //$NON-NLS-1$
-                int idx = pathInfo.indexOf("/static");
-                pathInfo = pathInfo.substring(idx+7);
-                InputStream contents = getClass().getResourceAsStream(pathInfo);
-                if (contents != null) {
-                    writeContent(response, contents);
-                    response.flushBuffer();
-                    return;
-                }
+            int idx = pathInfo.indexOf("/static");
+            pathInfo = pathInfo.substring(idx+7);
+            InputStream contents = getClass().getResourceAsStream(pathInfo);
+            if (contents != null) {
+                writeContent(response, contents);
+                response.flushBuffer();
+                return;
             }
             throw new TeiidProcessingException(ODataPlugin.Util.gs(ODataPlugin.Event.TEIID16055, pathInfo));
         } catch (TeiidProcessingException e) {

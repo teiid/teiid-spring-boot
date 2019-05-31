@@ -34,14 +34,11 @@ import org.springframework.web.servlet.ModelAndView;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
 import org.teiid.metadata.Schema;
-import org.teiid.net.TeiidURL;
 import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
 import org.teiid.olingo.service.OlingoBridge.HandlerInfo;
 import org.teiid.olingo.web.OpenApiHandler;
 import org.teiid.spring.autoconfigure.TeiidServer;
-import org.teiid.spring.identity.SpringSecurityHelper;
-import org.teiid.spring.identity.TeiidSecurityContext;
 import org.teiid.vdb.runtime.VDBKey;
 
 public class SpringODataFilter implements HandlerInterceptor {
@@ -51,11 +48,9 @@ public class SpringODataFilter implements HandlerInterceptor {
     protected OpenApiHandler openApiHandler;
     protected SoftReference<OlingoBridge> clientReference = null;
     protected Properties connectionProperties;
-    private SpringSecurityHelper securityHelper;
     private Map<Object, Future<Boolean>> loadingQueries = new ConcurrentHashMap<>();
 
-    public SpringODataFilter(Properties props, TeiidServer server, VDB vdb, ServletContext servletContext,
-            SpringSecurityHelper securityHelper) {
+    public SpringODataFilter(Properties props, TeiidServer server, VDB vdb, ServletContext servletContext) {
         this.connectionProperties = props;
         this.server = server;
         this.vdb = vdb;
@@ -64,7 +59,6 @@ public class SpringODataFilter implements HandlerInterceptor {
         } catch (ServletException e) {
             throw new IllegalStateException(e);
         }
-        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -75,22 +69,11 @@ public class SpringODataFilter implements HandlerInterceptor {
         HttpServletResponse httpResponse = response;
 
         String uri = request.getRequestURI();
-        String fullURL = request.getRequestURL().toString();
 
-        //        // filer is already mapped to "/odata" pattern, but just double check
-        //        if ((!uri.equals("/odata") && !uri.startsWith("/odata/"))) {
-        //            return false;
-        //        }
-        //        uri = uri.substring(6);
-        //        if (uri.isEmpty()) {
-        //            uri = "/";
-        //        }
-        String contextPath = httpRequest.getContextPath();
-        contextPath = contextPath + "/odata";
+        String contextPath = httpRequest.getContextPath() + "/odata";
 
         // possible vdb and model names
-        boolean root = uri.equals(contextPath);
-        if (!contextPath.isEmpty() && uri.startsWith(contextPath)) {
+        if (uri.startsWith(contextPath)) {
             uri = uri.substring(contextPath.length());
             if (uri.isEmpty()) {
                 uri = "/";
@@ -103,30 +86,20 @@ public class SpringODataFilter implements HandlerInterceptor {
             subContext = uri.substring(1, idx);
         }
 
+        if (subContext != null) {
+            contextPath = contextPath.isEmpty()?subContext:(contextPath+"/"+subContext);
+        }
+
         // figure out vdbname and model name from paths are assume defaults
         VDB requestVDB = this.vdb;
         String vdbName = this.vdb.getName();
         String vdbVersion = this.vdb.getVersion();
-        boolean implicitVdb = vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true");
+        boolean implicitVdb = Boolean.valueOf(vdb.getPropertyValue("implicit"));
 
         String modelName = modelName(subContext, requestVDB, implicitVdb);
         if (modelName == null || modelName.isEmpty()) {
             httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "Wrong Model/Schema name defined in the URL");
             return false;
-        }
-
-        String baseURI = fullURL;
-        if (subContext != null) {
-            baseURI = fullURL.substring(0, fullURL.indexOf(subContext)-1);
-            contextPath = contextPath.isEmpty()?subContext:(contextPath+"/"+subContext);
-        } else if (!root) {
-            baseURI = fullURL.substring(0, fullURL.indexOf(contextPath.isEmpty()?uri:contextPath+uri));
-            if (!contextPath.isEmpty()) {
-                baseURI = baseURI + contextPath;
-            }
-        }
-        if (baseURI.endsWith("/")) {
-            baseURI = baseURI.substring(0, baseURI.length()-1);
         }
 
         OlingoBridge context = null;
@@ -143,7 +116,13 @@ public class SpringODataFilter implements HandlerInterceptor {
         Client client = buildClient(vdbName, vdbVersion, this.connectionProperties);
         client.open();
 
-        HandlerInfo handlerInfo = context.getHandlers(baseURI, client, modelName);
+        String fullURL = request.getRequestURL().toString();
+        String root = fullURL.substring(0, fullURL.indexOf(request.getRequestURI())) + httpRequest.getContextPath();
+
+        //we'll use a root base url for /static/metadata.file
+        //it's not enforced, but if there are cross references between more than 1 visible model,
+        //then the logic will create urls which are invalid for spring
+        HandlerInfo handlerInfo = context.getHandlers(root, client, modelName);
         ODataHandler handler = handlerInfo.oDataHttpHandler;
 
         if (openApiHandler.processOpenApiMetadata(httpRequest, key, uri, modelName,
@@ -162,7 +141,7 @@ public class SpringODataFilter implements HandlerInterceptor {
             path = null;
         }
         Schema schema = server.getSchema("teiid");
-        if (path == null && schema != null && !schema.getTables().isEmpty() && implicitVdb) {
+        if (implicitVdb && path == null && schema != null && !schema.getTables().isEmpty()) {
             return "teiid";
         }
 
@@ -170,8 +149,7 @@ public class SpringODataFilter implements HandlerInterceptor {
         String firstModel = null;
         for (Model m : vdb.getModels()) {
 
-            // these models are implicit models, skip these
-            if (m.getName().equals("file") || m.getName().equals("rest")) {
+            if (!m.isVisible()) {
                 continue;
             }
 
