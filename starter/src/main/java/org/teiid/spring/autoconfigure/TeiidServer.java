@@ -87,6 +87,7 @@ import org.teiid.metadata.Schema;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.metadata.TransformationMetadata;
+import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.annotations.ExcelTable;
@@ -126,7 +127,7 @@ public class TeiidServer extends EmbeddedServer {
     @SuppressWarnings("rawtypes")
     public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
         // only when user did not define a explicit VDB then build one.
-        if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
+        if (Boolean.valueOf(vdb.getPropertyValue("implicit"))) {
             boolean redirectUpdates = isRedirectUpdatesEnabled(context);
             String redirectedDSName = getRedirectedDataSource(context);
 
@@ -272,7 +273,7 @@ public class TeiidServer extends EmbeddedServer {
 
     void deployVDB(VDBMetaData vdb, boolean last, ApplicationContext context) {
         try {
-            if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
+            if (Boolean.valueOf(vdb.getPropertyValue("implicit"))) {
                 // if there is no view model, then keep all the other models as visible.
                 if (vdb.getModel("teiid") == null) {
                     for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
@@ -312,7 +313,7 @@ public class TeiidServer extends EmbeddedServer {
                     }
                 }
             }
-            deployVDB(vdb, null);
+            deployVDB(vdb, vdb.getAttachment(VDBResources.class));
         } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
                 | IOException e) {
             throw new IllegalStateException("Failed to deploy the VDB file", e);

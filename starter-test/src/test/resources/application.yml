@@ -18,4 +18,4 @@ spring:
     model:
       package: org.teiid.spring.configuration
 teiid:
-  vdb-file: test-vdb.ddl
+  vdb-file: test.vdb
