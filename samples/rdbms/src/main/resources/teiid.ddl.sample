@@ -4,12 +4,12 @@
 CREATE FOREIGN DATA WRAPPER postgresql;
 CREATE SERVER pgsql FOREIGN DATA WRAPPER postgresql
     OPTIONS (
-        "jndi-name" 'accountsDS'
+        "resource-name" 'accountsDS'
     );
 
 CREATE SERVER pgsql2 FOREIGN DATA WRAPPER postgresql
     OPTIONS (
-        "jndi-name" 'customerDS'
+        "resource-name" 'customerDS'
     );
     
 CREATE SCHEMA test SERVER pgsql;

@@ -91,7 +91,7 @@ spring.datasource.mydb.platform=mydb
 repeat above step for all the data sources you are going to use in the vdb. Note the bean name, as you need to use that name as jndi name in the VDB source definitions. For example, see the line
 
 ---
-CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("jndi-name" 'mydb');
+CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("resource-name" 'mydb');
 ---
 
 from the example customer-vdb.ddl file defined.
