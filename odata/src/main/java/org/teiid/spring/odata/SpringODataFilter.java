@@ -140,36 +140,31 @@ public class SpringODataFilter implements HandlerInterceptor {
         if (path != null && path.isEmpty()) {
             path = null;
         }
-        Schema schema = server.getSchema("teiid");
-        if (implicitVdb && path == null && schema != null && !schema.getTables().isEmpty()) {
-            return "teiid";
+        String defaultSchema = vdb.getPropertyValue("default_odata_schema");
+        if (defaultSchema == null && implicitVdb) {
+            defaultSchema = "teiid";
+        }
+        if (defaultSchema != null) {
+            Schema schema = server.getSchema(defaultSchema);
+            if (schema != null) {
+                return defaultSchema;
+            }
         }
 
-        String modelName = null;
-        String firstModel = null;
         for (Model m : vdb.getModels()) {
-
             if (!m.isVisible()) {
                 continue;
             }
-
-            if (firstModel == null) {
-                firstModel = m.getName();
-            }
-
-            if (path == null && !m.isSource()) {
-                modelName = m.getName();
-                break;
-            } else if (path != null && path.equalsIgnoreCase(m.getName())) {
-                modelName = m.getName();
-                break;
+            if (path != null) {
+                if (path.equalsIgnoreCase(m.getName())) {
+                    return m.getName();
+                }
+            } else {
+                return m.getName();
             }
         }
 
-        if (path == null && modelName == null) {
-            modelName = firstModel;
-        }
-        return modelName;
+        return null;
     }
 
     public Client buildClient(String vdbName, String version, Properties props) {
