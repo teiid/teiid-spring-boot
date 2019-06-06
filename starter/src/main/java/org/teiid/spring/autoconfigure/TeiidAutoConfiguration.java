@@ -19,7 +19,6 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,6 +69,7 @@ import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
 import org.teiid.query.metadata.NioZipFileSystem;
+import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.metadata.VirtualFile;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
@@ -184,7 +184,7 @@ public class TeiidAutoConfiguration implements Ordered {
                     }
                 } else if (resource.getFilename().endsWith(".vdb")) {
                     try {
-                        vdb = loadVDB(new File(resource.getFilename()).toURI().toURL());
+                        vdb = loadVDB(resource.getURL());
                     } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | IOException
                             | URISyntaxException e) {
                         throw new IllegalStateException("Failed to load the VDB defined", e);
@@ -207,7 +207,10 @@ public class TeiidAutoConfiguration implements Ordered {
         VirtualFile root = NioZipFileSystem.mount(url);
         VDBMetaData metadata;
 
-        VirtualFile vdbMetadata = root.getChild("/META-INF/vdb.xml"); //$NON-NLS-1$
+        VirtualFile vdbMetadata = root.getChild("/vdb.xml"); //$NON-NLS-1$
+        if (!vdbMetadata.exists()) {
+            vdbMetadata = root.getChild("/META-INF/vdb.xml"); //$NON-NLS-1$
+        }
         if (vdbMetadata.exists()) {
             try {
                 VDBMetadataParser.validate(vdbMetadata.openStream());
@@ -221,10 +224,19 @@ public class TeiidAutoConfiguration implements Ordered {
                 throw new VirtualDatabaseException(e);
             }
         } else {
-            vdbMetadata = root.getChild("/META-INF/vdb.ddl"); //$NON-NLS-1$
+            vdbMetadata = root.getChild("/vdb.ddl"); //$NON-NLS-1$
+            if (!vdbMetadata.exists()) {
+                vdbMetadata = root.getChild("/META-INF/vdb.ddl"); //$NON-NLS-1$
+            }
             DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
-            metadata = store.getVDBMetadata(ObjectConverterUtil.convertToString(vdbMetadata.openStream()));
+            try {
+                metadata = store.getVDBMetadata(ObjectConverterUtil.convertToString(vdbMetadata.openStream()));
+            } catch (IOException e) {
+                throw new VirtualDatabaseException("Could not find a vdb.xml or vdb.ddl file in " + url);
+            }
         }
+        VDBResources resources = new VDBResources(root);
+        metadata.addAttchment(VDBResources.class, resources);
         return metadata;
     }
 
