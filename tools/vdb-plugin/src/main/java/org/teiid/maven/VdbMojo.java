@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -49,6 +50,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.teiid.core.util.ObjectConverterUtil;
+import org.teiid.core.util.ReaderInputStream;
 import org.teiid.maven.PluginDatabaseStore.VdbImport;
 import org.teiid.metadata.Grant;
 import org.teiid.metadata.Server;
@@ -139,7 +141,7 @@ public class VdbMojo extends AbstractMojo {
 
                 String vdbDDL = DDLStringVisitor.getDDLString(top.db());
                 getLog().debug(vdbDDL);
-                ObjectConverterUtil.write(new StringReader(vdbDDL),  finalVDB);
+                ObjectConverterUtil.write(new ReaderInputStream(new StringReader(vdbDDL), Charset.forName("UTF-8")),  finalVDB);
                 addFile(archive, "vdb.ddl", finalVDB);
             } catch (Exception e) {
                 throw new MojoExecutionException("Exception when creating artifact archive.", e);

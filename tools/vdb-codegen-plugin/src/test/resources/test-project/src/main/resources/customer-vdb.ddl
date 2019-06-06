@@ -26,13 +26,13 @@ SET NAMESPACE 'http://teiid.org/rest' AS REST;
 
 -- create translators and connections to source
 CREATE FOREIGN DATA WRAPPER postgresql;
-CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql OPTIONS ("jndi-name" 'sampledb');
+CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql OPTIONS ("resource-name" 'sampledb');
 
 CREATE FOREIGN DATA WRAPPER mongodb;
-CREATE SERVER samplemango TYPE 'NONE' FOREIGN DATA WRAPPER mongodb OPTIONS ("jndi-name" 'samplemongo');
+CREATE SERVER samplemango TYPE 'NONE' FOREIGN DATA WRAPPER mongodb OPTIONS ("resource-name" 'samplemongo');
 
 CREATE FOREIGN DATA WRAPPER salesforce;
-CREATE SERVER samplesf TYPE 'NONE' FOREIGN DATA WRAPPER salesforce OPTIONS ("jndi-name" 'samplesf');
+CREATE SERVER samplesf TYPE 'NONE' FOREIGN DATA WRAPPER salesforce OPTIONS ("resource-name" 'samplesf');
 
 -- create schema, then import the metadata from the PostgreSQL database
 CREATE SCHEMA accounts SERVER sampledb;

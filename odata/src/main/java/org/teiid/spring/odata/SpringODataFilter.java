@@ -108,7 +108,7 @@ public class SpringODataFilter implements HandlerInterceptor {
         }
 
         if (context == null) {
-            context = new OlingoBridge();
+            context = new OlingoBridge("odata");
             this.clientReference = new SoftReference<OlingoBridge>(context);
         }
 

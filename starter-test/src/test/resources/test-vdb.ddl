@@ -21,9 +21,9 @@ CREATE FOREIGN DATA WRAPPER fake;
 CREATE FOREIGN DATA WRAPPER fake2;
 CREATE FOREIGN DATA WRAPPER fake3 TYPE fake OPTIONS ("myProperty" 'foo');
 
-CREATE SERVER fakeSource TYPE 'NONE' FOREIGN DATA WRAPPER fake OPTIONS ("jndi-name" 'fakeSource');
-CREATE SERVER fakeSource2 TYPE 'NONE' FOREIGN DATA WRAPPER fake2 OPTIONS ("jndi-name" 'fakeSource2');
-CREATE SERVER fakeSource3 TYPE 'NONE' FOREIGN DATA WRAPPER fake3 OPTIONS ("jndi-name" 'fakeSource3');
+CREATE SERVER fakeSource TYPE 'NONE' FOREIGN DATA WRAPPER fake OPTIONS ("resource-name" 'fakeSource');
+CREATE SERVER fakeSource2 TYPE 'NONE' FOREIGN DATA WRAPPER fake2 OPTIONS ("resource-name" 'fakeSource2');
+CREATE SERVER fakeSource3 TYPE 'NONE' FOREIGN DATA WRAPPER fake3 OPTIONS ("resource-name" 'fakeSource3');
 
 CREATE SCHEMA accounts SERVER fakeSource;
 CREATE SCHEMA accounts2 SERVER fakeSource2;
