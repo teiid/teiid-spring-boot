@@ -19,7 +19,6 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -158,37 +157,32 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean
     @ConditionalOnMissingBean
     public VDBMetaData teiidVDB() {
-        List<Resource> resources = TeiidInitializer.getScripts("teiid.vdb-file", this.properties.getVdbFile(),
-                "teiid.ddl", this.context);
+        List<Resource> resources = TeiidInitializer.getClasspathResources(this.context, this.properties.getVdbFile(), "teiid.ddl", "teiid.vdb");
 
         VDBMetaData vdb = null;
         if (!resources.isEmpty()) {
-            for (Resource resource : resources) {
-                if (resource.getFilename().endsWith(".ddl")) {
-                    try {
-                        DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
-                        String db = ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
-                        vdb = store.getVDBMetadata(db);
-                        logger.info("Predefined VDB found :" + resources.get(0).getFilename());
-                    } catch (FileNotFoundException e) {
-                        // no-op
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Failed to parse the VDB defined");
-                    }
-                    break;
-                } else if (resource.getFilename().endsWith("-vdb.xml")) {
-                    try {
-                        vdb =  VDBMetadataParser.unmarshell(resources.get(0).getInputStream());
-                    } catch (XMLStreamException | IOException e) {
-                        throw new IllegalStateException("Failed to load the VDB defined", e);
-                    }
-                } else if (resource.getFilename().endsWith(".vdb")) {
-                    try {
-                        vdb = loadVDB(resource.getURL());
-                    } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | IOException
-                            | URISyntaxException e) {
-                        throw new IllegalStateException("Failed to load the VDB defined", e);
-                    }
+            Resource resource = resources.iterator().next();
+            if (resource.getFilename().endsWith(".ddl")) {
+                try {
+                    DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
+                    String db = ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
+                    vdb = store.getVDBMetadata(db);
+                    logger.info("Predefined VDB found :" + resources.get(0).getFilename());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to parse the VDB defined");
+                }
+            } else if (resource.getFilename().endsWith("-vdb.xml")) {
+                try {
+                    vdb =  VDBMetadataParser.unmarshell(resources.get(0).getInputStream());
+                } catch (XMLStreamException | IOException e) {
+                    throw new IllegalStateException("Failed to load the VDB defined", e);
+                }
+            } else if (resource.getFilename().endsWith(".vdb")) {
+                try {
+                    vdb = loadVDB(resource.getURL());
+                } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | IOException
+                        | URISyntaxException e) {
+                    throw new IllegalStateException("Failed to load the VDB defined", e);
                 }
             }
         }

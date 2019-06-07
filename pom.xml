@@ -248,6 +248,12 @@
         <groupId>org.teiid</groupId>
         <artifactId>teiid-runtime</artifactId>
         <version>${teiid.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+            </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
@@ -296,6 +302,10 @@
           <exclusion>
             <groupId>com.fasterxml</groupId>
             <artifactId>aalto-xml</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.jboss.logging</groupId>
+              <artifactId>jboss-logging</artifactId>
           </exclusion>
         </exclusions>
       </dependency>

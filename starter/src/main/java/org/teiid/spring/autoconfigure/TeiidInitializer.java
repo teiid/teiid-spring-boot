@@ -80,20 +80,13 @@ class TeiidInitializer implements ApplicationListener<TeiidInitializedEvent> {
         // none right now.
     }
 
-    static List<Resource> getScripts(String propertyName, String vdb, String fallback, ApplicationContext context) {
-        if (vdb == null) {
-            vdb = fallback;
-        }
-        List<String> fallbackResources = new ArrayList<String>();
-        fallbackResources.add("classpath*:" + vdb);
-        return getResources(propertyName, fallbackResources, context);
-    }
-
-    private static List<Resource> getResources(String propertyName, List<String> locations,
-            ApplicationContext context) {
+    static List<Resource> getClasspathResources(ApplicationContext context, String... locations) {
         List<Resource> resources = new ArrayList<Resource>();
         for (String location : locations) {
-            for (Resource resource : doGetResources(location, context)) {
+            if (location == null) {
+                continue;
+            }
+            for (Resource resource : doGetResources("classpath*:" +location, context)) {
                 if (resource.exists()) {
                     resources.add(resource);
                 }
