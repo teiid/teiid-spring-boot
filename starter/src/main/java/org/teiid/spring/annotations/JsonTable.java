@@ -57,7 +57,7 @@ import java.lang.annotation.Target;
  * <pre>
  * <code>
  * &#64;Entity
- * &#64;JsonTable(source=file, endpoint="/path/to/file.txt")
+ * &#64;JsonTable(source=file, endpoint="/path/to/file.txt" rootIsArray=true)
  * public class Person {
  *    &#64;Id
  *    private int id;
@@ -95,9 +95,15 @@ public @interface JsonTable {
 
     /**
      * On Class ONLY The endpoint where the document is located at. If this is file
-     * resource then this field can be used to define name of the file.
+     * resource then this field can be used to define name of the file. If this is
+     * REST based call, it can either define the endpoint URL or can refer to a bean
+     * name that returns {@link Function&lt;org.teiid.translator.ExecutionContext,
+     * byte[]&gt;} or {@link Function&lt;org.teiid.translator.ExecutionContext,
+     * String&gt;} or {@link Function&lt;org.teiid.translator.ExecutionContext,
+     * InputStream&gt;} Where byte[], String and InputStream are response from the
+     * REST call made.
      *
-     * @return string
+     * @return string - file/endpoint or name of the bean
      */
     String endpoint();
 

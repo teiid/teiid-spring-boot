@@ -15,30 +15,35 @@
  */
 package org.teiid.spring.example;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.teiid.hibernate.types.LongArrayType;
+import org.teiid.hibernate.types.StringArrayType;
 import org.teiid.spring.annotations.JsonTable;
 
+@SuppressWarnings("serial")
 @Entity
 @Table(name = "employee")
-@JsonTable(endpoint = "employee.json", source = "file")
-@TypeDefs({ @TypeDef(name = "long-array", typeClass = LongArrayType.class) })
-public class Employee {
+@JsonTable(endpoint = "employee.json", source = "file", rootIsArray=true)
+@TypeDefs({ @TypeDef(name = "long-array", typeClass = LongArrayType.class),
+    @TypeDef(name = "string-array", typeClass = StringArrayType.class) })
+public class Employee implements Serializable {
 
     @Id
     private int id;
@@ -50,12 +55,17 @@ public class Employee {
     @Embedded
     private Address address;
 
-    @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
-    private Set<Skills> skills = new HashSet<>();
+    @OneToMany(mappedBy = "employee")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<Skills> skills = new ArrayList<>();
 
     @Type(type = "long-array")
     @Column(name = "phonenumbers", columnDefinition = "long[]")
     private long[] phoneNumbers;
+
+    @OneToMany(mappedBy = "employee")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<Details> details = new ArrayList<>();
 
     public int getId() {
         return id;
@@ -113,7 +123,15 @@ public class Employee {
         this.phoneNumbers = phoneNumbers;
     }
 
-    public Set<Skills> getSkills() {
+    public List<Details> getDetails() {
+        return details;
+    }
+
+    public void setDetails(List<Details> details) {
+        this.details = details;
+    }
+
+    public List<Skills> getSkills() {
         return this.skills;
     }
 
@@ -127,6 +145,7 @@ public class Employee {
         sb.append("Salary: $" + getSalary() + "\n");
         sb.append("Designation: " + getDesignation() + "\n");
         sb.append("Phone Numbers: " + Arrays.toString(getPhoneNumbers()) + "\n");
+        sb.append("details: " + getDetails() + "\n");
         sb.append("Address: " + getAddress() + "\n");
         sb.append("Skills: " + getSkills() + "\n");
         return sb.toString();

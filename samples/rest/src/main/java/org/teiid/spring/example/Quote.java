@@ -19,11 +19,9 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import org.teiid.spring.annotations.JsonTable;
-import org.teiid.spring.annotations.RestConfiguration;
 
-@JsonTable(endpoint = "http://gturnquist-quoters.cfapps.io/api/random", source = "rest", root = "/value")
+@JsonTable(endpoint = "webCallBean", source = "rest", root = "/value")
 @Entity
-@RestConfiguration(headersBean = "customHeaders")
 public class Quote {
 
     @Id

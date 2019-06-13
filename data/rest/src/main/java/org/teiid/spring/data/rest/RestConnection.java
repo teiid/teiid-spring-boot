@@ -238,4 +238,8 @@ public class RestConnection extends BaseConnection implements WSConnection {
     public String getStatusMessage(int status) {
         return null;
     }
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
+    }
 }

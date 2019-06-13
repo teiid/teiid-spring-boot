@@ -1,3 +1,4 @@
+[
 {
 	"id": 123,
 	"name": "Henry Smith",
@@ -13,6 +14,11 @@
 		654321,
 		222333
 	],
+	"details": [
+	 [1, "one", 1.0],
+	 [2, "two", 2.0],
+	 [3, "three", 3.0]
+	], 	
 	"skills": [
 		{
 			"type": "Professionalism",
@@ -28,4 +34,41 @@
 			"rating": 4
 		}
 	]
+},
+{
+    "id": 111,
+    "name": "Jane Doe",
+    "age": 45,
+    "salary": 5000,
+    "designation": "Mason",
+    "address": {
+        "street": "market st",
+        "city": "Newyork",
+        "zipcode": 10583
+    },
+    "phonenumbers": [
+        12345,
+        45678
+    ],
+    "details": [
+     [1, "one", 1.0],
+     [2, "two", 2.0],
+     [3, "three", 3.0]
+    ],  
+    "skills": [
+        {
+            "type": "lazy",
+            "rating": 4
+        },
+        {
+            "type": "dumb",
+            "rating": 9
+        },
+        null,
+        {
+            "type": "yea, that one",
+            "rating": 4
+        }
+    ]
 }
+]

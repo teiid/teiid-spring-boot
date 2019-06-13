@@ -22,9 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Defines RestConfiguration, like verbs and headers etc for REST based
- * connection. If the values of the annotation parameters in configuration are
- * expressions like ${custom.myheader} they will be evaluated at the runtime.
+ * Defines configuration, like HTTP verbs and headers etc for REST based
+ * connection. See method javadoc for more details. Alternatively, instead of
+ * configuring values with this annotation, you define a bean name instead of
+ * literal endpoint to make the REST call as user defined. See {@link JsonTable}
  *
  * For example:
  *

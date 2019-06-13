@@ -40,6 +40,8 @@ public class TextTableView extends ViewBuilder<TextTable> {
         String source = annotation.source();
         String file = annotation.file();
 
+        view.setSupportsUpdate(false);
+
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");

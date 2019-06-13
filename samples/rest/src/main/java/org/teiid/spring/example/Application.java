@@ -16,18 +16,25 @@
 
 package org.teiid.spring.example;
 
+import java.util.function.Function;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import org.teiid.translator.ExecutionContext;
 
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
     @Autowired
     private QuoteRepository quoteRepository;
+
+    @Autowired
+    RestTemplate restTemplate;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args).close();
@@ -38,10 +45,12 @@ public class Application implements CommandLineRunner {
         quoteRepository.findAll().forEach(c -> System.out.println("***" + c));
     }
 
-    @Bean(name = "customHeaders")
-    public HttpHeaders customHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "foo:bar");
-        return headers;
+    @Bean(name = "webCallBean")
+    public Function<ExecutionContext, String> webCallBean() {
+        return (c) -> {
+            String url = "http://gturnquist-quoters.cfapps.io/api/random";
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            return response.getBody();
+        };
     }
 }
