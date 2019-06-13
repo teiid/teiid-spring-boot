@@ -34,14 +34,12 @@ import org.springframework.web.servlet.ModelAndView;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.VDB;
 import org.teiid.metadata.Schema;
-import org.teiid.net.TeiidURL;
 import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
 import org.teiid.olingo.service.OlingoBridge.HandlerInfo;
 import org.teiid.olingo.web.OpenApiHandler;
 import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.spring.identity.SpringSecurityHelper;
-import org.teiid.spring.identity.TeiidSecurityContext;
 import org.teiid.vdb.runtime.VDBKey;
 
 public class SpringODataFilter implements HandlerInterceptor {
@@ -135,7 +133,7 @@ public class SpringODataFilter implements HandlerInterceptor {
         }
 
         if (context == null) {
-            context = new OlingoBridge();
+            context = new OlingoBridge(vdbName);
             this.clientReference = new SoftReference<OlingoBridge>(context);
         }
 
