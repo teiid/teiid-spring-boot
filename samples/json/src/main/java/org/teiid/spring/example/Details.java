@@ -16,64 +16,43 @@
 package org.teiid.spring.example;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
 import org.teiid.spring.annotations.JsonTable;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "employee_skills")
-@JsonTable(endpoint = "employee.json", source = "file", root = "/skills", rootIsArray=true)
-public class Skills implements Serializable{
+@Table(name = "employee_details")
+@JsonTable(endpoint = "employee.json", source = "file", root = "/details", rootIsArray=true)
+public class Details implements Serializable{
 
     @ManyToOne
     @Id
-    @JoinColumn(name = "id", nullable = false, updatable = true)
+    @JoinColumn(name = "id", nullable = false, updatable = false, insertable = false)
     private Employee employee;
 
-    private String type;
+    @Type(type = "string-array")
+    @Column(name = "details", columnDefinition = "string[]")
+    String[] items;
 
-    private int rating;
-
-    public Skills() {
+    public String[] getItems() {
+        return items;
     }
 
-    public Skills(String type, int rating) {
-        this.type = type;
-        this.rating = rating;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public int getRating() {
-        return rating;
-    }
-
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
+    public void setItems(String[] items) {
+        this.items = items;
     }
 
     @Override
     public String toString() {
-        return "[type=" + type + ", rating=" + rating + "]";
+        return "Details [items=" + Arrays.toString(items) + "]";
     }
 }
