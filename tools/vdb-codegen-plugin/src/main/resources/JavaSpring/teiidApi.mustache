@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 {{#jdk8-no-delegate}}
     {{^reactive}}
 import org.springframework.web.context.request.NativeWebRequest;
@@ -57,8 +59,8 @@ import java.util.Optional;
 {{#async}}
 import java.util.concurrent.{{^jdk8}}Callable{{/jdk8}}{{#jdk8}}CompletableFuture{{/jdk8}};
 {{/async}}
-{{>generatedAnnotation}}
 {{#useBeanValidation}}
+
 @Validated
 {{/useBeanValidation}}
 @Api(value = "{{{baseName}}}", description = "the {{{baseName}}} API")
@@ -66,20 +68,31 @@ import java.util.concurrent.{{^jdk8}}Callable{{/jdk8}}{{#jdk8}}CompletableFuture
 {{#virtualService}}
 @VirtualService
 {{/virtualService}}
-public interface {{classname}} {
+public class {{classname}} {
 {{#jdk8}}
     {{^isDelegate}}
         {{^reactive}}
 
-    default Optional<NativeWebRequest> getRequest() {
+    Optional<NativeWebRequest> getRequest() {
         return Optional.empty();
     }
         {{/reactive}}
     {{/isDelegate}}
     {{#isDelegate}}
-
-    default {{classname}}Delegate getDelegate() {
-        return new {{classname}}Delegate() {};
+    
+    @Autowired
+    private org.teiid.spring.autoconfigure.TeiidServer server;
+    
+    @Autowired
+    private org.teiid.adminapi.VDB vdb;    
+    
+    private {{classname}}Delegate delegate;
+    
+    {{classname}}Delegate getDelegate() {
+        if(this.delegate == null){
+            this.delegate =  new {{classname}}Delegate(server, vdb);
+        }
+        return delegate;
     }
     {{/isDelegate}}
 {{/jdk8}}
@@ -111,7 +124,7 @@ public interface {{classname}} {
         consumes = { {{#consumes}}"{{{mediaType}}}"{{#hasMore}}, {{/hasMore}}{{/consumes}} },{{/hasConsumes}}{{/singleContentTypes}}
         method = RequestMethod.{{httpMethod}})
     @ResponseBody
-    {{#jdk8}}default {{/jdk8}}{{#responseWrapper}}{{.}}<{{/responseWrapper}}ResponseEntity<{{>returnTypes}}>{{#responseWrapper}}>{{/responseWrapper}} {{#delegate-method}}_{{/delegate-method}}{{operationId}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{#hasMore}},{{/hasMore}}{{^hasMore}}{{#reactive}}, {{/reactive}}{{/hasMore}}{{/allParams}}{{#reactive}}ServerWebExchange exchange{{/reactive}}){{^jdk8}};{{/jdk8}}{{#jdk8}} {
+    {{#jdk8}}public {{/jdk8}}{{#responseWrapper}}{{.}}<{{/responseWrapper}}ResponseEntity<{{>teiidReturnTypes}}>{{#responseWrapper}}>{{/responseWrapper}} {{#delegate-method}}_{{/delegate-method}}{{operationId}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{#hasMore}},{{/hasMore}}{{^hasMore}}{{#reactive}}, {{/reactive}}{{/hasMore}}{{/allParams}}{{#reactive}}ServerWebExchange exchange{{/reactive}}){{^jdk8}};{{/jdk8}}{{#jdk8}} {
         {{#delegate-method}}
         return {{operationId}}({{#allParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}{{#reactive}}{{#hasParams}}, {{/hasParams}}exchange{{/reactive}});
     }

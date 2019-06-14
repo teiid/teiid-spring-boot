@@ -1,13 +1,13 @@
-setServer(this.server);
+        setServer(this.server);
         setVdb(this.vdb);
         LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
         {{#allParams}}
         parameters.put("{{paramName}}",{{paramName}});
         {{/allParams}}
         {{#hasReturn}}
-            execute("{{operationId}}", parameters, "UTF-8", {{hasReturn}});
-            return new ResponseEntity<>(HttpStatus.OK);        
+        return execute("{{operationId}}", parameters, "UTF-8", {{hasReturn}});        
         {{/hasReturn}}
         {{^hasReturn}}
-            return execute("{{operationId}}", parameters, "UTF-8", {{hasReturn}});
+        execute("{{operationId}}", parameters, "UTF-8", {{hasReturn}});
+        return new ResponseEntity<>(HttpStatus.OK);        
         {{/hasReturn}}

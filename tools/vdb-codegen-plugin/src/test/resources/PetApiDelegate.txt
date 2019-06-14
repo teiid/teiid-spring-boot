@@ -1,15 +1,34 @@
-@Configuration
-public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
+package com.example;
 
-    @Autowired
+import com.example.ModelApiResponse;
+import com.example.Pet;
+import org.springframework.core.io.Resource;
+import java.util.*;
+import io.swagger.annotations.*;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
+import org.springframework.core.io.InputStreamResource;
+import java.util.Optional;
+
+/**
+ * A delegate to be called by the {@link PetApiController}}.
+ * Implement this interface with a {@link org.springframework.stereotype.Service} annotated class.
+ */
+
+public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
     private org.teiid.spring.autoconfigure.TeiidServer server;
-    
-    @Autowired
     private org.teiid.adminapi.VDB vdb;
 
-
-    default Optional<NativeWebRequest> getRequest() {
-        return Optional.empty();
+    public PetApiDelegate(org.teiid.spring.autoconfigure.TeiidServer server, org.teiid.adminapi.VDB vdb) {
+        this.server = server;
+        this.vdb = vdb;
     }
 
     /**
@@ -20,7 +39,9 @@ public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
         setVdb(this.vdb);
         LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
         parameters.put("body",body);
-        return execute("addPet", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+        execute("addPet", parameters, "UTF-8", false);
+        return new ResponseEntity<>(HttpStatus.OK);        
+
     }
 
     /**
@@ -33,29 +54,33 @@ public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
         LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
         parameters.put("petId",petId);
         parameters.put("apiKey",apiKey);
-        return execute("deletePet", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+        execute("deletePet", parameters, "UTF-8", false);
+        return new ResponseEntity<>(HttpStatus.OK);        
+
     }
 
     /**
      * @see PetApi#findPetsByStatus
      */
-    public ResponseEntity<List<Pet>> findPetsByStatus(List<String> status) {
+    public ResponseEntity<InputStreamResource> findPetsByStatus(List<String> status) {
         setServer(this.server);
         setVdb(this.vdb);
         LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
         parameters.put("status",status);
-        return execute("findPetsByStatus", parameters, "UTF-8", !"Pet".contentEquals("Void"));        
+        return execute("findPetsByStatus", parameters, "UTF-8", true);        
+
     }
 
     /**
      * @see PetApi#getPetById
      */
-    public ResponseEntity<Pet> getPetById(Long petId) {
+    public ResponseEntity<InputStreamResource> getPetById(Long petId) {
         setServer(this.server);
         setVdb(this.vdb);
         LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
         parameters.put("petId",petId);
-        return execute("getPetById", parameters, "UTF-8", !"Pet".contentEquals("Void"));        
+        return execute("getPetById", parameters, "UTF-8", true);        
+
     }
 
     /**
@@ -66,7 +91,9 @@ public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
         setVdb(this.vdb);
         LinkedHashMap<String, Object> parameters = new LinkedHashMap<String, Object>();
         parameters.put("body",body);
-        return execute("updatePet", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+        execute("updatePet", parameters, "UTF-8", false);
+        return new ResponseEntity<>(HttpStatus.OK);        
+
     }
 
     /**
@@ -81,13 +108,15 @@ public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
         parameters.put("petId",petId);
         parameters.put("name",name);
         parameters.put("status",status);
-        return execute("updatePetWithForm", parameters, "UTF-8", !"Void".contentEquals("Void"));        
+        execute("updatePetWithForm", parameters, "UTF-8", false);
+        return new ResponseEntity<>(HttpStatus.OK);        
+
     }
 
     /**
      * @see PetApi#uploadFile
      */
-    public ResponseEntity<ModelApiResponse> uploadFile(Long petId,
+    public ResponseEntity<InputStreamResource> uploadFile(Long petId,
         String additionalMetadata,
         MultipartFile file) {
         setServer(this.server);
@@ -96,7 +125,8 @@ public class PetApiDelegate extends org.teiid.spring.openapi.TeiidRSProvider {
         parameters.put("petId",petId);
         parameters.put("additionalMetadata",additionalMetadata);
         parameters.put("file",file);
-        return execute("uploadFile", parameters, "UTF-8", !"ModelApiResponse".contentEquals("Void"));        
+        return execute("uploadFile", parameters, "UTF-8", true);        
+
     }
 
 }

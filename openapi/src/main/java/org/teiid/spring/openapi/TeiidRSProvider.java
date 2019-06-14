@@ -21,7 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Clob;
@@ -30,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +37,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -49,14 +51,13 @@ import org.teiid.core.types.BlobType;
 import org.teiid.core.types.ClobImpl;
 import org.teiid.core.types.DataTypeManager;
 import org.teiid.core.types.InputStreamFactory;
-import org.teiid.core.types.JDBCSQLTypeInfo;
+import org.teiid.core.types.JsonType;
 import org.teiid.core.types.SQLXMLImpl;
 import org.teiid.core.types.Transform;
 import org.teiid.core.types.TransformationException;
 import org.teiid.core.types.XMLType;
 import org.teiid.core.util.Base64;
 import org.teiid.core.util.ReaderInputStream;
-import org.teiid.core.util.StringUtil;
 import org.teiid.jdbc.ConnectionImpl;
 import org.teiid.jdbc.LocalProfile;
 import org.teiid.jdbc.TeiidDriver;
@@ -71,6 +72,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class TeiidRSProvider {
     private static final Pattern charsetPattern = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
+    private static final Log logger = LogFactory.getLog(TeiidRSProvider.class);
 
     private TeiidServer server;
     private VDB vdb;
@@ -91,6 +93,7 @@ public abstract class TeiidRSProvider {
         this.vdb = vdb;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public ResponseEntity<InputStreamResource> execute(final String procedureName, final LinkedHashMap<String, Object> parameters,
             final String charSet, final boolean usingReturn) {
         Connection conn = null;
@@ -99,11 +102,24 @@ public abstract class TeiidRSProvider {
             LinkedHashMap<String, Object> updatedParameters = convertParameters(conn, procedureName,
                     parameters);
             InputStream is = executeProc(conn, procedureName, updatedParameters, charSet, usingReturn);
-            InputStreamResource inputStreamResource = new InputStreamResource(is);
-            HttpHeaders httpHeaders = new HttpHeaders();
-            return new ResponseEntity<InputStreamResource>(inputStreamResource, httpHeaders, HttpStatus.OK);
+            if (is != null) {
+                InputStreamResource inputStreamResource = new InputStreamResource(is);
+                HttpHeaders httpHeaders = new HttpHeaders();
+                return new ResponseEntity<InputStreamResource>(inputStreamResource, httpHeaders, HttpStatus.OK);
+            } else {
+                if (usingReturn) {
+                    return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+                }
+                return null;
+            }
         } catch (SQLException e ) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+            logger.debug(e.getMessage(), e);
+            try {
+                HttpStatus status = HttpStatus.valueOf(e.getErrorCode());
+                return new ResponseEntity(null, status);
+            } catch(IllegalArgumentException e1) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+            }
         } finally {
             if (conn != null) {
                 try {
@@ -160,9 +176,7 @@ public abstract class TeiidRSProvider {
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only result producing procedures are allowed");
             }
-        } else if (!usingReturn) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Only result producing procedures are allowed");
-        } else {
+        } else if (usingReturn) {
             result = statement.getObject(1);
         }
         return handleResult(charSet, result);
@@ -187,9 +201,8 @@ public abstract class TeiidRSProvider {
                     }
                     else if (value instanceof MultipartFile) {
                         value = convertToRuntimeType(runtimeType, (MultipartFile) value);
-                    } else if (Array.class.isAssignableFrom(runtimeType)) {
-                        List<String> array = StringUtil.split((String) value, ","); //$NON-NLS-1$
-                        value = array.toArray(new String[array.size()]);
+                    } else if (runtimeType.isArray() && value instanceof List) {
+                        value = ((List<?>)value).toArray();
                     } else if (DataTypeManager.DefaultDataClasses.VARBINARY.isAssignableFrom(runtimeType)) {
                         value = Base64.decode((String) value);
                     } else {
@@ -198,6 +211,12 @@ public abstract class TeiidRSProvider {
                         if (DataTypeManager.isTransformable(String.class, runtimeType)) {
                             Transform t = DataTypeManager.getTransform(String.class, runtimeType);
                             value = t.transform(in, runtimeType);
+                        } else {
+                            if (runtimeType.isAssignableFrom(JsonType.class)) {
+                                value = new JsonType(new ClobImpl(in));
+                            } else {
+                                value = in;
+                            }
                         }
                     }
                 }
@@ -273,21 +292,33 @@ public abstract class TeiidRSProvider {
     }
 
     private LinkedHashMap<String, Class<?>> getParameterTypes(Connection conn, String vdbName, String procedureName) {
-        String schemaName = procedureName.substring(0, procedureName.lastIndexOf('.')).replace('\"', ' ').trim();
-        String procName = procedureName.substring(procedureName.lastIndexOf('.') + 1).replace('\"', ' ').trim();
+        String schemaName = null;
+        String procName = procedureName;
+        if (procedureName.lastIndexOf('.') != -1) {
+            schemaName = procedureName.substring(0, procedureName.lastIndexOf('.')).replace('\"', ' ').trim();
+            procName = procedureName.substring(procedureName.lastIndexOf('.') + 1).replace('\"', ' ').trim();
+        }
         LinkedHashMap<String, Class<?>> expectedTypes = new LinkedHashMap<String, Class<?>>();
         try {
             ResultSet rs = conn.getMetaData().getProcedureColumns(vdbName, schemaName, procName, "%"); //$NON-NLS-1$
             while (rs.next()) {
                 String columnName = rs.getString(4);
                 int columnDataType = rs.getInt(6);
-                Class<?> runtimeType = DataTypeManager
-                        .getRuntimeType(Class.forName(JDBCSQLTypeInfo.getJavaClassName(columnDataType)));
-                expectedTypes.put(columnName, runtimeType);
+                String typeName = rs.getString(7);
+                if (columnDataType == Types.ARRAY) {
+                    if (typeName.endsWith("[]")) { //$NON-NLS-1$
+                        String type = typeName.substring(0, typeName.length()-2);
+                        Class<?> runtimeType = DataTypeManager.getRuntimeType(DataTypeManager.getDataTypeClass(type));
+                        expectedTypes.put(columnName, DataTypeManager.getArrayType(runtimeType));
+                    }
+                } else {
+                    Class<?> runtimeType = DataTypeManager.getRuntimeType(DataTypeManager.getDataTypeClass(typeName));
+                    expectedTypes.put(columnName, runtimeType);
+                }
             }
             rs.close();
             return expectedTypes;
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }

@@ -32,10 +32,13 @@ public class TeiidCodegen extends SpringCodegen {
         super.processOpts();
         apiTemplateFiles.remove("api.mustache");
         apiTemplateFiles.remove("apiDelegate.mustache");
+        //apiTemplateFiles.remove("apiController.mustache");
+
 
         //  Only added @ResponseBody in this, needs update in future perhaps
         apiTemplateFiles.put("teiidApi.mustache", ".java");
         apiTemplateFiles.put("teiidDelegate.mustache", "Delegate.java");
+        apiTemplateFiles.put("teiidApiController.mustache", "Controller.java");
 
         // remove the verbose files
         removeSupportingFile("OpenAPI2SpringBoot.java");
@@ -69,13 +72,15 @@ public class TeiidCodegen extends SpringCodegen {
 
     @Override
     public Map<String, Object> postProcessOperationsWithModels(Map<String, Object> objs, List<Object> allModels) {
+        super.postProcessOperationsWithModels(objs, allModels);
         Map<String, Object> operations = (Map<String, Object>) objs.get("operations");
         List<CodegenOperation> os = (List<CodegenOperation>) operations.get("operation");
         List<TeiidCodegenOperation> newOs = new ArrayList<>();
         for (CodegenOperation o : os) {
             TeiidCodegenOperation tco = new TeiidCodegenOperation(o);
-            if (o.returnType.contentEquals("Void")) {
+            if (o.returnType == null || o.returnType.contentEquals("Void")) {
                 tco.setHasReturn(false);
+                o.returnType = "Void";
             }
             newOs.add(tco);
         }

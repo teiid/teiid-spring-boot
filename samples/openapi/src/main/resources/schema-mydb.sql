@@ -20,7 +20,18 @@ CREATE TABLE Category
 (
     id bigint,
     name varchar(25),
-    CONSTRAINT PK PRIMARY KEY(id)
+    CONSTRAINT PK_CAT PRIMARY KEY(id)
+);
+
+DROP TABLE IF EXISTS Pet;
+CREATE TABLE Pet
+(
+    id int,
+    name varchar(50),
+    category_id bigint,
+    status char(10),
+    CONSTRAINT PK_PET PRIMARY KEY(id),
+    CONSTRAINT CAT_FK FOREIGN KEY (category_id) REFERENCES Category (id)
 );
 
 DROP TABLE IF EXISTS Tag;
@@ -28,26 +39,21 @@ CREATE TABLE Tag
 (
     id bigint,
     name varchar(25),
-    CONSTRAINT PK PRIMARY KEY(id)
+    CONSTRAINT PK_TAG PRIMARY KEY(id)
 );
 
-DROP TABLE IF EXISTS Pet;
-CREATE TABLE Pet
+DROP TABLE IF EXISTS PetTag;
+CREATE TABLE PetTag
 (
     id bigint,
-    name varchar(50),
-    category_id bigint,
-    tag_id bigint[],
-    status char(10),
-    photo_url_id bigint[],
-    CONSTRAINT PK PRIMARY KEY(id),
-    CONSTRAINT CAT_FK FOREIGN KEY (category_id) REFERENCES Category (ID)
+    pet_id bigint
 );
 
 DROP TABLE IF EXISTS Photo;
 CREATE TABLE Photo
 (
-    id bigint,
+    pet_id bigint,
     content blob, 
-    CONSTRAINT PK PRIMARY KEY(id)
+    CONSTRAINT PK_PHOTO PRIMARY KEY(pet_id),
+    CONSTRAINT PPET_FK FOREIGN KEY (pet_id) REFERENCES Pet (id)
 );
