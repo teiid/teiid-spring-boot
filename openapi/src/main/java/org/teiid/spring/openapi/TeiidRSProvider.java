@@ -205,6 +205,9 @@ public abstract class TeiidRSProvider {
                         value = ((List<?>)value).toArray();
                     } else if (DataTypeManager.DefaultDataClasses.VARBINARY.isAssignableFrom(runtimeType)) {
                         value = Base64.decode((String) value);
+                    } else if (DataTypeManager.isTransformable(value.getClass(), runtimeType)) {
+                        Transform t = DataTypeManager.getTransform(value.getClass(), runtimeType);
+                        value = t.transform(value, runtimeType);
                     } else {
                         ObjectMapper mapper = new ObjectMapper();
                         String in = mapper.writeValueAsString(value);

@@ -60,8 +60,8 @@ public class VdbMojoTest {
         testDataSourceGeneration(outputDirectory);
         testMongoGeneration(outputDirectory);
         testSalesforceGeneration(outputDirectory);
-        testRestGeneration(outputDirectory);
-        testSwaggerConfig(outputDirectory);
+        //testRestGeneration(outputDirectory);
+        //testSwaggerConfig(outputDirectory);
     }
 
 
@@ -89,6 +89,7 @@ public class VdbMojoTest {
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 
+    /*
     public void testSwaggerConfig(File outputDirectory)throws Exception {
         File file = new File(outputDirectory, "com/example/SwaggerConfig.java");
         assertTrue( file.exists() );
@@ -106,4 +107,5 @@ public class VdbMojoTest {
                 FileUtils.readFileToString(new File( "target/test-classes/controller.txt"), "utf-8").trim(),
                 FileUtils.readFileToString(file, "utf-8").trim());
     }
+     */
 }

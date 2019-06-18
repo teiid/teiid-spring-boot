@@ -74,7 +74,6 @@ public class OpenApiTest {
     public void testDelegate(File outputDirectory)throws Exception {
         File dsFile = new File(outputDirectory, "com/example/PetApiDelegate.java");
         assertTrue(dsFile.exists());
-        System.out.println(FileUtils.readFileToString(dsFile, "utf-8").trim());
 
         assertEquals("The files differ!",
                 FileUtils.readFileToString(new File( "target/test-classes/PetApiDelegate.txt"), "utf-8").trim(),
@@ -83,7 +82,6 @@ public class OpenApiTest {
 
         dsFile = new File(outputDirectory, "com/example/PetApiController.java");
         assertTrue(dsFile.exists());
-        System.out.println(FileUtils.readFileToString(dsFile, "utf-8").trim());
 
         assertEquals("The files differ!",
                 FileUtils.readFileToString(new File( "target/test-classes/PetApiController.txt"), "utf-8").trim(),
@@ -91,7 +89,6 @@ public class OpenApiTest {
 
         dsFile = new File(outputDirectory, "com/example/PetApi.java");
         assertTrue(dsFile.exists());
-        System.out.println(FileUtils.readFileToString(dsFile, "utf-8").trim());
 
         assertEquals("The files differ!",
                 FileUtils.readFileToString(new File( "target/test-classes/PetApi.txt"), "utf-8").trim(),

@@ -83,7 +83,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     @Parameter
     private Boolean generateDataSourceClasses = true;
 
-    @Parameter(defaultValue = "${basedir}/src/main/resources/swagger.json")
+    @Parameter(defaultValue = "${basedir}/src/main/resources/openapi.json")
     private File openApiFile;
 
     public File getOutputDirectory() {
@@ -130,7 +130,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 createDataSources(mf, javaSrcDir, database, parentMap);
             }
             verifyTranslatorDependencies(database);
-            if (generateOpenApiScoffolding()) {
+            if (generateOpenApiScoffolding() && this.openApiFile.exists()) {
                 ApiGenerator generator = new ApiGenerator(openApiFile, outputDirectory, getLog());
                 generator.generate(mf, javaSrcDir, database, parentMap);
             }
@@ -336,7 +336,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 return true;
             }
         }
-        getLog().info("No OpenAPI dependency is found in the pom.xml");
+        getLog().info("No OpenAPI dependency is found in the pom.xml, skipping the generation of the OpenAPI classes");
         return false;
     }
 }

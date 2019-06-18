@@ -22,10 +22,13 @@ import java.util.Map;
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.SupportingFile;
 import org.openapitools.codegen.languages.SpringCodegen;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.swagger.v3.oas.models.Operation;
 
 public class TeiidCodegen extends SpringCodegen {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TeiidCodegen.class);
 
     @Override
     public void processOpts() {
@@ -66,8 +69,7 @@ public class TeiidCodegen extends SpringCodegen {
     public void addOperationToGroup(String tag, String resourcePath, Operation operation, CodegenOperation co,
             Map<String, List<CodegenOperation>> operations) {
         super.addOperationToGroup(tag, resourcePath, operation, co, operations);
-
-        System.out.println("tag = "+tag +" resourcePath = "+ resourcePath);
+        LOGGER.info("tag = "+tag +" resourcePath = "+ resourcePath);
     }
 
     @Override

@@ -40,11 +40,10 @@ public class PetApi {
     
     private PetApiDelegate delegate;
     
-    public PetApi() {
-        this.delegate =  new PetApiDelegate(server, vdb);
-    }
-
     PetApiDelegate getDelegate() {
+        if(this.delegate == null){
+            this.delegate =  new PetApiDelegate(server, vdb);
+        }
         return delegate;
     }
 
