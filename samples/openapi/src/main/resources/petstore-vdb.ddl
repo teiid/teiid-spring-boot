@@ -84,27 +84,3 @@ BEGIN
     UPSERT INTO Photo (pet_id, content) values (petId, file);
     return jsonParse('{"code": 9,"message": "image updated", "type": "string"}', true);
 END
-
--- to support 3.0 version of pets
-
-CREATE VIRTUAL PROCEDURE createPets(IN body json) OPTIONS (UPDATECOUNT 1)AS
-BEGIN  
-   LOOP ON (SELECT j.id, j.name, j.status FROM JSONTABLE(body, '$', false COLUMNS id integer, name string, status string) as j) AS x
-   BEGIN
-       ERROR '**********************values ' || x.id || ',' || x.name;
-       INSERT INTO petdb.Pet(id, name, status) VALUES (x.id, x.name, x.status);
-   END
-END
-
-CREATE VIRTUAL PROCEDURE showPetById(IN petId integer) RETURNS json OPTIONS (UPDATECOUNT 0)AS
-BEGIN
-    declare json x = (SELECT JSONOBJECT(id, name, status) FROM petdb.Pet where id = petId);
-    return x;
-END
-
-CREATE VIRTUAL PROCEDURE listPets(IN "limit" integer) RETURNS json OPTIONS (UPDATECOUNT 0)AS
-BEGIN
-    declare json x = (SELECT JSONARRAY_AGG(JSONOBJECT(p.id, p.name, p.status)) 
-        FROM petdb.Pet p WHERE p.status in (status));
-    return x;
-END

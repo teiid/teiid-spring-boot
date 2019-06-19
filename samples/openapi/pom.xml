@@ -63,7 +63,7 @@
         <configuration>
           <packageName>org.teiid.spring.example</packageName>
           <generateApplicationClass>false</generateApplicationClass>
-          <vdbFile>src/main/resources/petstore-vdb.ddl</vdbFile>
+          <vdbFile>src/main/resources/petstore-3.0-vdb.ddl</vdbFile>
           <openApiFile>src/main/resources/petstore-3.0.yml</openApiFile>
         </configuration>
         <executions>

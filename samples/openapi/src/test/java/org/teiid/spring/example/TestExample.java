@@ -48,7 +48,7 @@ public class TestExample {
 
     @Test
     public void testApiDocs() throws Exception{
-        ResponseEntity<String> response = web.getForEntity(baseurl()+"/v2/api-docs", String.class);
+        ResponseEntity<String> response = web.getForEntity(baseurl()+"/openapi.json", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
     private String baseurl() {

@@ -56,6 +56,7 @@ import org.teiid.core.types.SQLXMLImpl;
 import org.teiid.core.types.Transform;
 import org.teiid.core.types.TransformationException;
 import org.teiid.core.types.XMLType;
+import org.teiid.core.types.basic.ObjectToAnyTransform;
 import org.teiid.core.util.Base64;
 import org.teiid.core.util.ReaderInputStream;
 import org.teiid.jdbc.ConnectionImpl;
@@ -205,7 +206,9 @@ public abstract class TeiidRSProvider {
                         value = ((List<?>)value).toArray();
                     } else if (DataTypeManager.DefaultDataClasses.VARBINARY.isAssignableFrom(runtimeType)) {
                         value = Base64.decode((String) value);
-                    } else if (DataTypeManager.isTransformable(value.getClass(), runtimeType)) {
+                    } else if (DataTypeManager.isTransformable(value.getClass(), runtimeType)
+                            && !DataTypeManager.getTransform(value.getClass(), runtimeType).getClass()
+                            .equals(ObjectToAnyTransform.class)) {
                         Transform t = DataTypeManager.getTransform(value.getClass(), runtimeType);
                         value = t.transform(value, runtimeType);
                     } else {
