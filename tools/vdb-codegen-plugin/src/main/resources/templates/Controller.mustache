@@ -16,7 +16,7 @@
 /*
  * GENERATED CODE - DO NOT EDIT
  */
-package ${packageName};
+package {{packageName}};
 
 import java.util.LinkedHashMap;
 
@@ -40,13 +40,12 @@ import org.teiid.adminapi.VDB;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping("/${modelName}")
-public class ${modelName} extends TeiidRSProvider {
+@RequestMapping("/{{schemaName}}")
+public class {{modelName}} extends TeiidRSProvider {
     
     @Autowired
     private TeiidServer server;
     
     @Autowired
     private VDB vdb;
-    
-    
+

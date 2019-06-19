@@ -14,33 +14,29 @@
  * limitations under the License.
  */
 
-/*
- * GENERATED CODE - DO NOT EDIT
- */
-
-package com.example;
+package {{packageName}};
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.salesforce.SalesforceConfiguration;
-import org.teiid.spring.data.salesforce.SalesforceConnectionFactory;
+import org.teiid.spring.data.google.SpreadSheetConfiguration;
+import org.teiid.spring.data.google.SpreadsheetConnectionFactory;
 
 @Configuration
-public class DataSourcessamplesf {
+public class DataSources {
 
     @Bean
     @Autowired
-    @Qualifier("samplesf")
-    public SalesforceConnectionFactory samplesf(SalesforceConfiguration config) {
-        return new SalesforceConnectionFactory(config);
+    @Qualifier("{{dsName}}")
+    public SpreadsheetConnectionFactory source(SpreadSheetConfiguration config) {
+        return new SpreadsheetConnectionFactory(config);
     }
 
-    @Bean(name="samplesf")
-    @ConfigurationProperties("spring.teiid.data.salesforce.samplesf")
-    public SalesforceConfiguration salesforceConfig() {
-        return new SalesforceConfiguration();
+    @Bean(name="{{dsName}}")
+    @ConfigurationProperties("spring.teiid.data.google.sheets.{{dsName}}")
+    public SpreadSheetConfiguration sheetsConfig() {
+        return new SpreadSheetConfiguration();
     }
 }

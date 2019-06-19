@@ -26,7 +26,7 @@ import org.apache.maven.plugin.testing.MojoRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class VdbMojoTest {
+public class OpenApiTest {
 
     @Rule
     public MojoRule rule = new MojoRule()
@@ -44,7 +44,7 @@ public class VdbMojoTest {
 
     @Test
     public void test() throws Exception {
-        File pom = new File( "target/test-classes/test-project/" );
+        File pom = new File( "target/test-classes/test-openapi/" );
         assertNotNull( pom );
         assertTrue( pom.exists() );
 
@@ -57,13 +57,11 @@ public class VdbMojoTest {
         assertNotNull( outputDirectory );
         assertTrue( outputDirectory.exists() );
 
-        testDataSourceGeneration(outputDirectory);
-        testMongoGeneration(outputDirectory);
-        testSalesforceGeneration(outputDirectory);
-        //testRestGeneration(outputDirectory);
-        //testSwaggerConfig(outputDirectory);
-    }
 
+        testDataSourceGeneration(outputDirectory);
+
+        testDelegate(outputDirectory);
+    }
 
     public void testDataSourceGeneration(File outputDirectory)throws Exception {
         File dsFile = new File(outputDirectory, "com/example/DataSourcessampledb.java");
@@ -73,39 +71,27 @@ public class VdbMojoTest {
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 
-    public void testMongoGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplemango.java");
-        assertTrue( dsFile.exists() );
+    public void testDelegate(File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/PetApiDelegate.java");
+        assertTrue(dsFile.exists());
+
         assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/mongo.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(new File( "target/test-classes/PetApiDelegate.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(dsFile, "utf-8").trim());
+
+
+        dsFile = new File(outputDirectory, "com/example/PetApiController.java");
+        assertTrue(dsFile.exists());
+
+        assertEquals("The files differ!",
+                FileUtils.readFileToString(new File( "target/test-classes/PetApiController.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(dsFile, "utf-8").trim());
+
+        dsFile = new File(outputDirectory, "com/example/PetApi.java");
+        assertTrue(dsFile.exists());
+
+        assertEquals("The files differ!",
+                FileUtils.readFileToString(new File( "target/test-classes/PetApi.txt"), "utf-8").trim(),
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
-
-    public void testSalesforceGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplesf.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/salesforce.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
-
-    /*
-    public void testSwaggerConfig(File outputDirectory)throws Exception {
-        File file = new File(outputDirectory, "com/example/SwaggerConfig.java");
-        assertTrue( file.exists() );
-        //System.out.println(FileUtils.readFileToString(file, "utf-8"));
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/swaggerconfig.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(file, "utf-8").trim());
-    }
-
-    public void testRestGeneration(File outputDirectory)throws Exception {
-        File file = new File(outputDirectory, "com/example/Portfolio.java");
-        assertTrue( file.exists() );
-        //System.out.println(FileUtils.readFileToString(file, "utf-8"));
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/controller.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(file, "utf-8").trim());
-    }
-     */
 }

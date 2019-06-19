@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.example;
+/*
+ * GENERATED CODE - DO NOT EDIT
+ */
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+package {{packageName}};
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.google.SpreadSheetConfiguration;
-import org.teiid.spring.data.google.SpreadsheetConnectionFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.teiid.spring.data.mongodb.MongoDBConnectionFactory;
 
 @Configuration
-public class DataSources {
-
+public class DataSources{{dsName}} {
     @Bean
-    public SpreadsheetConnectionFactory source(SpreadSheetConfiguration config) {
-        return new SpreadsheetConnectionFactory(config);
-    }
-
-    @Bean
-    @ConfigurationProperties("spring.teiid.data.google.sheets")
-    public SpreadSheetConfiguration sheetsConfig() {
-        return new SpreadSheetConfiguration();
+    public MongoDBConnectionFactory {{dsName}}(@Autowired MongoTemplate template) {
+        return new MongoDBConnectionFactory(template);
     }
 }

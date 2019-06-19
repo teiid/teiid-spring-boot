@@ -13,21 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * GENERATED CODE - DO NOT EDIT
- */
-package ${packageName};
+
+package org.teiid.spring.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-<#if openapi??>
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
-</#if>
 
 @SpringBootApplication
-<#if openapi??>
-@EnableAutoConfiguration(exclude = {ErrorMvcAutoConfiguration.class})
-</#if>
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

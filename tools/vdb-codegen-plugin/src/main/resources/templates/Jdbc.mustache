@@ -18,18 +18,21 @@
  * GENERATED CODE - DO NOT EDIT
  */
 
-package ${packageName};
+package {{packageName}};
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.sql.DataSource;
+
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.teiid.spring.data.mongodb.MongoDBConnectionFactory;
 
 @Configuration
-public class DataSources${dsName} {
+public class DataSources{{dsName}} {
+
+    @ConfigurationProperties(prefix = "spring.datasource.{{dsName}}")
     @Bean
-    public MongoDBConnectionFactory ${dsName}(@Autowired MongoTemplate template) {
-        return new MongoDBConnectionFactory(template);
+    public DataSource {{dsName}}() {
+        return DataSourceBuilder.create().build();
     }
 }
