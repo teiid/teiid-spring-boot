@@ -43,12 +43,12 @@ and create pom.xml file of your choosing and add following maven dependencies
 <dependency>
    <groupId>org.teiid</groupId>
    <artifactId>teiid-spring-boot-starter</artifactId>
-   <version>${project.version}</version>
+   <version>${teiid.version}</version>
 </dependency>
 <dependency>
     <groupId>org.teiid</groupId>
     <artifactId>spring-openapi</artifactId>
-    <version>${project.version}</version>
+    <version>${teiid.version}</version>
 </dependency> 
 ----
 
@@ -73,9 +73,9 @@ This example makes use of code generation techniques on given `openapi.json` doc
       <plugin>
         <groupId>org.teiid</groupId>
         <artifactId>vdb-codegen-plugin</artifactId>
-        <version>${project.version}</version>
+        <version>${teiid.version}</version>
         <configuration>
-          <packageName>org.teiid.spring.example</packageName>
+          <packageName>com.example.demo</packageName>
           <generateApplicationClass>false</generateApplicationClass>
           <generateDataSourceClasses>false</generateDataSourceClasses>
         </configuration>
@@ -91,19 +91,40 @@ This example makes use of code generation techniques on given `openapi.json` doc
   </build>
 ----
 
-This plugin searches for a Virtual Database with name `teiid-vdb.ddl` and OpenAPI document with name `openapi.json` in the `resources` directory by default. If the names do not match your configuration you can configure the alternative names on above plug-in.
+Note: Make sure the `packageName` property is correctly set to the package name of your java classes, the generated classes will be using this property.
 
+This plugin searches for a Virtual Database with name `teiid.ddl` and OpenAPI document with name `openapi.json` in the `resources` directory by default. If the names do not match your configuration you can configure the alternative names on above plug-in.
+
+== Define the OpenAPI file
+For this example to work we need OpenAPI document, we will be using (link:https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v3.0/petstore.yaml[Pet Store]) API, by default the above plugin looks for `openapi.json` or `openapi.yml` file in the `src/main/resources` directory. If the name is different, then in the above `vdb-codegen-plugin` define a configuration property `openApiFile` and provide the path to it. For example:
+```
+<configuration>
+  <openApiFile>src/main/resources/petstore-3.0.yml</openApiFile>
+</configuration>
+```
 === Define Virtual Database
-To support the (link:https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v3.0/petstore.yaml[Pet Store]) API, the following VDB needs to be defined. This needs to stored in `src/main/resources` directory with name `teiid-vdb.ddl`
+To support the (link:https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v3.0/petstore.yaml[Pet Store]) API, the following VDB needs to be defined. This needs to stored in `src/main/resources` directory with name `teiid.ddl`. You can also define an alternative name to VDB, if you do then the name needs to updated in above maven plugin as 
+
+```
+<configuration>
+  <vdbFile>src/main/resources/petstore-3.0-vdb.ddl</vdbFile>
+</configuration>
+```
+and also define the property in `application.properties` as
+```
+teiid.vdb-file=petstore-3.0-vdb.ddl
+```
+considering name of your vdb is `petstore-3.0-vdb.ddl`
+
+Here is sample Virtual Database.
 
 [source,sql]
 .*Virtual Database*
 ----
 
-CREATE DATABASE openapi OPTIONS (ANNOTATION 'PetStore VDB');
+CREATE DATABASE PetStore OPTIONS (ANNOTATION 'PetStore VDB');
 USE DATABASE PetStore;
 
-SET NAMESPACE 'http://teiid.org/rest' AS REST;
 CREATE FOREIGN DATA WRAPPER h2;
 CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2;
 
@@ -117,36 +138,43 @@ SET SCHEMA pets;
 
 CREATE VIRTUAL PROCEDURE createPets(IN body json) OPTIONS (UPDATECOUNT 1)AS
 BEGIN  
-   LOOP ON (SELECT j.id, j.name, j.status FROM JSONTABLE(body, '$', false COLUMNS id integer, name string, status string) as j) AS x
+   LOOP ON (SELECT j.id, j.name, j.tag FROM JSONTABLE(body, '$', false COLUMNS id integer, name string, tag string) as j) AS x
    BEGIN
-       INSERT INTO petdb.Pet(id, name, status) VALUES (x.id, x.name, x.status);
+       INSERT INTO petdb.Pet(id, name, tag) VALUES (x.id, x.name, x.tag);
    END
 END
 
 CREATE VIRTUAL PROCEDURE showPetById(IN petId integer) RETURNS json OPTIONS (UPDATECOUNT 0)AS
 BEGIN
-    declare json x = (SELECT JSONOBJECT(id, name, status) FROM petdb.Pet where id = petId);
+    declare json x = (SELECT JSONOBJECT(id, name, tag) FROM petdb.Pet where id = petId);
     return x;
 END
 
 CREATE VIRTUAL PROCEDURE listPets(IN "limit" integer) RETURNS json OPTIONS (UPDATECOUNT 0)AS
 BEGIN
-    declare json x = (SELECT JSONARRAY_AGG(JSONOBJECT(p.id, p.name, p.status)) 
-        FROM petdb.Pet p WHERE p.status in (status));
+    declare json x = (SELECT JSONARRAY_AGG(JSONOBJECT(p.id, p.name, p.tag)) 
+        FROM petdb.Pet p WHERE p.tag in (tag));
     return x;
 END
 
 ----
 
-NOTE: The `operationId` field of every API call becomes a Virtual Procedure name. Then this procedure needs to have ALL the Request, Path, Header and Body based parameters on it. The names MUST match exactly to OpenAPI document. Try to match the data types of the parameters to that of Teiid's data types. Then return type should also match, mostly if you are returning JSON content it will be `json` type. If you need to return an error condition you can use `RAISE SQLEXCEPTION` in the stored procedure with proper Http Status code, which will be converted automatically into a correct response.
+NOTE: The `operationId` field of every API call becomes a Virtual Procedure name. Then this procedure needs to have ALL the Request, Path, Header and Body based parameters on it. The names MUST match exactly to OpenAPI document. Try to match the data types of the parameters to that of Teiid's data types. Then return type should also match, mostly if you are returning JSON content it will be `json` type. If you need to return an error condition you can use `RAISE SQLEXCEPTION` in the stored procedure with proper Http tag code, which will be converted automatically into a correct response.
 
 === Define the Data Sources
-For accessing the database, we need to configure data source. (This file can also be generated automatically)
+For accessing the database, we need to configure data source. (This Java file can also be generated automatically, by the above maven plugin)
 
 [source,java]
 .*src/main/java/org/example/DataSources.java*
 ----
-package org.example;
+package com.example.demo;
+
+import javax.sql.DataSource;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DataSources {
@@ -168,11 +196,39 @@ spring.datasource.mydb.username=sa
 spring.datasource.mydb.password=sa
 spring.datasource.mydb.driver-class-name=org.h2.Driver
 spring.datasource.mydb.platform=mydb
+
+spring.teiid.model.package=com.example.demo
 ----
 
-Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for Translator "import" properties.
+Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for JDBC Translator "import" properties.
 
 property "spring.datasource.mydb.platform" defines the prefix for the init scripts for your database, data-${platform}.sql and schema-${platform}.sql. Also disable hibernate to generate any hb2ddl scripts. 
+
+For example purpose lets define a some schema and data. If you are working with existing database you do NOT need to do this
+
+[source,sql]
+.*schema-mydb.sql*
+```
+SET SCHEMA petstore;
+
+CREATE TABLE Pet
+(
+    id int,
+    name varchar(50),
+    tag char(10),
+    CONSTRAINT PK_PET PRIMARY KEY(id)
+);
+```
+
+[source,sql]
+.*data-mydb.sql*
+```
+INSERT INTO pet (id, name, tag) VALUES (1,'rocky', 'sold');
+INSERT INTO pet (id, name, tag) VALUES (2,'nikky', 'available');
+INSERT INTO pet (id, name, tag) VALUES (3,'micky', 'pending');
+```
+
+Copy above two files into `src/main/resources` directory.
 
 === Create an Application class
 
@@ -181,7 +237,7 @@ Here you create an Application class with all the components.
 [source,java]
 .src/main/java/org/example/Application.java
 ----
-package org.example;
+package com.example.demo;
 
 @SpringBootApplication
 public class Application {    
@@ -199,7 +255,7 @@ mvn clean install
 and run the application
 
 ----
-java -jar target/example-1.0.0-SNAPSHOT.jar
+java -jar target/demo-1.0.0-SNAPSHOT.jar
 ----
 
 ==== That's it, You are done exposing the Data Source with OpenAPI

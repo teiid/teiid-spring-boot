@@ -18,7 +18,6 @@ package org.teiid.maven;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,11 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -65,7 +60,7 @@ import com.github.mustachejava.MustacheFactory;
 public class VdbCodeGeneratorMojo extends AbstractMojo {
     public static final SystemFunctionManager SFM = SystemMetadata.getInstance().getSystemFunctionManager();
 
-    @Parameter(defaultValue = "${basedir}/src/main/resources/teiid-vdb.ddl")
+    @Parameter(defaultValue = "${basedir}/src/main/resources/teiid.ddl")
     private File vdbFile;
 
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -130,9 +125,21 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 createDataSources(mf, javaSrcDir, database, parentMap);
             }
             verifyTranslatorDependencies(database);
+
+            // also look for .yml equivalent
+            if (!this.openApiFile.exists()) {
+                String ymlFile = this.openApiFile.getAbsolutePath().replace("openapi.json", "openapi.yml");
+                if (!ymlFile.contentEquals(this.openApiFile.getAbsolutePath())) {
+                    this.openApiFile = new File(ymlFile);
+                }
+            }
+
             if (generateOpenApiScoffolding() && this.openApiFile.exists()) {
+                getLog().info("Found the OpenAPI document at " + this.openApiFile.getAbsolutePath());
                 ApiGenerator generator = new ApiGenerator(openApiFile, outputDirectory, getLog());
                 generator.generate(mf, javaSrcDir, database, parentMap);
+            } else {
+                getLog().info("No OpenAPI document found, no classes for the OpenAPI will be generated ");
             }
             this.project.addCompileSourceRoot(javaSrcDir.getAbsolutePath());
 
@@ -172,6 +179,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
     private void createApplication(MustacheFactory mf, File javaSrcDir, Database database, HashMap<String, String> props)
             throws Exception {
+        getLog().info("Creating the Application.java class");
         Mustache mustache = mf.compile(
                 new InputStreamReader(this.getClass().getResourceAsStream("/templates/Application.mustache")),
                 "application");
@@ -266,48 +274,15 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             return this.vdbFile;
         }
 
-        // read import vdbs from dependencies
-        Set<Artifact> dependencies = project.getArtifacts();
-        for (Artifact d : dependencies) {
-            if (d.getFile() == null || !d.getFile().getName().endsWith(".vdb")) {
-                continue;
+        String f = this.vdbFile.getAbsolutePath().replace("teiid.ddl", "teiid.vdb");
+        if (!f.contentEquals(this.openApiFile.getAbsolutePath())) {
+            this.vdbFile = new File(f);
+            if (this.vdbFile.exists()) {
+                return this.vdbFile;
             }
-            File vdbDir = unzipContents(d);
-            File childFile = new File(vdbDir, "vdb.ddl");
-            return childFile;
         }
-
         throw new MojoExecutionException(
                 "No VDB File found at location " + this.vdbFile + " or no VDB dependencies defined");
-    }
-
-
-
-    private File unzipContents(Artifact d) throws IOException {
-        File f = new File(this.project.getBuild().getDirectory(), d.getArtifactId());
-        f.mkdirs();
-        getLog().info("unzipping " + d.getArtifactId() + " to directory " + f.getCanonicalPath());
-
-        byte[] buffer = new byte[1024];
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(d.getFile()));
-        ZipEntry ze = zis.getNextEntry();
-        while (ze != null) {
-            String fileName = ze.getName();
-            getLog().info("\t" + fileName);
-            File newFile = new File(f, fileName);
-            new File(newFile.getParent()).mkdirs();
-            FileOutputStream fos = new FileOutputStream(newFile);
-            int len;
-            while ((len = zis.read(buffer)) > 0) {
-                fos.write(buffer, 0, len);
-            }
-            fos.close();
-
-            zis.closeEntry();
-            ze = zis.getNextEntry();
-        }
-        zis.close();
-        return f;
     }
 
     private ClassLoader getClassLoader() throws MojoExecutionException {
