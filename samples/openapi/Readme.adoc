@@ -262,8 +262,8 @@ java -jar target/demo-1.0.0-SNAPSHOT.jar
 
 Once you execute this application, Teiid Spring Boot will connect to the data source configured and expose a OpenAPI rest interface using the Spring Boot's built in web engine. You can issue a call to swagger-ui using the URL below.
 
----
+----
 http://localhost:8080/swagger-ui.html
----
+----
      
 That's it you have successfully implemented OpenAPI interface using a Teiid's Virtual database. Since Teiid supports various data sources, you can expose this API on any data source. For full support of all the data sources supported checkout Teiid documentation on at link:http://teiid.io[Teiid.io]
