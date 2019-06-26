@@ -32,28 +32,25 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.teiid.adminapi.Model;
-import org.teiid.adminapi.VDB;
+import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.Schema;
 import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
 import org.teiid.olingo.service.OlingoBridge.HandlerInfo;
 import org.teiid.olingo.web.OpenApiHandler;
 import org.teiid.spring.autoconfigure.TeiidServer;
-import org.teiid.spring.identity.SpringSecurityHelper;
 import org.teiid.vdb.runtime.VDBKey;
 
 public class SpringODataFilter implements HandlerInterceptor {
     static final String CONTEXT_PATH = "__CONTEXT_PATH__";
     private TeiidServer server;
-    private VDB vdb;
+    private VDBMetaData vdb;
     protected OpenApiHandler openApiHandler;
     protected SoftReference<OlingoBridge> clientReference = null;
     protected Properties connectionProperties;
-    private SpringSecurityHelper securityHelper;
     private Map<Object, Future<Boolean>> loadingQueries = new ConcurrentHashMap<>();
 
-    public SpringODataFilter(Properties props, TeiidServer server, VDB vdb, ServletContext servletContext,
-            SpringSecurityHelper securityHelper) {
+    public SpringODataFilter(Properties props, TeiidServer server, VDBMetaData vdb, ServletContext servletContext) {
         this.connectionProperties = props;
         this.server = server;
         this.vdb = vdb;
@@ -62,7 +59,6 @@ public class SpringODataFilter implements HandlerInterceptor {
         } catch (ServletException e) {
             throw new IllegalStateException(e);
         }
-        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -102,7 +98,7 @@ public class SpringODataFilter implements HandlerInterceptor {
         }
 
         // figure out vdbname and model name from paths are assume defaults
-        VDB requestVDB = this.vdb;
+        VDBMetaData requestVDB = this.vdb;
         String vdbName = this.vdb.getName();
         String vdbVersion = this.vdb.getVersion();
         boolean implicitVdb = vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true");
@@ -155,13 +151,19 @@ public class SpringODataFilter implements HandlerInterceptor {
         return true;
     }
 
-    public String modelName(String path, VDB vdb, boolean implicitVdb) {
+    public String modelName(String path, VDBMetaData vdb, boolean implicitVdb) {
         if (path != null && path.isEmpty()) {
             path = null;
         }
-        Schema schema = server.getSchema("teiid");
-        if (path == null && schema != null && !schema.getTables().isEmpty() && implicitVdb) {
-            return "teiid";
+        String defaultSchema = vdb.getPropertyValue("default_odata_schema");
+        if (defaultSchema == null && implicitVdb) {
+            defaultSchema = "teiid";
+        }
+        if (defaultSchema != null) {
+            Schema schema = server.getSchema(vdb, defaultSchema);
+            if (schema != null) {
+                return defaultSchema;
+            }
         }
 
         String modelName = null;
