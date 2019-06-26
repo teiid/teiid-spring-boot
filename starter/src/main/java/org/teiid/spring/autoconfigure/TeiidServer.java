@@ -654,8 +654,7 @@ public class TeiidServer extends EmbeddedServer {
         vdb.addModel(model);
     }
 
-    public Schema getSchema(String modelName) {
-        VDBMetaData vdb = getVDBRepository().getVDB(VDBNAME, VDBVERSION); // $NON-NLS-1$
+    public Schema getSchema(VDBMetaData vdb, String modelName) {
         if (vdb == null) {
             return null;
         }
