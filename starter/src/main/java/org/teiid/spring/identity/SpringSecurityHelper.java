@@ -32,62 +32,41 @@ import org.teiid.security.SecurityHelper;
 
 public class SpringSecurityHelper implements SecurityHelper {
     private static final String ANONYMOUS = "anonymous";
-    private static ThreadLocal<TeiidSecurityContext> securityContext = new ThreadLocal<TeiidSecurityContext>();
     private static final Log logger = LogFactory.getLog(SpringSecurityHelper.class);
 
     private AuthenticationManager authenticationManager;
 
     @Override
-    public TeiidSecurityContext associateSecurityContext(Object newContext) {
-        TeiidSecurityContext context = securityContext.get();
+    public Object associateSecurityContext(Object newContext) {
+        Authentication context = SecurityContextHolder.getContext().getAuthentication();
         if (newContext != context) {
-            TeiidSecurityContext tsc = (TeiidSecurityContext)newContext;
-            securityContext.set(tsc);
-            SecurityContextHolder.getContext().setAuthentication(tsc!=null?tsc.getAuthentication():null);
+            SecurityContextHolder.getContext().setAuthentication((Authentication)newContext);
         }
         return context;
     }
 
     @Override
     public void clearSecurityContext() {
-        securityContext.remove();
         SecurityContextHolder.getContext().setAuthentication(null);
     }
 
-    public TeiidSecurityContext getSecurityContext() {
-        return securityContext.get();
-    }
-
-    public Subject getSubjectInContext(String securityDomain) {
-        TeiidSecurityContext tsc = securityContext.get();
-        if (tsc != null && tsc.getSecurityDomain().equals(securityDomain)) {
-            return getSubjectInContext(tsc);
-        }
-        return null;
-    }
-
+    @Override
     public Object getSecurityContext(String securityDomain) {
-        TeiidSecurityContext tsc = securityContext.get();
-        if (tsc != null && tsc.getSecurityDomain().equals(securityDomain)) {
-            return tsc;
-        }
-        return null;
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 
     @Override
     public Subject getSubjectInContext(Object context) {
-        if (!(context instanceof TeiidSecurityContext)) {
+        if (!(context instanceof Authentication)) {
             return null;
         }
-        TeiidSecurityContext sc = (TeiidSecurityContext)context;
-        return sc.getSubject();
+        Authentication sc = (Authentication)context;
+        return buildSubject(sc);
     }
 
     @Override
     public Object authenticate(String securityDomain, String baseUserName,
             Credentials credentials, String applicationName) throws LoginException {
-        Subject s = null;
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authenticationManager != null) {
             //if authentication is not null, we'll logically treat as caller identity
@@ -102,15 +81,13 @@ public class SpringSecurityHelper implements SecurityHelper {
                 }
             }
             baseUserName = authentication.getName();
+        } else {
+            return null;
         }
-        s = buildSubject(authentication);
-
         if (logger.isTraceEnabled()) {
-            logger.trace("Logged in user: " + s);
+            logger.trace("Logged in user: " + baseUserName);
         }
-        TeiidSecurityContext tsc =  new TeiidSecurityContext(s, baseUserName, securityDomain, authentication);
-        associateSecurityContext(tsc);
-        return tsc;
+        return authentication;
     }
 
     @Override
