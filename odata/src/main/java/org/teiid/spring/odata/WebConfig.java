@@ -79,7 +79,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     SpringODataFilter getOdataFilter() {
-        return new SpringODataFilter(this.props, this.server, this.vdb, this.servletContext, this.securityHelper);
+        return new SpringODataFilter(this.props, this.server, this.vdb, this.servletContext);
     }
 
     @Bean

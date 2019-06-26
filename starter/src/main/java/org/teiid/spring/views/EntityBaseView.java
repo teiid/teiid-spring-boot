@@ -127,7 +127,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
         String foundIn = null;
         boolean found = false;
         for (Model model : vdb.getModels()) {
-            Schema s = this.server.getSchema(model.getName());
+            Schema s = this.server.getSchema(vdb, model.getName());
             Table table = s.getTable(tableName);
             if (table != null) {
                 if (!found) {
