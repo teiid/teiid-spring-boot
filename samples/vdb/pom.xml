@@ -40,9 +40,9 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>spring-openapi</artifactId>
+      <artifactId>spring-data-rest</artifactId>
     </dependency>
-    <dependency>
+    <dependency>    
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
@@ -51,23 +51,6 @@
 
   <build>
     <plugins>
-<!--       <plugin>
-        <groupId>org.teiid</groupId>
-        <artifactId>vdb-codegen-plugin</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          <packageName>org.teiid.spring.example</packageName>
-          <generateApplicationClass>false</generateApplicationClass>
-          <vdbFile>src/main/resources/customer-vdb.ddl</vdbFile>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>vdb-codegen</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin> -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

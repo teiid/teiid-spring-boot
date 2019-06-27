@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
@@ -55,6 +56,7 @@ import org.teiid.core.types.InputStreamFactory;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.spring.data.BaseConnection;
 import org.teiid.translator.ws.WSConnection;
+import org.teiid.util.WSUtil;
 
 public class RestConnection extends BaseConnection implements WSConnection {
 
@@ -97,7 +99,8 @@ public class RestConnection extends BaseConnection implements WSConnection {
         private RestTemplate template;
         private BeanFactory beanFactory;
 
-        public HttpDispatch(String endpoint, RestTemplate template, BeanFactory beanFactory, String binding) {
+        public HttpDispatch(String endpoint, RestTemplate template, BeanFactory beanFactory, String binding,
+                Map<String, List<String>> inHeaders) {
             this.endpoint = endpoint;
             this.template = template;
             this.beanFactory = beanFactory;
@@ -105,6 +108,9 @@ public class RestConnection extends BaseConnection implements WSConnection {
             Map<String, List<String>> httpHeaders = new HashMap<String, List<String>>();
             httpHeaders.put("Content-Type", Collections.singletonList("text/xml; charset=utf-8"));//$NON-NLS-1$ //$NON-NLS-2$
             httpHeaders.put("User-Agent", Collections.singletonList("Teiid Server"));//$NON-NLS-1$ //$NON-NLS-2$
+            for (Map.Entry<String, List<String>> entry : inHeaders.entrySet()) {
+                httpHeaders.put(entry.getKey(), entry.getValue());
+            }
             getRequestContext().put(MessageContext.HTTP_REQUEST_HEADERS, httpHeaders);
         }
 
@@ -203,16 +209,69 @@ public class RestConnection extends BaseConnection implements WSConnection {
     @Override
     @SuppressWarnings("unchecked")
     public <T> Dispatch<T> createDispatch(String binding, String endpoint, Class<T> type, Mode mode) {
-        Dispatch<T> dispatch = (Dispatch<T>) new HttpDispatch(endpoint, this.template, this.beanFactory, binding);
+        if (endpoint != null) {
+            try {
+                new URL(endpoint);
+                //valid url, just use the endpoint
+            } catch (MalformedURLException e) {
+                //otherwise it should be a relative value
+                //but we should still preserve the base path and query string
+                String defaultEndpoint = this.endpoint;
+                String defaultQueryString = null;
+                String defaultFragment = null;
+                if (defaultEndpoint == null) {
+                    throw new IllegalStateException("The use of a relative endpoint in a procedure call "
+                            + "requires a a default endpoint on the datasource.");
+                }
+                String[] parts = defaultEndpoint.split("\\?", 2); //$NON-NLS-1$
+                defaultEndpoint = parts[0];
+                if (parts.length > 1) {
+                    defaultQueryString = parts[1];
+                    parts = defaultQueryString.split("#"); //$NON-NLS-1$
+                    defaultQueryString = parts[0];
+                    if (parts.length > 1) {
+                        defaultFragment = parts[1];
+                    }
+                }
+                if (endpoint.startsWith("?") || endpoint.startsWith("/") || defaultEndpoint.endsWith("/")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    endpoint = defaultEndpoint + endpoint;
+                } else {
+                    endpoint = defaultEndpoint + "/" + endpoint; //$NON-NLS-1$
+                }
+                if ((defaultQueryString != null) && (defaultQueryString.trim().length() > 0)) {
+                    endpoint = WSUtil.appendQueryString(endpoint, defaultQueryString);
+                }
+                if ((defaultFragment != null) && (endpoint.indexOf('#') < 0)) {
+                    endpoint = endpoint + '#' + defaultFragment;
+                }
+            }
+        } else {
+            endpoint = this.endpoint;
+            if (endpoint == null) {
+                throw new IllegalStateException("The use of a relative endpoint in a procedure call "
+                        + "requires a a default endpoint on the datasource.");
+            }
+        }
+        Dispatch<T> dispatch = (Dispatch<T>) new HttpDispatch(endpoint, this.template, this.beanFactory, binding,
+                this.headers);
         return dispatch;
     }
 
     private RestTemplate template;
     private BeanFactory beanFactory;
+    private Map<String, List<String>> headers;
+    private String endpoint;
 
     public RestConnection(RestTemplate template, BeanFactory beanFactory) {
+        this(template, beanFactory, null, null);
+    }
+
+    public RestConnection(RestTemplate template, BeanFactory beanFactory, String endpoint,
+            Map<String, List<String>> headers) {
         this.template = template;
         this.beanFactory = beanFactory;
+        this.headers = headers;
+        this.endpoint = endpoint;
     }
 
     @Override

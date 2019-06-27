@@ -196,23 +196,33 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             }
 
             boolean foundDependency = false;
-            List<Dependency> dependencies = project.getDependencies();
-            for (Dependency d : dependencies) {
-                String gav = d.getGroupId() + ":" + d.getArtifactId();
-                getLog().info("Found dependency:" + gav);
-                if (source.getGav().equals(gav)) {
-                    foundDependency = true;
+            for (String g : source.getGav()) {
+                foundDependency = false;
+                List<Dependency> dependencies = project.getDependencies();
+                for (Dependency d : dependencies) {
+                    String gav = d.getGroupId() + ":" + d.getArtifactId();
+                    if (g.equals(gav)) {
+                        getLog().info("Found dependency:" + gav);
+                        foundDependency = true;
+                    }
+                }
+                if (!foundDependency) {
+                    break;
                 }
             }
 
             if (!foundDependency) {
                 if (source.getGav() != null) {
-                    throw new MojoExecutionException("Drivers for translator \"" + dw.getName()
-                    + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
-                    + "    <groupId>" + source.getGav().substring(0, source.getGav().indexOf(':'))
-                    + "</groupId>\n" + "    <artifactId>"
-                    + source.getGav().substring(source.getGav().indexOf(':') + 1) + "</artifactId>\n"
-                    + "</dependency>\n");
+                    StringBuilder sb = new StringBuilder();
+                    for (String g : source.getGav()) {
+                        sb.append("Drivers for translator \"" + dw.getName()
+                        + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
+                        + "    <groupId>" + g.substring(0, g.indexOf(':'))
+                        + "</groupId>\n" + "    <artifactId>"
+                        + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
+                        + "</dependency>\n\n");
+                    }
+                    throw new MojoExecutionException(sb.toString());
                 } else {
                     getLog().error("Drivers for translator \"" + dw.getName()
                     + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
