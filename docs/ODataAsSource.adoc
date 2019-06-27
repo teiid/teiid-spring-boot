@@ -1,0 +1,93 @@
+== Adding external OData Service as Source in the VDB
+
+This guide shows how add an external third party OData V2 or OData v4 service in your the Teiid Spring Boot application as a source, such that the data from this OData service can be read as part of the VDB.
+
+To use the OData service in the application you need following dependencies to your pom.xml file.
+
+[source, xml]
+----
+<dependency>
+    <groupId>org.teiid</groupId>
+    <artifactId>spring-data-rest</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.connectors</groupId>
+    <artifactId>translator-odata4</artifactId>
+</dependency>  
+----
+
+NOTE: If you are using OData V2, use the dependency `org.teiid.connectors:translator-odata`
+
+
+To represent the connection to the OData service, add the following Java class to your application. The package name assumed as `com.example`.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+    @ConfigurationProperties(prefix = "spring.teiid.rest.oservice")
+    @Bean
+    public RestConnectionFactory oservice() {
+        return new RestConnectionFactory();
+    }
+}
+----
+
+Note: Please note that the name `oservice` in the annotation and as method name match exactly to that of the `SERVER` defined in the VDB file. See example below.
+
+In above code `spring.teiid.rest` defines the prefix of properties that can be used to configure the connection. Each property is postfixed with unique name like `oservice` as in below example to identify the name of the connection then followed by the property name.
+
+To configure a REST service with different security profiles use the following properties
+
+[source, text]
+.*No Security*
+----
+spring.teiid.rest.oservice.endpoint=<endpoint>
+----
+
+
+[source, text]
+.*Http Basic Authentication*
+----
+spring.teiid.rest.oservice.securityType=http-basic
+spring.teiid.rest.oservice.userName = <user>
+spring.teiid.rest.oservice.password = <password>
+spring.teiid.rest.oservice.endpoint=<endpoint>
+----
+
+
+[source, text]
+.*OAuth2/Openid-Connect Authentication*
+----
+spring.teiid.rest.oservice.securityType=openid-connect
+spring.teiid.rest.oservice.clientId=<client-id>
+spring.teiid.rest.oservice.clientSecret=<client-secret>
+spring.teiid.rest.oservice.userName = <user>
+spring.teiid.rest.oservice.password = <password>
+spring.teiid.rest.oservice.refreshToken=<token>
+spring.teiid.rest.oservice.authorizeUrl=<authurl>
+spring.teiid.rest.oservice.accessTokenUrl=<access-tken-utl>
+spring.teiid.rest.oservice.endpoint=<endpoint>
+----
+
+Note: in above either `userName` and `password` are required or you can supply the `refreshToken`. If both are supplied, `refreshToken` is given preference.
+
+=== VDB Example
+With above the connection is configured, but to use that connection as source in the VDB, one need to configure VDB like below.
+
+[source,SQL, numbered]
+----
+CREATE FOREIGN DATA WRAPPER odata4;
+CREATE SERVER oservice TYPE 'oservice' FOREIGN DATA WRAPPER odata4;
+CREATE SCHEMA portfolio SERVER oservice;
+IMPORT FOREIGN SCHEMA accounts FROM SERVER oservice INTO portfolio;
+----
+<1> Creates a translator for OData V4 as `odata4`. If you are using the OData V2 based service use `odata` as the identifier.
+<2> Creates a connection to the `oservice` SERVER module using the `odata4` as translator
+<3> Creates a Schema object the VDB
+<4> Imports metadata from connection in <2>  into Schema <3>. This example shows the import of `accounts` schema in OData service. 
+
+Note: Above is a fragment of the VDB not a whole VDB

@@ -1,0 +1,98 @@
+== Adding external Rest Service as Source in the VDB
+
+This guide shows how add an external third party Rest service in your the Teiid Spring Boot application as a source, such that the data from this Rest service can be read as part of the VDB.
+
+To use the OData service in the application you need following dependencies to your pom.xml file.
+
+[source, xml]
+----
+<dependency>
+    <groupId>org.teiid</groupId>
+    <artifactId>spring-data-rest</artifactId>
+</dependency>
+----
+
+To represent the connection to the Rest service, add the following Java class to your application. The package name assumed as `com.example`.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+    @ConfigurationProperties(prefix = "spring.teiid.rest.oservice")
+    @Bean
+    public RestConnectionFactory oservice() {
+        return new RestConnectionFactory();
+    }
+}
+----
+
+Note: Please note that the name `oservice` in the annotation and as method name match exactly to that of the `SERVER` defined in the VDB file. See example below.
+
+In above code `spring.teiid.rest` defines the prefix of properties that can be used to configure the connection. Each property is postfixed with unique name like `oservice` as in below example to identify the name of the connection then followed by the property name.
+
+To configure a REST service with different security profiles use the following properties
+
+[source, text]
+.*No Security*
+----
+spring.teiid.rest.oservice.endpoint=<endpoint>
+----
+
+
+[source, text]
+.*Http Basic Authentication*
+----
+spring.teiid.rest.oservice.securityType=http-basic
+spring.teiid.rest.oservice.userName = <user>
+spring.teiid.rest.oservice.password = <password>
+spring.teiid.rest.oservice.endpoint=<endpoint>
+----
+
+
+[source, text]
+.*OAuth2/Openid-Connect Authentication*
+----
+spring.teiid.rest.oservice.securityType=openid-connect
+spring.teiid.rest.oservice.clientId=<client-id>
+spring.teiid.rest.oservice.clientSecret=<client-secret>
+spring.teiid.rest.oservice.userName = <user>
+spring.teiid.rest.oservice.password = <password>
+spring.teiid.rest.oservice.refreshToken=<token>
+spring.teiid.rest.oservice.authorizeUrl=<authurl>
+spring.teiid.rest.oservice.accessTokenUrl=<access-tken-utl>
+spring.teiid.rest.oservice.endpoint=<endpoint>
+----
+
+Note: in above either `userName` and `password` are required or you can supply the `refreshToken`. If both are supplied, `refreshToken` is given preference.
+
+=== VDB Example
+With above the connection is configured, but to use that connection as source in the VDB, one need to configure VDB like below.
+
+A Rest based connection is typically used with some defined translator in the VDB, like `odata` translator or `openpi` transltor. However in the case that you are trying to reach a service with no metadata semantics then to facilitate that interaction, the basic `ws` translator provides a procedure called `invokeHttp`, which can be used in your VDB. For example the below example shows a call a to REST service that returns a JSON content, that is gain parsed into a tabular structure using `JSONTable` language construct in Teiid.
+
+[source,SQL, numbered]
+----
+CREATE FOREIGN DATA WRAPPER rest;
+CREATE SERVER oservice TYPE 'oservice' FOREIGN DATA WRAPPER rest;
+CREATE SCHEMA myservice SERVER oservice;
+CREATE VIRTUAL SCHEMA portfolio;
+SET SCHEMA portfolio;
+
+CREATE VIRTUAL PROCEDURE getPets(IN status string) RETURNS TABLE (id integer, name string, status string)
+BEGIN  
+  DECLARE STRING qp = (('http://host/context/pets' || '/') || status);  
+  SELECT A.ISBN AS ISBN, A.TITLE AS TITLE 
+    FROM (EXEC rest.invokeHttp(action=>'GET', endpoint=>qp, headers=>jsonObject('application/json' as "Accept")) AS f, 
+    JSONTABLE(f.result, '$', false COLUMNS id integer, name string, status string) AS A);  
+END 
+----
+<1> Creates a translator for service called `rest`
+<2> Creates a connection to the `oservice` SERVER module using the `rest` as translator
+<3> Creates a Schema object the VDB
+
+<6> Defines a stored procedure, which reads the JSON content from a REST API defined, and parses the content into a relational table and returns table contents to the caller.
+
+Note: Above is a fragment of the VDB not a whole VDB

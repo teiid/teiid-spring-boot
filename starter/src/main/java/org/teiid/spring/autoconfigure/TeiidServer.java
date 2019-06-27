@@ -215,6 +215,15 @@ public class TeiidServer extends EmbeddedServer {
                 if (clazz != null) {
                     addTranslator(clazz);
                 } else {
+                    ExternalSource source = ExternalSource.find(translatorname);
+                    if (source != null) {
+                        StringBuilder sb = new StringBuilder();
+                        for (String str: source.getGav()) {
+                            sb.append("\n").append(str);
+                        }
+                        throw new IllegalStateException("The following Dependencies is missing, \n"
+                                + sb.toString() + " \n\nin your pom.xml. Please add these dependencies.");
+                    }
                     throw new IllegalStateException("Failed to load translator " + translatorname
                             + ". Check to make sure @Translator annotation is added on your custom translator "
                             + "and also set the 'spring.teiid.model.package' set to package where the translator "
