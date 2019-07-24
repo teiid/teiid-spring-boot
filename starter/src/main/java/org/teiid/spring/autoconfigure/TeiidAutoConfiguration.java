@@ -256,6 +256,7 @@ public class TeiidAutoConfiguration implements Ordered {
                 sc.setPortNumber(this.properties.getJdbcPort());
                 sc.setProtocol(WireProtocol.teiid);
                 embeddedConfiguration.addTransport(sc);
+                logger.info("JDBC Port is opened on :" + this.properties.getJdbcPort());
             }
 
             if (this.properties.isJdbcSecureEnable()) {
@@ -264,6 +265,7 @@ public class TeiidAutoConfiguration implements Ordered {
                 sc.setProtocol(WireProtocol.teiid);
                 sc.setSSLConfiguration(this.properties.getSsl());
                 embeddedConfiguration.addTransport(sc);
+                logger.info("Secure JDBC Port is opened on :" + this.properties.getJdbcSecurePort());
             }
 
             if (this.properties.isPgEnable()) {
@@ -271,6 +273,7 @@ public class TeiidAutoConfiguration implements Ordered {
                 sc.setPortNumber(this.properties.getPgPort());
                 sc.setProtocol(WireProtocol.pg);
                 embeddedConfiguration.addTransport(sc);
+                logger.info("PG Port is opened on :" + this.properties.getPgPort());
             }
 
             if (this.properties.isPgSecureEnable()) {
@@ -279,6 +282,7 @@ public class TeiidAutoConfiguration implements Ordered {
                 sc.setProtocol(WireProtocol.pg);
                 sc.setSSLConfiguration(this.properties.getSsl());
                 embeddedConfiguration.addTransport(sc);
+                logger.info("Secure PG Port is opened on :" + this.properties.getPgSecurePort());
             }
         }
 
