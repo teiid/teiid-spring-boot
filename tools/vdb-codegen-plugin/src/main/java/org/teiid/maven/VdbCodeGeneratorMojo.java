@@ -117,7 +117,9 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             parentMap.put("packageName", this.packageName);
             parentMap.put("vdbName", database.getName());
             parentMap.put("vdbDescription", database.getAnnotation());
-            parentMap.put("openapi", generateOpenApiScoffolding()?"true":"false");
+            if (generateOpenApiScoffolding()) {
+                parentMap.put("openapi", generateOpenApiScoffolding()?"true":"false");
+            }
             if (this.generateApplicationClass) {
                 createApplication(mf, javaSrcDir, database, parentMap);
             }
