@@ -21,6 +21,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.teiid.query.sql.symbol.Function;
+
 /**
  * Use this annotation on any Entity class, that defines the data from a JSON
  * file or web resource.<br>
@@ -97,10 +99,10 @@ public @interface JsonTable {
      * On Class ONLY The endpoint where the document is located at. If this is file
      * resource then this field can be used to define name of the file. If this is
      * REST based call, it can either define the endpoint URL or can refer to a bean
-     * name that returns {@link Function&lt;org.teiid.translator.ExecutionContext,
-     * byte[]&gt;} or {@link Function&lt;org.teiid.translator.ExecutionContext,
-     * String&gt;} or {@link Function&lt;org.teiid.translator.ExecutionContext,
-     * InputStream&gt;} Where byte[], String and InputStream are response from the
+     * name that returns {@link Function} &lt;org.teiid.translator.ExecutionContext,
+     * byte[]&gt; or {@link Function} &lt;org.teiid.translator.ExecutionContext,
+     * String&gt; or {@link Function} &lt;org.teiid.translator.ExecutionContext,
+     * InputStream&gt; Where byte[], String and InputStream are response from the
      * REST call made.
      *
      * @return string - file/endpoint or name of the bean
