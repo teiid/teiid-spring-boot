@@ -31,14 +31,13 @@ import org.teiid.spring.data.salesforce.SalesforceConnectionFactory;
 @Configuration
 public class DataSources{{dsName}} {
 
-    @Bean
+    @Bean(name="{{dsName}}")
     @Autowired
-    @Qualifier("{{dsName}}")
-    public SalesforceConnectionFactory {{dsName}}(SalesforceConfiguration config) {
+    public SalesforceConnectionFactory {{dsName}}(@Qualifier("{{dsName}}-config") SalesforceConfiguration config) {
         return new SalesforceConnectionFactory(config);
     }
 
-    @Bean(name="{{dsName}}")
+    @Bean(name="{{dsName}}-config")
     @ConfigurationProperties("spring.teiid.data.salesforce.{{dsName}}")
     public SalesforceConfiguration salesforceConfig() {
         return new SalesforceConfiguration();

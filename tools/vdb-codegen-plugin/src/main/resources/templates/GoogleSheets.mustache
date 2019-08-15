@@ -27,14 +27,13 @@ import org.teiid.spring.data.google.SpreadsheetConnectionFactory;
 @Configuration
 public class DataSources {
 
-    @Bean
-    @Autowired
-    @Qualifier("{{dsName}}")
-    public SpreadsheetConnectionFactory source(SpreadSheetConfiguration config) {
+    @Bean(name="{{dsName}}")
+    @Autowired    
+    public SpreadsheetConnectionFactory source(@Qualifier("{{dsName}}-config") SpreadSheetConfiguration config) {
         return new SpreadsheetConnectionFactory(config);
     }
 
-    @Bean(name="{{dsName}}")
+    @Bean(name="{{dsName}}-config")
     @ConfigurationProperties("spring.teiid.data.google.sheets.{{dsName}}")
     public SpreadSheetConfiguration sheetsConfig() {
         return new SpreadSheetConfiguration();
