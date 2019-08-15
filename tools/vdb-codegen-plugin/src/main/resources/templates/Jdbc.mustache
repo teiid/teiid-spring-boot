@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 public class DataSources{{dsName}} {
 
     @ConfigurationProperties(prefix = "spring.datasource.{{dsName}}")
-    @Bean
+    @Bean(name="{{dsName}}")
     public DataSource {{dsName}}() {
         return DataSourceBuilder.create().build();
     }

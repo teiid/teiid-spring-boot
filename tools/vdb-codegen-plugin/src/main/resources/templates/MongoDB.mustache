@@ -28,7 +28,7 @@ import org.teiid.spring.data.mongodb.MongoDBConnectionFactory;
 
 @Configuration
 public class DataSources{{dsName}} {
-    @Bean
+    @Bean(name="{{dsName}}")
     public MongoDBConnectionFactory {{dsName}}(@Autowired MongoTemplate template) {
         return new MongoDBConnectionFactory(template);
     }
