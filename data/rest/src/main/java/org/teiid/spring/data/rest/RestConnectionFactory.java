@@ -75,7 +75,8 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
     @Override
     public RestConnection getConnection() throws Exception {
         if (this.securityType == null) {
-            return new RestConnection(template, beanFactory);
+            Map<String, List<String>> headers = new HashMap<>();
+            return new RestConnection(template, beanFactory, this.endpoint, headers);
         }
         else if (this.securityType.contentEquals("http-basic")) {
             if (this.userName == null || this.password == null) {

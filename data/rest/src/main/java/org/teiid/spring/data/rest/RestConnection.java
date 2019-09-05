@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Future;
 
 import javax.activation.DataSource;
@@ -151,6 +152,9 @@ public class RestConnection extends BaseConnection implements WSConnection {
                         byte[].class);
 
                 String contentType = response.getHeaders().getContentType().toString();
+                for (Entry<String, List<String>> entry : response.getHeaders().entrySet()) {
+                    getResponseContext().put(entry.getKey(), entry.getValue());
+                }
                 getResponseContext().put(WSConnection.STATUS_CODE, response.getStatusCode().value());
                 return new HttpDataSource(url, new ByteArrayInputStream(response.getBody()), contentType);
             } catch (IOException e) {

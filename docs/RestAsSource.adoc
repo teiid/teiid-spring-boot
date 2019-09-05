@@ -12,6 +12,9 @@ To use the OData service in the application you need following dependencies to y
 </dependency>
 ----
 
+NOTE: If you are using `Swagger` V2, or `OpenAPI` add additional dependency `org.teiid.connectors:translator-swagger`
+
+
 To represent the connection to the Rest service, add the following Java class to your application. The package name assumed as `com.example`.
 
 [source,java]
@@ -71,10 +74,14 @@ Note: in above either `userName` and `password` are required or you can supply t
 === VDB Example
 With above the connection is configured, but to use that connection as source in the VDB, one need to configure VDB like below.
 
-A Rest based connection is typically used with some defined translator in the VDB, like `odata` translator or `openpi` transltor. However in the case that you are trying to reach a service with no metadata semantics then to facilitate that interaction, the basic `ws` translator provides a procedure called `invokeHttp`, which can be used in your VDB. For example the below example shows a call a to REST service that returns a JSON content, that is gain parsed into a tabular structure using `JSONTable` language construct in Teiid.
+A Rest based connection is typically used with some defined translator in the VDB, like `odata` translator or `openpi` or `swagger` transltor. However in the case that you are trying to reach a service with no metadata semantics then to facilitate that interaction, the basic `ws` translator provides a procedure called `invokeHttp`, which can be used in your VDB to invoke the REST calls. For example the below example shows a call a to REST service that returns a JSON content, that is payload is parsed into a tabular structure using `JSONTable` language construct in Teiid.
 
 [source,SQL, numbered]
 ----
+CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
+USE DATABASE customer;
+SET NAMESPACE 'http://teiid.org/rest' AS REST;
+
 CREATE FOREIGN DATA WRAPPER rest;
 CREATE SERVER oservice TYPE 'oservice' FOREIGN DATA WRAPPER rest;
 CREATE SCHEMA myservice SERVER oservice;
@@ -83,9 +90,10 @@ SET SCHEMA portfolio;
 
 CREATE VIRTUAL PROCEDURE getPets(IN status string) RETURNS TABLE (id integer, name string, status string)
 BEGIN  
-  DECLARE STRING qp = (('http://host/context/pets' || '/') || status);  
-  SELECT A.ISBN AS ISBN, A.TITLE AS TITLE 
-    FROM (EXEC rest.invokeHttp(action=>'GET', endpoint=>qp, headers=>jsonObject('application/json' as "Accept")) AS f, 
+  DECLARE STRING qp = (('http://host/context/pets' || '/') || status);
+
+  SELECT A.id, A.name, A.status
+    FROM (EXEC rest.invokeHttp(action=>'GET', endpoint=>qp, headers=>jsonObject('application/json' as "Accept")) AS f,
     JSONTABLE(f.result, '$', false COLUMNS id integer, name string, status string) AS A);  
 END 
 ----

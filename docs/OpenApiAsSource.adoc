@@ -1,8 +1,10 @@
-== Adding external OData Service as Source in the VDB
+== Access OpenApi based Rest Service using SQL
 
-This guide shows how add an external third party OData V2 or OData v4 service in your the Teiid Spring Boot application as a source, such that the data from this OData service can be read as part of the VDB.
+This guide shows how add `OpenApi` or `Swagger` based Rest service in your the Teiid Spring Boot application as a source, such that the data from this Rest service can be read as part of the VDB and integrated with other sources or just accessed using the SQL. 
 
-To use the OData service in the application you need following dependencies to your pom.xml file.
+The virtual database at startup time will fetch the api document and parse and make all the api available as SQL stored procedures for you to execute.
+
+To use the service in the application you need following dependencies to your pom.xml file.
 
 [source, xml]
 ----
@@ -11,15 +13,12 @@ To use the OData service in the application you need following dependencies to y
     <artifactId>spring-data-rest</artifactId>
 </dependency>
 <dependency>
-    <groupId>org.teiid.connectors</groupId>
-    <artifactId>translator-odata4</artifactId>
-</dependency>  
+    <groupId>org.teiid</groupId>
+    <artifactId>translator-swagger</artifactId>
+</dependency>
 ----
 
-NOTE: If you are using OData V2, use the dependency `org.teiid.connectors:translator-odata`
-
-
-To represent the connection to the OData service, add the following Java class to your application. The package name assumed as `org.example`.
+To represent the connection to the Rest service, add the following Java class to your application. The package name assumed as `org.example`.
 
 [source,java]
 .*src/main/java/org/example/DataSources.java*
@@ -36,9 +35,17 @@ public class DataSources {
 }
 ----
 
-Note: Please note that the name `oservice` in the annotation and as method name match exactly to that of the `SERVER` defined in the VDB file. See example below.
+Note: Please note that the name `oservice` in the annotation and as method name must match exactly to that of the `SERVER` defined in the VDB file. See example below.
 
 In above code `spring.teiid.rest` defines the prefix of properties that can be used to configure the connection. Each property is postfixed with unique name like `oservice` as in below example to identify the name of the connection then followed by the property name.
+
+[source, text]
+.*API Endpoint*
+```
+spring.teiid.rest.oservice.importer.metadataUrl=http://localhost:8080/openapi.json
+```
+
+The virtual database at startup time will use the above link to fetch the api document and parse and make all the api available as SQL stored procedures for you to execute.
 
 To configure a REST service with different security profiles use the following properties
 
@@ -80,14 +87,21 @@ With above the connection is configured, but to use that connection as source in
 
 [source,SQL, numbered]
 ----
-CREATE FOREIGN DATA WRAPPER odata4;
-CREATE SERVER oservice TYPE 'oservice' FOREIGN DATA WRAPPER odata4;
-CREATE SCHEMA portfolio SERVER oservice;
-IMPORT FOREIGN SCHEMA accounts FROM SERVER oservice INTO portfolio;
-----
-<1> Creates a translator for OData V4 as `odata4`. If you are using the OData V2 based service use `odata` as the identifier.
-<2> Creates a connection to the `oservice` SERVER module using the `odata4` as translator
-<3> Creates a Schema object the VDB
-<4> Imports metadata from connection in <2>  into Schema <3>. This example shows the import of `accounts` schema in OData service. 
+CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
+USE DATABASE customer;
+SET NAMESPACE 'http://teiid.org/rest' AS REST;
 
-Note: Above is a fragment of the VDB not a whole VDB
+CREATE FOREIGN DATA WRAPPER openapi;
+CREATE SERVER oservice TYPE 'oservice' FOREIGN DATA WRAPPER openapi;
+CREATE SCHEMA myservice SERVER oservice;
+IMPORT FOREIGN SCHEMA myservice FROM SERVER oservice INTO portfolio;
+
+----
+
+The above VDB when deployed will have all the API available as stored procedures, which you can execute as
+
+```
+exec myApi('foo', 'bar');
+or 
+select X.* from (exec myApi('foo', 'bar') as X);
+```

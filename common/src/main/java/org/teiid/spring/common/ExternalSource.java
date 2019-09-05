@@ -87,8 +87,12 @@ public enum ExternalSource {
             new String[] {}, "google-spreadsheet", null, new String[] {"org.teiid:spring-data-google"}),
     ODATA("odata", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "odata", null,
             new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata"}),
+    SAP_GATEWAY("sap-gateway", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "sap-gateway", null,
+            new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata"}),
     ODATA4("odata4", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "odata4",
-            null, new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata4"});
+            null, new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata4"}),
+    OPENAPI("openapi", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "openapi",
+            null, new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-swagger"});
 
     private String name;
     private String[] driverNames;
