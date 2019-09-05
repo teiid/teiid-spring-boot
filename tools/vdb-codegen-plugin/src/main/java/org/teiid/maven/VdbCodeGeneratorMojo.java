@@ -266,10 +266,21 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
                 mustache.execute(out, tempMap);
                 out.close();
-            } else if (translator.equals(ExternalSource.FILE.getTranslatorName())) {
-                // ignore as by default it is created
-            } else if (translator.equals(ExternalSource.REST.getTranslatorName())) {
-                // ignore as by default it is created
+            } else if (translator.equals(ExternalSource.FILE.getTranslatorName())
+                    || translator.equals(ExternalSource.EXCEL.getTranslatorName())) {
+                Mustache mustache = mf.compile(
+                        new InputStreamReader(getClass().getResourceAsStream("/templates/File.mustache")),
+                        "file");
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                mustache.execute(out, tempMap);
+                out.close();
+            } else if (isRestBasedTranslator(translator)) {
+                Mustache mustache = mf.compile(
+                        new InputStreamReader(getClass().getResourceAsStream("/templates/Rest.mustache")),
+                        "rest");
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                mustache.execute(out, tempMap);
+                out.close();
             } else {
                 Mustache mustache = mf.compile(
                         new InputStreamReader(getClass().getResourceAsStream("/templates/Jdbc.mustache")), "jdbc");
@@ -278,6 +289,14 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 out.close();
             }
         }
+    }
+
+    private boolean isRestBasedTranslator(String translator) {
+        return (ExternalSource.REST.getTranslatorName().equalsIgnoreCase(translator)) ||
+                (ExternalSource.OPENAPI.getTranslatorName().equalsIgnoreCase(translator)) ||
+                (ExternalSource.SAP_GATEWAY.getTranslatorName().equalsIgnoreCase(translator)) ||
+                (ExternalSource.ODATA.getTranslatorName().equalsIgnoreCase(translator)) ||
+                (ExternalSource.ODATA4.getTranslatorName().equalsIgnoreCase(translator));
     }
 
     private File getVDBFile() throws MojoExecutionException, IOException {

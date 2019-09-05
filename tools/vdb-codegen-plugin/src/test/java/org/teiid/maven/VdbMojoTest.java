@@ -60,8 +60,7 @@ public class VdbMojoTest {
         testDataSourceGeneration(outputDirectory);
         testMongoGeneration(outputDirectory);
         testSalesforceGeneration(outputDirectory);
-        //testRestGeneration(outputDirectory);
-        //testSwaggerConfig(outputDirectory);
+        testRestGeneration(outputDirectory);
     }
 
 
@@ -89,23 +88,19 @@ public class VdbMojoTest {
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 
-    /*
-    public void testSwaggerConfig(File outputDirectory)throws Exception {
-        File file = new File(outputDirectory, "com/example/SwaggerConfig.java");
-        assertTrue( file.exists() );
-        //System.out.println(FileUtils.readFileToString(file, "utf-8"));
+    public void testRestGeneration(File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/DataSourcessampleodata.java");
+        assertTrue( dsFile.exists() );
         assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/swaggerconfig.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(file, "utf-8").trim());
+                FileUtils.readFileToString(new File( "target/test-classes/rest.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 
-    public void testRestGeneration(File outputDirectory)throws Exception {
-        File file = new File(outputDirectory, "com/example/Portfolio.java");
-        assertTrue( file.exists() );
-        //System.out.println(FileUtils.readFileToString(file, "utf-8"));
+    public void testFileGeneration(File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplefile.java");
+        assertTrue( dsFile.exists() );
         assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/controller.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(file, "utf-8").trim());
+                FileUtils.readFileToString(new File( "target/test-classes/file.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
-     */
 }

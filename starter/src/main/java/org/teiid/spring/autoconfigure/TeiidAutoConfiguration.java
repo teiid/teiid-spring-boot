@@ -396,6 +396,7 @@ public class TeiidAutoConfiguration implements Ordered {
     }
 
     @Bean(name="file")
+    @ConditionalOnMissingBean
     public FileConnectionFactory fileConnectionFactory() {
         return new FileConnectionFactory();
     }

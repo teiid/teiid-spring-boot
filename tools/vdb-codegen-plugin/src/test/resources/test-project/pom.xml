@@ -55,7 +55,27 @@
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-salesforce</artifactId>
         <version>${teiid.version}</version>
-    </dependency>              
+    </dependency> 
+    <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-rest</artifactId>
+        <version>${teiid.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-odata</artifactId>
+        <version>${teiid.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-odata4</artifactId>
+        <version>${teiid.version}</version>
+    </dependency>                       
+    <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>teiid-spring-boot-starter</artifactId>
+        <version>${teiid.version}</version>
+    </dependency>                      
     <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>

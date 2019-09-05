@@ -34,6 +34,12 @@ CREATE SERVER samplemango TYPE 'NONE' FOREIGN DATA WRAPPER mongodb OPTIONS ("res
 CREATE FOREIGN DATA WRAPPER salesforce;
 CREATE SERVER samplesf TYPE 'NONE' FOREIGN DATA WRAPPER salesforce OPTIONS ("resource-name" 'samplesf');
 
+CREATE FOREIGN DATA WRAPPER odata4;
+CREATE SERVER sampleodata TYPE 'NONE' FOREIGN DATA WRAPPER odata4 OPTIONS ("resource-name" 'sampleodata');
+
+CREATE FOREIGN DATA WRAPPER file;
+CREATE SERVER samplefile TYPE 'NONE' FOREIGN DATA WRAPPER file OPTIONS ("resource-name" 'samplefile');
+
 -- create schema, then import the metadata from the PostgreSQL database
 CREATE SCHEMA accounts SERVER sampledb;
 CREATE VIRTUAL SCHEMA portfolio;
