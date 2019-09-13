@@ -85,7 +85,7 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
             }
             Map<String, List<String>> headers = new HashMap<>();
             String str = this.userName+":"+this.password;
-            headers.put(AUTHORIZATION, Arrays.asList(Base64.getEncoder().encodeToString(str.getBytes())));
+            headers.put(AUTHORIZATION,Arrays.asList("Basic "+Base64.getEncoder().encodeToString(str.getBytes())));
             return new RestConnection(this.template, this.beanFactory, this.endpoint, headers);
         } else if (securityType.contentEquals("openid-connect")) {
             if (!isAccessTokenValid()) {
