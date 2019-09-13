@@ -30,7 +30,7 @@ import com.mongodb.ServerAddress;
 public class MongoDBConfiguration {
     public enum SecurityType {None, SCRAM_SHA_1, MONGODB_CR, Kerberos, X509}
     private String remoteServerList=null;
-    private String username;
+    private String user;
     private String password;
     private String database;
     private String securityType = SecurityType.SCRAM_SHA_1.name();
@@ -58,27 +58,27 @@ public class MongoDBConfiguration {
     public MongoCredential getCredential() {
         MongoCredential credential = null;
         if (this.securityType.equals(SecurityType.SCRAM_SHA_1.name())) {
-            credential = MongoCredential.createScramSha1Credential(this.username,
+            credential = MongoCredential.createScramSha1Credential(this.user,
                     (this.authDatabase == null) ? this.database: this.authDatabase,
                             this.password.toCharArray());
         }
         else if (this.securityType.equals(SecurityType.MONGODB_CR.name())) {
-            credential = MongoCredential.createMongoCRCredential(this.username,
+            credential = MongoCredential.createMongoCRCredential(this.user,
                     (this.authDatabase == null) ? this.database: this.authDatabase,
                             this.password.toCharArray());
         }
         else if (this.securityType.equals(SecurityType.Kerberos.name())) {
-            credential = MongoCredential.createGSSAPICredential(this.username);
+            credential = MongoCredential.createGSSAPICredential(this.user);
         }
         else if (this.securityType.equals(SecurityType.X509.name())) {
-            credential = MongoCredential.createMongoX509Credential(this.username);
+            credential = MongoCredential.createMongoX509Credential(this.user);
         } else if (this.securityType.equals(SecurityType.None.name())) {
             // skip
         }
-        else if (this.username != null && this.password != null) {
+        else if (this.user != null && this.password != null) {
             // to support legacy pre-3.0 authentication
             credential = MongoCredential.createMongoCRCredential(
-                    MongoDBConfiguration.this.username,
+                    MongoDBConfiguration.this.user,
                     (this.authDatabase == null) ? this.database: this.authDatabase,
                             this.password.toCharArray());
         }
@@ -104,12 +104,12 @@ public class MongoDBConfiguration {
         this.remoteServerList = remoteServerList;
     }
 
-    public String getUsername() {
-        return this.username;
+    public String getUser() {
+        return this.user;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUser(String username) {
+        this.user = username;
     }
 
     public String getPassword() {
