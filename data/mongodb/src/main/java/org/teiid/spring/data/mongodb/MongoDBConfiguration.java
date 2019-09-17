@@ -164,7 +164,7 @@ public class MongoDBConfiguration {
         String serverlist = getRemoteServerList();
         if (!serverlist.startsWith("mongodb://")) { //$NON-NLS-1$
             List<ServerAddress> addresses = new ArrayList<ServerAddress>();
-            StringTokenizer st = new StringTokenizer(serverlist, ";"); //$NON-NLS-1$
+            StringTokenizer st = new StringTokenizer(serverlist, ","); //$NON-NLS-1$
             while (st.hasMoreTokens()) {
                 String token = st.nextToken();
                 int idx = token.indexOf(':');
