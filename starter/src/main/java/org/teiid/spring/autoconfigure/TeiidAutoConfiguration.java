@@ -253,36 +253,46 @@ public class TeiidAutoConfiguration implements Ordered {
             // add ability for remote jdbc connections
             if (this.properties.isJdbcEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
+                sc.setBindAddress(this.properties.getHostName());
                 sc.setPortNumber(this.properties.getJdbcPort());
                 sc.setProtocol(WireProtocol.teiid);
                 embeddedConfiguration.addTransport(sc);
-                logger.info("JDBC Port is opened on :" + this.properties.getJdbcPort());
+                logger.info("JDBC is opened on = " + this.properties.getHostName() + ":"
+                        + this.properties.getJdbcPort());
+
             }
 
             if (this.properties.isJdbcSecureEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
+                sc.setBindAddress(this.properties.getHostName());
                 sc.setPortNumber(this.properties.getJdbcSecurePort());
                 sc.setProtocol(WireProtocol.teiid);
                 sc.setSSLConfiguration(this.properties.getSsl());
                 embeddedConfiguration.addTransport(sc);
-                logger.info("Secure JDBC Port is opened on :" + this.properties.getJdbcSecurePort());
+                logger.info("Secure JDBC is opened on = " + this.properties.getHostName() + ":"
+                        + this.properties.getJdbcSecurePort());
             }
 
             if (this.properties.isPgEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
+                sc.setBindAddress(this.properties.getHostName());
                 sc.setPortNumber(this.properties.getPgPort());
                 sc.setProtocol(WireProtocol.pg);
                 embeddedConfiguration.addTransport(sc);
-                logger.info("PG Port is opened on :" + this.properties.getPgPort());
+                logger.info("PG is opened on = " + this.properties.getHostName() + ":"
+                        + this.properties.getPgPort());
+
             }
 
             if (this.properties.isPgSecureEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
+                sc.setBindAddress(this.properties.getHostName());
                 sc.setPortNumber(this.properties.getPgSecurePort());
                 sc.setProtocol(WireProtocol.pg);
                 sc.setSSLConfiguration(this.properties.getSsl());
                 embeddedConfiguration.addTransport(sc);
-                logger.info("Secure PG Port is opened on :" + this.properties.getPgSecurePort());
+                logger.info("Secure PG is opened on = " + this.properties.getHostName() + ":"
+                        + this.properties.getPgPort());
             }
         }
 
