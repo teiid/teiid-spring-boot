@@ -33,6 +33,8 @@ public class TeiidProperties {
     private int pgPort = 35432;
     private int pgSecurePort = 35443;
     private boolean allowAlter = false;
+    private String hostName = "0.0.0.0";
+
     private SSLConfiguration ssl = new SSLConfiguration();
 
     public TeiidProperties() {
@@ -135,4 +137,11 @@ public class TeiidProperties {
         this.ssl = ssl;
     }
 
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
 }
