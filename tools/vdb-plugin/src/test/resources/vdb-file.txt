@@ -1,0 +1,55 @@
+
+/*
+###########################################
+# START DATABASE customer
+###########################################
+*/
+CREATE DATABASE customer VERSION '1' OPTIONS (ANNOTATION 'Customer VDB');
+USE DATABASE customer VERSION '1';
+
+--############ Translators ############
+CREATE FOREIGN DATA WRAPPER h2;
+
+
+--############ Servers ############
+CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("resource-name" 'mydb');
+
+
+--############ Schemas ############
+CREATE VIRTUAL SCHEMA virt;
+
+CREATE SCHEMA accounts SERVER mydb;
+
+CREATE SCHEMA foo SERVER mydb;
+
+CREATE SCHEMA bar SERVER mydb;
+
+
+--############ Schema:virt ############
+SET SCHEMA virt;
+
+
+--############ Schema:accounts ############
+SET SCHEMA accounts;
+
+
+--############ Schema:foo ############
+SET SCHEMA foo;
+
+CREATE FOREIGN TABLE FOO (
+	name string,
+	id integer
+);
+--############ Schema:bar ############
+SET SCHEMA bar;
+
+CREATE FOREIGN TABLE BAR (
+	name string,
+	id integer
+);
+/*
+###########################################
+# END DATABASE customer
+###########################################
+*/
+
