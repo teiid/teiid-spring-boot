@@ -16,10 +16,7 @@
 package org.teiid.maven;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
@@ -29,21 +26,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveException;
-import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -83,6 +70,14 @@ public class VdbMojo extends AbstractMojo {
     @Parameter
     private Boolean includeDependencies = false;
 
+    private FileFilter vdbFilter = new FileFilter() {
+        @Override
+        public boolean accept(File f) {
+            return !f.getName().equals("vdb.ddl") && !f.getName().endsWith("-vdb.ddl") && !f.getName().endsWith(".vdb")
+                    && !f.getName().endsWith("-vdb.xml");
+        }
+    };
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -91,18 +86,19 @@ public class VdbMojo extends AbstractMojo {
 
         try {
             Thread.currentThread().setContextClassLoader(pluginClassloader);
+            if (!this.outputDirectory.exists()) {
+                this.outputDirectory.mkdirs();
+            }
+
             File artifact = new File(this.outputDirectory, this.finalName + ".vdb");
 
             this.project.getArtifact().setFile(artifact);
 
-            try (ArchiveOutputStream archive = getStream(artifact)) {
+            try (ZipArchive archive = new ZipArchive(artifact)) {
                 File vdbFile = this.getMainVDBFile();
                 if (vdbFile == null) {
                     throw new MojoExecutionException("No \"vdb.ddl\" File found in directory" + this.vdbFolder);
                 }
-
-                // add config, classes, lib and META-INF directories
-                Set<File> directories = new LinkedHashSet<>();
 
                 PluginDatabaseStore top = getDatabaseStore(vdbFile);
                 // check if the VDB has any vdb imports, if yes, then check the dependencies
@@ -115,7 +111,7 @@ public class VdbMojo extends AbstractMojo {
                         List<String> files = Files.walk(Paths.get(this.vdbFolder.getPath())).map(f -> f.toString())
                                 .filter(f -> f.endsWith("-vdb.ddl")).collect(Collectors.toList());
 
-                        for(String f : files) {
+                        for (String f : files) {
                             File childFile = new File(f);
                             mergeVDB(top, childFile, childFile.getName());
                         }
@@ -127,10 +123,10 @@ public class VdbMojo extends AbstractMojo {
                                 continue;
                             }
                             File vdbDir = unzipContents(d);
-                            File childFile = new File(vdbDir, "/META-INF/vdb.ddl");
+                            File childFile = new File(vdbDir, "META-INF/vdb.ddl");
                             // if the merge target is correct then gather up the contents
                             if (mergeVDB(top, childFile, d.getArtifactId())) {
-                                gatherContents(vdbDir, directories);
+                                archive.addToArchive(vdbDir, "", this.vdbFilter);
                             }
                         }
                     } catch (IOException e) {
@@ -147,17 +143,17 @@ public class VdbMojo extends AbstractMojo {
                 }
 
                 // gather local directory contents
-                gatherContents(this.vdbFolder, directories);
-                addToArchive(archive, "", directories.toArray(new File[0]));
+                archive.addToArchive(this.vdbFolder, "", this.vdbFilter);
 
                 File finalVDB = new File(this.outputDirectory.getPath(), "vdb.ddl");
                 finalVDB.getParentFile().mkdirs();
 
                 String vdbDDL = DDLStringVisitor.getDDLString(top.db());
                 getLog().debug(vdbDDL);
-                ObjectConverterUtil.write(new ReaderInputStream(new StringReader(vdbDDL), Charset.forName("UTF-8")),  finalVDB);
+                ObjectConverterUtil.write(new ReaderInputStream(new StringReader(vdbDDL), Charset.forName("UTF-8")),
+                        finalVDB);
 
-                addToArchive(archive, "/META-INF/", finalVDB);
+                archive.addToArchive(finalVDB, "META-INF/" + finalVDB.getName());
 
                 // add dependencies, like JDBC driver files
                 if (this.includeDependencies) {
@@ -166,7 +162,7 @@ public class VdbMojo extends AbstractMojo {
                         if (d.getFile() == null || !d.getFile().getName().endsWith(".jar")) {
                             continue;
                         }
-                        addToArchive(archive, "/lib/", d.getFile());
+                        archive.addToArchive(d.getFile(), "/lib/" + d.getFile().getName());
                     }
                 }
             } catch (Exception e) {
@@ -196,7 +192,7 @@ public class VdbMojo extends AbstractMojo {
         return store;
     }
 
-    private boolean mergeVDB(PluginDatabaseStore top,  File childFile, String childName)
+    private boolean mergeVDB(PluginDatabaseStore top, File childFile, String childName)
             throws MojoExecutionException, IOException {
         VdbImport matched = null;
 
@@ -212,7 +208,7 @@ public class VdbMojo extends AbstractMojo {
 
                 child.db().getSchemas().forEach((v) -> {
                     if (v.isPhysical()) {
-                        for (Server s: v.getServers()) {
+                        for (Server s : v.getServers()) {
                             if (top.getServer(s.getName()) == null) {
                                 String dw = s.getDataWrapper();
                                 if (top.getCurrentDatabase().getDataWrapper(dw) == null) {
@@ -246,58 +242,7 @@ public class VdbMojo extends AbstractMojo {
         File f = new File(this.outputDirectory.getPath(), d.getArtifactId());
         f.mkdirs();
         getLog().info("unzipping " + d.getArtifactId() + " to directory " + f.getCanonicalPath());
-
-        return unzipContents(d.getFile(), f);
-    }
-
-    public static File unzipContents(File in, File out) throws FileNotFoundException, IOException {
-        byte[] buffer = new byte[1024];
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(in));
-        ZipEntry ze = zis.getNextEntry();
-        while (ze != null) {
-            String fileName = ze.getName();
-            File newFile = new File(out, fileName);
-            new File(newFile.getParent()).mkdirs();
-            FileOutputStream fos = new FileOutputStream(newFile);
-            int len;
-            while ((len = zis.read(buffer)) > 0) {
-                fos.write(buffer, 0, len);
-            }
-            fos.close();
-
-            zis.closeEntry();
-            ze = zis.getNextEntry();
-        }
-        zis.close();
-        return out;
-    }
-
-    private void addFile(ArchiveOutputStream archive, String name, File file) throws IOException {
-        getLog().info("Adding file = " + name + " from " + file.getCanonicalPath());
-        ArchiveEntry entry = this.entry(file, name);
-        archive.putArchiveEntry(entry);
-        IOUtils.copy(new FileInputStream(file), archive);
-        archive.closeArchiveEntry();
-    }
-
-    protected void addToArchive(ArchiveOutputStream archive, String path, File... files) throws IOException {
-        for (File file : files) {
-            if (!file.exists()) {
-                throw new FileNotFoundException("Folder or file not found: " + file.getPath());
-            }
-            String name = path + file.getName();
-            if (file.isDirectory()) {
-                this.addToArchive(archive, name + "/", Objects.requireNonNull(file.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return !name.equals("vdb.ddl") && !name.endsWith("-vdb.ddl") && !name.endsWith(".vdb")
-                                && !name.endsWith("-vdb.xml");
-                    }
-                })));
-            } else {
-                addFile(archive, name, file);
-            }
-        }
+        return ZipArchive.unzip(d.getFile(), f);
     }
 
     protected ClassLoader getClassLoader() throws MojoExecutionException {
@@ -314,38 +259,6 @@ public class VdbMojo extends AbstractMojo {
             return new URLClassLoader(urlsForClassLoader, VdbMojo.class.getClassLoader());
         } catch (Exception e) {
             throw new MojoExecutionException("Couldn't create a classloader.", e);
-        }
-    }
-
-    protected ArchiveOutputStream getStream(File artifact) throws IOException {
-        if (!this.outputDirectory.exists()) {
-            this.outputDirectory.mkdirs();
-        }
-        FileOutputStream output = new FileOutputStream(artifact);
-        try {
-            return new ArchiveStreamFactory().createArchiveOutputStream(ArchiveStreamFactory.ZIP, output);
-        } catch (ArchiveException e) {
-            throw new IOException(e);
-        }
-    }
-
-    protected ArchiveEntry entry(File file, String name) {
-        return new ZipArchiveEntry(file, name);
-    }
-
-    protected void gatherContents(File f, Set<File> directories) {
-        if (f.exists() && f.isDirectory()) {
-            File[] list = f.listFiles();
-
-            for (File l : Objects.requireNonNull(list)) {
-                if (l.isDirectory()) {
-                    directories.add(l);
-                }
-                if (!l.getName().equals("vdb.ddl") && !l.getName().endsWith("-vdb.ddl")
-                        && !l.getName().endsWith(".vdb") && !l.getName().endsWith("-vdb.xml")) {
-                    directories.add(l);
-                }
-            }
         }
     }
 }

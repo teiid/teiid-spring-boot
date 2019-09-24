@@ -65,7 +65,7 @@ public class VdbMojoTest {
         assertTrue( dsFile.exists() );
         File unzippped = new File(dsFile.getParentFile(), "vdb-code");
         unzippped.mkdirs();
-        VdbMojo.unzipContents(dsFile, unzippped);
+        ZipArchive.unzip(dsFile, unzippped);
         /*
         FileWriter fw = new FileWriter("foo.txt");
         fw.write(FileUtils.readFileToString(new File(unzippped.getAbsolutePath()+"/META-INF/vdb.ddl"), "utf-8"));
