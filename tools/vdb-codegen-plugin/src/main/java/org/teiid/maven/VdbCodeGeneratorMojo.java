@@ -384,13 +384,14 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             String fileName = ze.getName();
             File newFile = new File(out, fileName);
             new File(newFile.getParent()).mkdirs();
-            FileOutputStream fos = new FileOutputStream(newFile);
-            int len;
-            while ((len = zis.read(buffer)) > 0) {
-                fos.write(buffer, 0, len);
+            if (!newFile.isDirectory()) {
+                FileOutputStream fos = new FileOutputStream(newFile);
+                int len;
+                while ((len = zis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, len);
+                }
+                fos.close();
             }
-            fos.close();
-
             zis.closeEntry();
             ze = zis.getNextEntry();
         }
