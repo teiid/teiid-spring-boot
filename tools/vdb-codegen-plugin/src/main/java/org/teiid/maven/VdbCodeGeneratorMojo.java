@@ -18,6 +18,8 @@ package org.teiid.maven;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,7 +32,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -312,6 +318,22 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 return this.vdbFile;
             }
         }
+
+        // find VDB from pom.xml dependencies
+        Set<Artifact> dependencies = project.getArtifacts();
+        for (Artifact d : dependencies) {
+            if (d.getFile() == null || !d.getFile().getName().endsWith(".vdb")) {
+                continue;
+            }
+            File vdbDir = unzipContents(d);
+            this.vdbFile = new File(vdbDir, "/META-INF/vdb.ddl");
+            File openapi = new File(vdbDir, "openapi.json");
+            if (openapi.exists()) {
+                this.openApiFile = openapi;
+            }
+            break;
+        }
+
         throw new MojoExecutionException(
                 "No VDB File found at location " + this.vdbFile + " or no VDB dependencies defined");
     }
@@ -344,5 +366,35 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         }
         getLog().info("No OpenAPI dependency is found in the pom.xml, skipping the generation of the OpenAPI classes");
         return false;
+    }
+
+    private File unzipContents(Artifact d) throws IOException {
+        File f = new File(this.outputDirectory.getPath(), d.getArtifactId());
+        f.mkdirs();
+        getLog().info("unzipping " + d.getArtifactId() + " to directory " + f.getCanonicalPath());
+
+        return unzipContents(d.getFile(), f);
+    }
+
+    public static File unzipContents(File in, File out) throws FileNotFoundException, IOException {
+        byte[] buffer = new byte[1024];
+        ZipInputStream zis = new ZipInputStream(new FileInputStream(in));
+        ZipEntry ze = zis.getNextEntry();
+        while (ze != null) {
+            String fileName = ze.getName();
+            File newFile = new File(out, fileName);
+            new File(newFile.getParent()).mkdirs();
+            FileOutputStream fos = new FileOutputStream(newFile);
+            int len;
+            while ((len = zis.read(buffer)) > 0) {
+                fos.write(buffer, 0, len);
+            }
+            fos.close();
+
+            zis.closeEntry();
+            ze = zis.getNextEntry();
+        }
+        zis.close();
+        return out;
     }
 }

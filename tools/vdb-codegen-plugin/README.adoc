@@ -59,6 +59,8 @@ Alternatively, you can also define the VDB as a maven dependency. For example, i
 </dependency> 
 ----
 
+NOTE: When a VDB is defined as maven dependency, the build process also lookes for "openapi.json" file in the root directory of the VDB, if found it will be used to define the OpenAPI.
+
 == Plugin Configuration Properties
 The below are all the properties that are supported by this plugin for further customization.
 

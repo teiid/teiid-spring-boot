@@ -27,39 +27,42 @@ import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.metadata.Database;
 import org.teiid.metadata.Datatype;
 import org.teiid.query.metadata.DatabaseStore;
-import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.parser.QueryParser;
 
 public class PluginDatabaseStore extends DatabaseStore {
-    static class VdbImport {
-        String dbName;
-        String version;
-        boolean importPolicies;
-    }
     private List<VdbImport> vdbImports = new ArrayList<>();
+    private  Map<String, Datatype> typeMap;
+
+    public PluginDatabaseStore ( Map<String, Datatype> typeMap) {
+        this.typeMap = typeMap;
+    }
 
     public List<VdbImport> getVdbImports() {
         return vdbImports;
     }
+
     @Override
     public Map<String, Datatype> getRuntimeTypes() {
-        return SystemMetadata.getInstance().getRuntimeTypeMap();
+        return typeMap;
     }
+
     @Override
     public void importSchema(String schemaName, String serverType, String serverName, String foreignSchemaName,
             List<String> includeTables, List<String> excludeTables, Map<String, String> properties) {
         // ignore
     }
+
     @Override
     public Database getCurrentDatabase() {
         return super.getCurrentDatabase();
     }
+
     @Override
     public void importDatabase(String dbName, String version, boolean importPolicies) {
         VdbImport vdb = new VdbImport();
-        vdb.dbName = dbName;
-        vdb.version = version;
-        vdb.importPolicies = importPolicies;
+        vdb.setDbName(dbName);
+        vdb.setVersion(version);
+        vdb.setImportPolicies(importPolicies);
         vdbImports.add(vdb);
     }
 

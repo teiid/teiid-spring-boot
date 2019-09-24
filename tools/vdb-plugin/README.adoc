@@ -1,8 +1,14 @@
 = VDB Maven Plugin
 
-A Maven PlugIn to build a VDB file. The current Teiid version recommends the VDB to be used only in the DDL format. In this case the typically there is single DDL file. However, users create multiple DDL files and use `vdb-import` feature to combine files such that the schema files can be managed individually as they can get rather large. However during the deployment time the requirement is single file, it will not allow multiple files. This plugin can solve the issue by merging multiple files into single VDB file.
+A Maven PlugIn to build a VDB file. The current Teiid version recommends the VDB to be used only in the DDL format. In this case the typically there is single DDL file. With this approach there are couple issues
 
-Additionally, if you wanting to follow the CI/CD process or checkin your VDB is a source repository like GIT, you can add in the DDL based VDB, but using maven you can convert into a format that can be feeded to any maven build as artifact.
+* A single file can very large
+* The artifact needs to include other files
+* When using `DDL-FILE` metadata repository in a VDB each schema is defined in its own directory
+
+In order to handle these situations, one needs a archive based VDB file, that can hold multiple file together in a single artifact. This plugin can help with building VDB file. Also, this plugin helps to push the VDB into a maven repository for access and version control, such that it can be easily usable in a CI/CD pipeline.
+
+This plugin also helps with `vdb-import` feature. For example, if you have multiple VDBs, that are imported by another VDB to build composite VDB, this plugin helps to build that VDB at build time vs runtime. Moreover, since all these are maven, using CI/CD pipeline hooks it should possible to rebuild the composite VDB automatically when a imported VDB changed.
 
 == Usage
 The below shows maven pom.xml fragment that you can add to enable this plugin.
@@ -33,7 +39,7 @@ The below shows maven pom.xml fragment that you can add to enable this plugin.
 </build>
 ----
 
-By default, the plugin will search for DDL form of the VDB in the `src/main/vdb` folder, this can be overridden using `vdbFOlder` configuration property. The plugin will look for `vdb.ddl` file in this folder as the main VDB file. If this file is importing any other VDBs using `IMPORT DATABASE` statement, then those other VDB DDL files can be provided in the same directory or in any sub-directories underneath same folder. These imported VDBs can also be defined as VDB dependencies on this project too. For example, if your VDB is importing a VDB called 'VDB-Foo' of version `1.0` you can define a dependency like below
+By default, the plugin will search for DDL form of the VDB in the `src/main/vdb` folder, this can be overridden using `vdbFolder` configuration property. The plugin will look for `vdb.ddl` file in this folder as the main VDB file. If this file is importing any other VDBs using `IMPORT DATABASE` statement, then those other VDB DDL files can be provided in the same directory or in any sub-directories underneath same folder. These imported VDBs can also be defined as VDB dependencies on this project too. For example, if your VDB is importing a VDB called 'VDB-Foo' of version `1.0` you can define a dependency like below
 
 ----
 <dependency>
@@ -46,23 +52,12 @@ By default, the plugin will search for DDL form of the VDB in the `src/main/vdb`
 
 and during the build, the plugin will read the dependent plugin and merge both VDBs into a single artifact, that can be used to deploy in Teiid.
 
-----
-src
-  /main
-    /vdb
-      vdb.ddl
-      /ddl
-         model1.ddl
-         model2.ddl
-      /misc
-        foo.txt 
-----
 
 NOTE: the `vdbFolder` is always defined in exploded format, it will NOT work if you copied the legacy Designer based VDB into this folder and expect to convert it. If you have a Designer based vdb, first load that into the your Designer, export as -vdb.xml file, then using the migration utility convert into DDL format, and then copy that file here.
 
 When the build process finishes, it will create zip archive with .vdb extension with all the vdb files and marks it as artifact of the build process and places it in the maven repository.
 
-NOTE: Currently you can include any other files in the VDB Folder to be part of the maven artifact that is generated, however currently the Teiid runtime will not look at any of the included files for further customization. This may change based on needs in the future.
+NOTE: Currently you can include any other files in the VDB Folder to be part of the maven artifact that is generated, however currently the Teiid runtime will not look at any of the included files for further customization. This may change based on needs in the future. See how to include JAR files as additional file using `includeDependencies` property.
 
 == Plugin Configuration Properties
 The below are all the properties that are supported by this plugin for further customization.
@@ -72,4 +67,5 @@ The below are all the properties that are supported by this plugin for further c
 |Property name |Description|Required |Default Value
 
 |vdbFolder |Path to the folder where a VDB can be found |no | ${basedir}/src/main/vdb
+|includeDependencies|Include the runtime JAR dependencies from project's pom.xml file|no|n/a|
 |===
