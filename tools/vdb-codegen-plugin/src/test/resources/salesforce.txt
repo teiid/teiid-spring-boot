@@ -39,7 +39,7 @@ public class DataSourcessamplesf {
 
     @Bean(name="samplesf-config")
     @ConfigurationProperties("spring.teiid.data.salesforce.samplesf")
-    public SalesforceConfiguration salesforceConfig() {
+    public SalesforceConfiguration samplesfConfig() {
         return new SalesforceConfiguration();
     }
 }
