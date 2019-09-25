@@ -39,7 +39,7 @@ public class DataSources{{dsName}} {
 
     @Bean(name="{{dsName}}-config")
     @ConfigurationProperties("spring.teiid.data.salesforce.{{dsName}}")
-    public SalesforceConfiguration salesforceConfig() {
+    public SalesforceConfiguration {{dsName}}Config() {
         return new SalesforceConfiguration();
     }
 }
