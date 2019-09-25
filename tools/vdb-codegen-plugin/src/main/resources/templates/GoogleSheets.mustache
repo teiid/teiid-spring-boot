@@ -35,7 +35,7 @@ public class DataSources {
 
     @Bean(name="{{dsName}}-config")
     @ConfigurationProperties("spring.teiid.data.google.sheets.{{dsName}}")
-    public SpreadSheetConfiguration sheetsConfig() {
+    public SpreadSheetConfiguration {{dsName}}Config() {
         return new SpreadSheetConfiguration();
     }
 }
