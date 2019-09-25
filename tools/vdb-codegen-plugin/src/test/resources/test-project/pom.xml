@@ -25,7 +25,7 @@
   <name>Test My VDB Code Generator</name>
 
   <properties>
-    <teiid.version>1.2.0-SNAPSHOT</teiid.version>
+    <teiid.version>1.3.0-SNAPSHOT</teiid.version>
   </properties>
 
   <build>
