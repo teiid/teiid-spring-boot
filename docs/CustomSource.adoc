@@ -1,6 +1,6 @@
 = How to develop a Custom Connection Factory
 
-If are have developed a custom translator to a source that is not already defined in the Teiid or trying to write a translator to data source, to make translator work, you need a Connection to that source. Teiid library requires that Connection be provided in a particular interface. Below shows an example on how build Connection and ConnectionFacory that can be used with the corresponding Translator.
+If you have developed a custom translator to a source that is not already defined in the Teiid or trying to write a translator to data source, to make translator work, you need a Connection to that source. Teiid library requires that Connection be provided in a particular interface. Below shows an example on how build Connection and ConnectionFacory that can be used with the corresponding Translator.
 
 * Define a connection interface to your Data Source, this can be anything. For example, to a MongoDB this can be `DB` class. This is the go between class that Translator understands to communicate with the souce
 
