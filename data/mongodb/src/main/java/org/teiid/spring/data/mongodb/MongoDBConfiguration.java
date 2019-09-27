@@ -168,10 +168,11 @@ public class MongoDBConfiguration {
             while (st.hasMoreTokens()) {
                 String token = st.nextToken();
                 int idx = token.indexOf(':');
-                if (idx < 0) {
-                    throw new RuntimeException("No database found"); //$NON-NLS-1$
+                int port = 27017;
+                if (idx > 0) {
+                    port = Integer.valueOf(token.substring(idx+1));
                 }
-                addresses.add(new ServerAddress(token.substring(0, idx), Integer.valueOf(token.substring(idx+1))));
+                addresses.add(new ServerAddress(token.substring(0, idx), port));
             }
             return addresses;
         }
