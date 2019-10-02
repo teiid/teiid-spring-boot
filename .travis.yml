@@ -11,7 +11,8 @@ deploy:
   script: "mvn -B -Dbasepom.check.skip-dependency-versions-check=true -DskipTests=true deploy"
   skip_cleanup: true
   on: 
-    condition: env(SONATYPE_USERNAME) IS present AND repo = teiid/teiid-spring-boot
+    condition: -n "$SONATYPE_USERNAME"
+    repo: teiid/teiid-spring-boot
     tags: false
     jdk: openjdk11
 cache:
