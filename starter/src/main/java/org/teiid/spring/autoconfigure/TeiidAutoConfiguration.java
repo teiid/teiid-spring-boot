@@ -52,7 +52,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.Ordered;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.embedded.ConnectionProperties;
@@ -73,6 +72,7 @@ import org.teiid.query.metadata.VirtualFile;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
+import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.spring.identity.SpringSecurityHelper;
 import org.teiid.translator.ExecutionFactory;
@@ -88,7 +88,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 @EnableConfigurationProperties(TeiidProperties.class)
 @Import({ Registrar.class })
 @PropertySource("classpath:teiid.properties")
-public class TeiidAutoConfiguration implements Ordered {
+public class TeiidAutoConfiguration {
 
     public static ThreadLocal<TeiidServer> serverContext = new ThreadLocal<>();
 
@@ -109,11 +109,6 @@ public class TeiidAutoConfiguration implements Ordered {
     @Autowired(required=false)
     private TransactionManager transactionManager;
 
-    @Override
-    public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE;
-    }
-
     @Bean
     @ConditionalOnMissingBean
     public TeiidInitializer teiidInitializer(ApplicationContext applicationContext) {
@@ -123,7 +118,12 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name="dataSource")
     @Primary
     @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource getDataSource(TeiidServer server, VDBMetaData vdb) {
+    public DataSource getDataSource(TeiidServer server, VDBMetaData vdb, ApplicationContext context) {
+
+        //trigger the initialization of all sources
+        context.getBeansOfType(DataSource.class);
+        context.getBeansOfType(BaseConnectionFactory.class);
+
         EmbeddedDatabaseFactory edf = new EmbeddedDatabaseFactory();
         edf.setDatabaseConfigurer(new TeiidDatabaseConfigurer(server));
         edf.setDataSourceFactory(new DataSourceFactory() {
