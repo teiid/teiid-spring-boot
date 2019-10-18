@@ -32,14 +32,15 @@ public class ODataController {
 
     @RequestMapping(value = "**")
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException{
-        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
+        HttpServletRequest actual = (HttpServletRequest) request.getAttribute(SpringODataFilter.REQUEST);
+        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(actual) {
             @Override
             public String getServletPath() {
                 return "";
             }
             @Override
             public String getContextPath() {
-                return (String)request.getAttribute(SpringODataFilter.CONTEXT_PATH);
+                return (String)actual.getAttribute(SpringODataFilter.CONTEXT_PATH);
             }
         };
         servlet.service(wrapper, response);

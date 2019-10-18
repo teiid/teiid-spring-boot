@@ -38,11 +38,13 @@ import org.teiid.odata.api.Client;
 import org.teiid.olingo.service.OlingoBridge;
 import org.teiid.olingo.service.OlingoBridge.HandlerInfo;
 import org.teiid.olingo.web.OpenApiHandler;
+import org.teiid.olingo.web.ProxyHttpServletRequest;
 import org.teiid.spring.autoconfigure.TeiidServer;
 import org.teiid.vdb.runtime.VDBKey;
 
 public class SpringODataFilter implements HandlerInterceptor {
     static final String CONTEXT_PATH = "__CONTEXT_PATH__";
+    static final String REQUEST = "__REQUEST__";
     private TeiidServer server;
     private VDBMetaData vdb;
     protected OpenApiHandler openApiHandler;
@@ -68,7 +70,9 @@ public class SpringODataFilter implements HandlerInterceptor {
         HttpServletRequest httpRequest = request;
         HttpServletResponse httpResponse = response;
 
-        String uri = request.getRequestURI();
+        httpRequest = handleProxiedRequest(httpRequest);
+
+        String uri = httpRequest.getRequestURI();
 
         String contextPath = httpRequest.getContextPath() + "/odata";
 
@@ -116,13 +120,10 @@ public class SpringODataFilter implements HandlerInterceptor {
         Client client = buildClient(vdbName, vdbVersion, this.connectionProperties);
         client.open();
 
-        String fullURL = request.getRequestURL().toString();
-        String root = fullURL.substring(0, fullURL.indexOf(request.getRequestURI())) + httpRequest.getContextPath();
-
-        //we'll use a root base url for /static/metadata.file
+        //we'll use a base context for /static/metadata.file
         //it's not enforced, but if there are cross references between more than 1 visible model,
         //then the logic will create urls which are invalid for spring
-        HandlerInfo handlerInfo = context.getHandlers(root, client, modelName);
+        HandlerInfo handlerInfo = context.getHandlers(httpRequest.getContextPath(), client, modelName);
         ODataHandler handler = handlerInfo.oDataHttpHandler;
 
         if (openApiHandler.processOpenApiMetadata(httpRequest, key, uri, modelName,
@@ -132,6 +133,7 @@ public class SpringODataFilter implements HandlerInterceptor {
 
         httpRequest.setAttribute(ODataHttpHandler.class.getName(), handler);
         httpRequest.setAttribute(Client.class.getName(), client);
+        httpRequest.setAttribute(REQUEST, httpRequest);
         httpRequest.setAttribute(CONTEXT_PATH, contextPath);
         return true;
     }
@@ -178,6 +180,44 @@ public class SpringODataFilter implements HandlerInterceptor {
         if (client != null) {
             client.close();
         }
+    }
+
+    public static HttpServletRequest handleProxiedRequest(
+            HttpServletRequest httpRequest) {
+        /*
+        Forwarded for=192.168.42.1;host=hostname:80;proto=http;proto-version=
+        X-Forwarded-Proto http
+        X-Forwarded-Host hostname
+        X-Forwarded-Port 80
+        */
+        String host = httpRequest.getHeader("X-Forwarded-Host"); //$NON-NLS-1$
+        String protocol = httpRequest.getHeader("X-Forwarded-Proto"); //$NON-NLS-1$
+        String port = httpRequest.getHeader("X-Forwarded-Port"); //$NON-NLS-1$
+        if (host == null) {
+            String forwarded = httpRequest.getHeader("Forwarded"); //$NON-NLS-1$
+            if (forwarded != null) {
+                String[] parts = forwarded.split(";"); //$NON-NLS-1$
+                for (String part : parts) {
+                    String[] keyValue = part.split("=", 2); //$NON-NLS-1$
+                    if (keyValue.length != 2) {
+                        continue;
+                    }
+                    if (keyValue[0].equals("host")) { //$NON-NLS-1$
+                        host = keyValue[1];
+                        port = null;
+                    } else if (keyValue[0].equals("proto")) { //$NON-NLS-1$
+                        protocol = keyValue[1];
+                    }
+                }
+            }
+        }
+        if (host != null) {
+            if (protocol == null) {
+                protocol = "http"; //$NON-NLS-1$
+            }
+            httpRequest = new ProxyHttpServletRequest(httpRequest, protocol + "://" + host + (port != null?(":"+port):"")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        }
+        return httpRequest;
     }
 }
 

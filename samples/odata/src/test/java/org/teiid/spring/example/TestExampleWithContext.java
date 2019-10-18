@@ -47,10 +47,6 @@ public class TestExampleWithContext {
         return "http://localhost:" + port+"/foo/odata";
     }
 
-    private String baseurl() {
-        return "http://localhost:" + port+"/foo";
-    }
-
     @Test
     public void test() throws Exception{
         ResponseEntity<String> response = web.getForEntity(url()+"/CUSTOMER", String.class);
@@ -62,7 +58,7 @@ public class TestExampleWithContext {
         ResponseEntity<String> response = web.getForEntity(url(), String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
         response = web.getForEntity(url()+"/$metadata", String.class);
-        assertTrue(response.getBody().contains(baseurl()+"/static/org.teiid.v1.xml"));
+        assertTrue(response.getBody().contains("/static/org.teiid.v1.xml"));
     }
 
     @Test
