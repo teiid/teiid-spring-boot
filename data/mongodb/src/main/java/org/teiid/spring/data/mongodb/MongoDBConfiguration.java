@@ -37,9 +37,16 @@ public class MongoDBConfiguration {
     private String authDatabase;
     private Boolean ssl;
 
+    private String uri;
+
     MongoClient mongoClient() {
+        if (uri != null) {
+            MongoClientURI mongoClientURI = new MongoClientURI(uri);
+            this.database = mongoClientURI.getDatabase();
+            return new MongoClient(new MongoClientURI(uri));
+        }
         if (getCredential() == null) {
-            return new MongoClient(getServers());
+            return new MongoClient(getServers(), getOptions());
         }
         else {
             return new MongoClient(getServers(), getCredential(), getOptions());
@@ -152,30 +159,32 @@ public class MongoDBConfiguration {
         this.authDatabase = database;
     }
 
-    protected MongoClientURI getConnectionURI() {
-        String serverlist = getRemoteServerList();
-        if (serverlist.startsWith("mongodb://")) { //$NON-NLS-1$
-            return new MongoClientURI(getRemoteServerList());
-        }
-        return null;
-    }
-
     protected List<ServerAddress> getServers() {
         String serverlist = getRemoteServerList();
-        if (!serverlist.startsWith("mongodb://")) { //$NON-NLS-1$
-            List<ServerAddress> addresses = new ArrayList<ServerAddress>();
-            StringTokenizer st = new StringTokenizer(serverlist, ","); //$NON-NLS-1$
-            while (st.hasMoreTokens()) {
-                String token = st.nextToken();
-                int idx = token.indexOf(':');
-                int port = 27017;
-                if (idx > 0) {
-                    port = Integer.valueOf(token.substring(idx+1));
-                }
-                addresses.add(new ServerAddress(token.substring(0, idx), port));
+        List<ServerAddress> addresses = new ArrayList<ServerAddress>();
+        StringTokenizer st = new StringTokenizer(serverlist, ","); //$NON-NLS-1$
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int idx = token.indexOf(':');
+            if (idx > 0) {
+                addresses.add(new ServerAddress(token.substring(0, idx), Integer.valueOf(token.substring(idx+1))));
+            } else {
+                addresses.add(new ServerAddress(token));
             }
-            return addresses;
         }
-        return null;
+        return addresses;
+    }
+
+    /**
+     * The full connection URI string to mongodb. If this is used, no other configuration properties will be looked at.
+     * The database should also be set in the URI.
+     * @return
+     */
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }
