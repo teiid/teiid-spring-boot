@@ -83,16 +83,17 @@ class TeiidInitializer implements ApplicationListener<TeiidInitializedEvent> {
     static List<Resource> getClasspathResources(ApplicationContext context, String... locations) {
         List<Resource> resources = new ArrayList<Resource>();
         for (String location : locations) {
-            if (location == null) {
-                continue;
-            }
-            for (Resource resource : doGetResources("classpath*:" +location, context)) {
-                if (resource.exists()) {
-                    resources.add(resource);
-                }
-            }
+            getClasspathResources(context, resources, location);
         }
         return resources;
+    }
+
+    private static void getClasspathResources(ApplicationContext context, List<Resource> resources, String location) {
+        for (Resource resource : doGetResources("classpath*:" +location, context)) {
+            if (resource.exists()) {
+                resources.add(resource);
+            }
+        }
     }
 
     private static Resource[] doGetResources(String location, ApplicationContext context) {

@@ -138,7 +138,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         boolean deploy = true;
         VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
         TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
-        if (vdb.getPropertyValue("implicit") != null && vdb.getPropertyValue("implicit").equals("true")) {
+        if (Boolean.valueOf(vdb.getPropertyValue(TeiidAutoConfiguration.IMPLICIT_VDB))) {
             PhysicalNamingStrategy namingStrategy = this.beanFactory.getBean(PhysicalNamingStrategy.class);
             deploy = server.findAndConfigureViews(vdb, event.getApplicationContext(), namingStrategy);
         }
