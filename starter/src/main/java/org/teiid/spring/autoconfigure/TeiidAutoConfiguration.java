@@ -90,6 +90,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 @PropertySource("classpath:teiid.properties")
 public class TeiidAutoConfiguration implements Ordered {
 
+    static final String IMPLICIT_VDB = "implicit";
+
     public static ThreadLocal<TeiidServer> serverContext = new ThreadLocal<>();
 
     private static final Log logger = LogFactory.getLog(TeiidAutoConfiguration.class);
@@ -157,7 +159,15 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean
     @ConditionalOnMissingBean
     public VDBMetaData teiidVDB() {
-        List<Resource> resources = TeiidInitializer.getClasspathResources(this.context, this.properties.getVdbFile(), "teiid.ddl", "teiid.vdb");
+        List<Resource> resources = null;
+        if (this.properties.getVdbFile() != null) {
+            resources = TeiidInitializer.getClasspathResources(this.context, this.properties.getVdbFile());
+            if (resources.isEmpty()) {
+                throw new IllegalStateException("Failed to find" + this.properties.getVdbFile());
+            }
+        } else {
+            resources = TeiidInitializer.getClasspathResources(this.context, "teiid.ddl", "teiid.vdb");
+        }
 
         VDBMetaData vdb = null;
         if (!resources.isEmpty()) {
@@ -189,7 +199,7 @@ public class TeiidAutoConfiguration implements Ordered {
 
         if (vdb == null) {
             vdb =  new VDBMetaData();
-            vdb.addProperty("implicit", "true");
+            vdb.addProperty(IMPLICIT_VDB, "true");
             vdb.setName(VDBNAME);
             vdb.setVersion(VDBVERSION);
         }

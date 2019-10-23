@@ -127,7 +127,7 @@ public class TeiidServer extends EmbeddedServer {
     @SuppressWarnings("rawtypes")
     public void addDataSource(VDBMetaData vdb, String sourceBeanName, Object source, ApplicationContext context) {
         // only when user did not define a explicit VDB then build one.
-        if (Boolean.valueOf(vdb.getPropertyValue("implicit"))) {
+        if (Boolean.valueOf(vdb.getPropertyValue(TeiidAutoConfiguration.IMPLICIT_VDB))) {
             boolean redirectUpdates = isRedirectUpdatesEnabled(context);
             String redirectedDSName = getRedirectedDataSource(context);
 
@@ -282,7 +282,7 @@ public class TeiidServer extends EmbeddedServer {
 
     void deployVDB(VDBMetaData vdb, boolean last, ApplicationContext context) {
         try {
-            if (Boolean.valueOf(vdb.getPropertyValue("implicit"))) {
+            if (Boolean.valueOf(vdb.getPropertyValue(TeiidAutoConfiguration.IMPLICIT_VDB))) {
                 // if there is no view model, then keep all the other models as visible.
                 if (vdb.getModel("teiid") == null) {
                     for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
