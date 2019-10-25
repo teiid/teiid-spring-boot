@@ -306,20 +306,39 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     }
 
     private File getVDBFile() throws MojoExecutionException, IOException {
+        // this is custom defined path, or default teiid.ddl
         if (this.vdbFile.exists()) {
             getLog().info("Found VDB = " + this.vdbFile);
+            // if this is .vdb, then we need to extract the ddl file inside,
+            // as vdb-generator only understands to handle ddl file
+            if (this.vdbFile.getName().endsWith(".vdb")) {
+                File vdbDir = unzipContents(this.vdbFile);
+                this.vdbFile = new File(vdbDir, "/META-INF/vdb.ddl");
+                File openapi = new File(vdbDir, "openapi.json");
+                if (openapi.exists()) {
+                    this.openApiFile = openapi;
+                }
+            }
             return this.vdbFile;
         }
 
+        // teiid.vdb is also default version, check for that
         String f = this.vdbFile.getAbsolutePath().replace("teiid.ddl", "teiid.vdb");
-        if (!f.contentEquals(this.openApiFile.getAbsolutePath())) {
+        if (!f.contentEquals(this.vdbFile.getAbsolutePath())) {
             this.vdbFile = new File(f);
             if (this.vdbFile.exists()) {
+                File vdbDir = unzipContents(this.vdbFile);
+                this.vdbFile = new File(vdbDir, "/META-INF/vdb.ddl");
+                File openapi = new File(vdbDir, "openapi.json");
+                if (openapi.exists()) {
+                    this.openApiFile = openapi;
+                }
                 return this.vdbFile;
             }
         }
 
-        // find VDB from pom.xml dependencies
+        // find VDB from pom.xml dependencies, there can not be more than single
+        // dependency of VDBs
         Set<Artifact> dependencies = project.getArtifacts();
         for (Artifact d : dependencies) {
             if (d.getFile() == null || !d.getFile().getName().endsWith(".vdb")) {
@@ -331,11 +350,11 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (openapi.exists()) {
                 this.openApiFile = openapi;
             }
-            break;
+            return this.vdbFile;
         }
 
         throw new MojoExecutionException(
-                "No VDB File found at location " + this.vdbFile + " or no VDB dependencies defined");
+                "No VDB File found at location " + this.vdbFile + " or no VDB dependencies found in pom.xml");
     }
 
     private ClassLoader getClassLoader() throws MojoExecutionException {
@@ -376,6 +395,14 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         return unzipContents(d.getFile(), f);
     }
 
+    private File unzipContents(File d) throws IOException {
+        File f = new File(this.outputDirectory.getPath(), d.getName());
+        f.mkdirs();
+        getLog().info("unzipping " + d.getName() + " to directory " + f.getCanonicalPath());
+
+        return unzipContents(d, f);
+    }
+
     public static File unzipContents(File in, File out) throws FileNotFoundException, IOException {
         byte[] buffer = new byte[1024];
         ZipInputStream zis = new ZipInputStream(new FileInputStream(in));
@@ -383,8 +410,10 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         while (ze != null) {
             String fileName = ze.getName();
             File newFile = new File(out, fileName);
-            new File(newFile.getParent()).mkdirs();
-            if (!newFile.isDirectory()) {
+            if (ze.isDirectory()) {
+                newFile.mkdirs();
+            } else {
+                new File(newFile.getParent()).mkdirs();
                 FileOutputStream fos = new FileOutputStream(newFile);
                 int len;
                 while ((len = zis.read(buffer)) > 0) {

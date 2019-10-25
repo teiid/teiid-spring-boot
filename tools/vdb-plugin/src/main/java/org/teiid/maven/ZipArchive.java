@@ -95,8 +95,10 @@ public class ZipArchive implements Closeable{
         while (ze != null) {
             String fileName = ze.getName();
             File newFile = new File(out, fileName);
-            new File(newFile.getParent()).mkdirs();
-            if (!newFile.isDirectory()) {
+            if (ze.isDirectory()) {
+                newFile.mkdirs();
+            } else {
+                new File(newFile.getParent()).mkdirs();
                 FileOutputStream fos = new FileOutputStream(newFile);
                 int len;
                 while ((len = zis.read(buffer)) > 0) {
