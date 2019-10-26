@@ -29,7 +29,7 @@ public class FileConnectionFactory extends BaseConnectionFactory<FileConnection>
     private boolean allowParentPaths = true;
 
     public FileConnectionFactory() {
-        super("file");
+        super("file", "spring.teiid.data.file");
     }
 
     @Override

@@ -1,0 +1,16 @@
+package accounts;
+
+/* @Indexed*/
+message Employee {
+   /*
+     @Id
+     @IndexedField(index=true, store=false)       
+    */
+   required int32 ROW_ID = 1;
+   
+   required string firstname = 2;
+
+   required string lastname = 3;
+
+   optional int32 age = 4;
+}

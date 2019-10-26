@@ -26,7 +26,7 @@ public class SpreadsheetConnectionFactory extends BaseConnectionFactory<Spreadsh
     private SpreadSheetConfiguration config;
 
     public SpreadsheetConnectionFactory(SpreadSheetConfiguration config) {
-        super("google-spreadsheet");
+        super("google-spreadsheet", "spring.teiid.data.google.sheets");
         this.config = config;
     }
 

@@ -24,7 +24,7 @@ public class MongoDBConnectionFactory extends BaseConnectionFactory<MongoDBConne
     private MongoTemplate mongoTemplate;
 
     public MongoDBConnectionFactory(MongoTemplate template) {
-        super("mongodb");
+        super("mongodb", "spring.teiid.data.mongodb");
         this.mongoTemplate = template;
     }
 
