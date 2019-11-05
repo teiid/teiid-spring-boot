@@ -109,9 +109,7 @@ public class RestConnection extends BaseConnection implements WSConnection {
             Map<String, List<String>> httpHeaders = new HashMap<String, List<String>>();
             httpHeaders.put("Content-Type", Collections.singletonList("text/xml; charset=utf-8"));//$NON-NLS-1$ //$NON-NLS-2$
             httpHeaders.put("User-Agent", Collections.singletonList("Teiid Server"));//$NON-NLS-1$ //$NON-NLS-2$
-            for (Map.Entry<String, List<String>> entry : inHeaders.entrySet()) {
-                httpHeaders.put(entry.getKey(), entry.getValue());
-            }
+            httpHeaders.putAll(inHeaders);
             getRequestContext().put(MessageContext.HTTP_REQUEST_HEADERS, httpHeaders);
         }
 
@@ -133,7 +131,7 @@ public class RestConnection extends BaseConnection implements WSConnection {
                         if (entry.getKey().equals("T-Spring-Bean")) {
                             headers = (HttpHeaders)beanFactory.getBean(entry.getValue().get(0));
                         } else {
-                            headers.add(entry.getKey(), entry.getValue().get(0));
+                            headers.addAll(entry.getKey(), entry.getValue());
                         }
                     }
                 }
