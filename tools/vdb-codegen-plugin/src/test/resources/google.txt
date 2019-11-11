@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package {{packageName}};
+package com.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,17 +25,17 @@ import org.teiid.spring.data.google.SpreadSheetConfiguration;
 import org.teiid.spring.data.google.SpreadsheetConnectionFactory;
 
 @Configuration
-public class DataSources{{dsName}} {
+public class DataSourcessamplegoogle {
 
-    @Bean(name="{{dsName}}")
+    @Bean(name="samplegoogle")
     @Autowired    
-    public SpreadsheetConnectionFactory source(@Qualifier("{{dsName}}-config") SpreadSheetConfiguration config) {
+    public SpreadsheetConnectionFactory source(@Qualifier("samplegoogle-config") SpreadSheetConfiguration config) {
         return new SpreadsheetConnectionFactory(config);
     }
 
-    @Bean(name="{{dsName}}-config")
-    @ConfigurationProperties("spring.teiid.data.google.sheets.{{dsName}}")
-    public SpreadSheetConfiguration {{dsName}}Config() {
+    @Bean(name="samplegoogle-config")
+    @ConfigurationProperties("spring.teiid.data.google.sheets.samplegoogle")
+    public SpreadSheetConfiguration samplegoogleConfig() {
         return new SpreadSheetConfiguration();
     }
 }

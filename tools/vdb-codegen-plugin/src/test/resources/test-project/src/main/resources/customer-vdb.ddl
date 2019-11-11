@@ -40,6 +40,9 @@ CREATE SERVER sampleodata TYPE 'NONE' FOREIGN DATA WRAPPER odata4 OPTIONS ("reso
 CREATE FOREIGN DATA WRAPPER file;
 CREATE SERVER samplefile TYPE 'NONE' FOREIGN DATA WRAPPER file OPTIONS ("resource-name" 'samplefile');
 
+CREATE FOREIGN DATA WRAPPER "google-spreadsheet";
+CREATE SERVER samplegoogle TYPE 'NONE' FOREIGN DATA WRAPPER "google-spreadsheet" OPTIONS ("resource-name" 'samplegoogle');
+
 -- create schema, then import the metadata from the PostgreSQL database
 CREATE SCHEMA accounts SERVER sampledb;
 CREATE VIRTUAL SCHEMA portfolio;

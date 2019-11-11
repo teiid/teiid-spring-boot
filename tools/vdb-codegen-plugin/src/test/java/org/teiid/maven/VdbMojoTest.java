@@ -61,6 +61,7 @@ public class VdbMojoTest {
         testMongoGeneration(outputDirectory);
         testSalesforceGeneration(outputDirectory);
         testRestGeneration(outputDirectory);
+        testGoogleGeneration(outputDirectory);
     }
 
 
@@ -101,6 +102,14 @@ public class VdbMojoTest {
         assertTrue( dsFile.exists() );
         assertEquals("The files differ!",
                 FileUtils.readFileToString(new File( "target/test-classes/file.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(dsFile, "utf-8").trim());
+    }
+
+    public void testGoogleGeneration(File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplegoogle.java");
+        assertTrue( dsFile.exists() );
+        assertEquals("The files differ!",
+                FileUtils.readFileToString(new File( "target/test-classes/google.txt"), "utf-8").trim(),
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 }

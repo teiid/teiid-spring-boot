@@ -75,7 +75,12 @@
         <groupId>org.teiid</groupId>
         <artifactId>teiid-spring-boot-starter</artifactId>
         <version>${teiid.version}</version>
-    </dependency>                      
+    </dependency>
+    <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-google</artifactId>
+        <version>${teiid.version}</version>
+    </dependency>
     <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
