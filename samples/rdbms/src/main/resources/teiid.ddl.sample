@@ -2,15 +2,9 @@
 # the model names are explicit not same as data source names.
 
 CREATE FOREIGN DATA WRAPPER postgresql;
-CREATE SERVER pgsql FOREIGN DATA WRAPPER postgresql
-    OPTIONS (
-        "resource-name" 'accountsDS'
-    );
+CREATE SERVER pgsql FOREIGN DATA WRAPPER postgresql;
 
-CREATE SERVER pgsql2 FOREIGN DATA WRAPPER postgresql
-    OPTIONS (
-        "resource-name" 'customerDS'
-    );
+CREATE SERVER pgsql2 FOREIGN DATA WRAPPER postgresql;
     
 CREATE SCHEMA test SERVER pgsql;
 CREATE SCHEMA test2 SERVER pgsql2;

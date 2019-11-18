@@ -12,7 +12,7 @@ CREATE FOREIGN DATA WRAPPER h2;
 
 
 --############ Servers ############
-CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2 OPTIONS ("resource-name" 'mydb');
+CREATE SERVER mydb FOREIGN DATA WRAPPER h2;
 
 
 --############ Schemas ############
