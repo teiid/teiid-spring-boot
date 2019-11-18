@@ -52,7 +52,7 @@ public ConnectionFactory customSource() {
 
 ----
 CREATE FOREIGN DATA WRAPPER customTranslator;
-CREATE SERVER customSource TYPE 'NONE' FOREIGN DATA WRAPPER customTranslator;
+CREATE SERVER customSource FOREIGN DATA WRAPPER customTranslator;
 ----
 
 * The above is defining a translator in your virtual database, and next defining a server using translator and binding that with the connection factory object in your source.   

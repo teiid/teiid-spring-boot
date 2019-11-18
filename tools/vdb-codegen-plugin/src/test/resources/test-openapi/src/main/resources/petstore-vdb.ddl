@@ -26,7 +26,7 @@ SET NAMESPACE 'http://teiid.org/rest' AS REST;
 
 -- create translators and connections to source
 CREATE FOREIGN DATA WRAPPER postgresql;
-CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql OPTIONS ("jndi-name" 'sampledb');
+CREATE SERVER sampledb FOREIGN DATA WRAPPER postgresql OPTIONS ("jndi-name" 'sampledb');
 
 CREATE VIRTUAL SCHEMA pets;
 SET SCHEMA pets;
