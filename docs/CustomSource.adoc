@@ -56,10 +56,10 @@ public class DataSources {
 }
 ----
 
-the above code creates a bean with name `accounts` in the application, which can be used as the `resource-name` and SERVER name as shown in below example
+This creates a bean with name `accounts` in the application, which can be referenced via a SERVER in ddl:
 
 ----
-CREATE SERVER accounts TYPE 'NONE' FOREIGN DATA WRAPPER customTranslator OPTIONS ("resource-name" 'accounts');
+CREATE SERVER accounts FOREIGN DATA WRAPPER customTranslator;
 ----
 
 see link:CustomTranslator.adoc[Custom Translator] on how write and deploy a custom translator. 
