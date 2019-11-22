@@ -135,7 +135,7 @@ java -jar target/example-1.0.0-SNAPSHOT.jar
 Once you execute this application, Teiid Spring Boot will connect to the data source configured and expose a OData V4 rest interface using the Spring Boot's built in Tomcat engine. You can issue a call to 
 
 [source,xml]
-http://localhost:8080/$metadata
+http://localhost:8080/odata/$metadata
 ----
 <?xml version='1.0' encoding='UTF-8'?>
 <edmx:Edmx Version="4.0"
@@ -170,7 +170,7 @@ http://localhost:8080/$metadata
 You can issue to see the contents of Entity by issuing a call like
 
 [source,json]
-http://localhost:8080/ACCOUNT?$format=json
+http://localhost:8080/odata/ACCOUNT?$format=json
 ----
 {  
    "@odata.context":"$metadata#ACCOUNT",
