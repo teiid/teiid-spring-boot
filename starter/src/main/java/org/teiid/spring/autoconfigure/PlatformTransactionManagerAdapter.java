@@ -131,29 +131,29 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
 
         @Override
         public void rollback() throws IllegalStateException, SystemException {
-            throw new SystemException();
+            throw new SystemException("This is a spring managed transaction, it should not direclty manipulated");
         }
 
         @Override
         public void commit() throws HeuristicMixedException, HeuristicRollbackException, RollbackException,
         SecurityException, SystemException {
-            throw new SystemException();
+            throw new SystemException("This is a spring managed transaction, it should not direclty manipulated");
         }
 
         @Override
         public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
-            throw new SystemException();
+            throw new SystemException("This is a spring managed transaction, it should not direclty manipulated");
         }
 
         @Override
         public boolean enlistResource(XAResource xaRes)
                 throws IllegalStateException, RollbackException, SystemException {
-            throw new SystemException();
+            throw new SystemException("This is a spring managed transaction, it should not direclty manipulated");
         }
 
         @Override
         public int getStatus() throws SystemException {
-            throw new SystemException();
+            throw new SystemException("This is a spring managed transation.  This method isn not implemented.");
         }
     }
 
@@ -226,43 +226,48 @@ public final class PlatformTransactionManagerAdapter implements TransactionManag
 
     @Override
     public void rollback() throws IllegalStateException, SecurityException, SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
     }
 
     @Override
     public void commit() throws HeuristicMixedException, HeuristicRollbackException, IllegalStateException,
     RollbackException, SecurityException, SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
     }
 
     @Override
     public void begin() throws NotSupportedException, SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
     }
 
     @Override
     public Transaction suspend() throws SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
     }
 
     @Override
     public void setTransactionTimeout(int seconds) throws SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
     }
 
     @Override
     public void resume(Transaction tobj) throws IllegalStateException, InvalidTransactionException, SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
     }
 
     @Override
     public void setRollbackOnly() throws IllegalStateException, SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
     }
 
     @Override
     public int getStatus() throws SystemException {
-        throw new SystemException();
+        throw useTransactionManager();
+    }
+
+    private SystemException useTransactionManager() {
+        return new SystemException("The system is only setup for spring managed transactions.  "
+                + "If you need Teiid to manage transactions, then a third-party transaction manager like narayana-spring-boot-starter needs to be configured.");
     }
 
     public void addDataSource(DataSource ds) {
