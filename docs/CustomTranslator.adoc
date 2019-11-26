@@ -41,7 +41,7 @@ public ExecutionFactory<?, ?> customTranslator(){
 
 [source, java]
 ----
-@Bean("customTranslator")
+@Bean("customSource")
 @DependsOn({"customTranslator"})
 public ConnectionFactory customSource() {
     return new CustomConnectionFactory();
