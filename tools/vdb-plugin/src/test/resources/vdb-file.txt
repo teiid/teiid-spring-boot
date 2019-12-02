@@ -20,9 +20,9 @@ CREATE VIRTUAL SCHEMA virt;
 
 CREATE SCHEMA accounts SERVER mydb;
 
-CREATE SCHEMA foo SERVER mydb;
-
 CREATE SCHEMA bar SERVER mydb;
+
+CREATE SCHEMA foo SERVER mydb;
 
 
 --############ Schema:virt ############
@@ -33,17 +33,17 @@ SET SCHEMA virt;
 SET SCHEMA accounts;
 
 
---############ Schema:foo ############
-SET SCHEMA foo;
-
-CREATE FOREIGN TABLE FOO (
-	name string,
-	id integer
-);
 --############ Schema:bar ############
 SET SCHEMA bar;
 
 CREATE FOREIGN TABLE BAR (
+	name string,
+	id integer
+);
+--############ Schema:foo ############
+SET SCHEMA foo;
+
+CREATE FOREIGN TABLE FOO (
 	name string,
 	id integer
 );
