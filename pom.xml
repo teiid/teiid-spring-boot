@@ -292,11 +292,6 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>teiid-admin</artifactId>
-        <version>${teiid.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.teiid</groupId>
         <artifactId>teiid-hibernate-dialect</artifactId>
         <version>${teiid.version}</version>
       </dependency>
