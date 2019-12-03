@@ -272,6 +272,13 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
                 mustache.execute(out, tempMap);
                 out.close();
+            } else if (translator.equals(ExternalSource.INFINISPAN.getTranslatorName())) {
+                Mustache mustache = mf.compile(
+                        new InputStreamReader(getClass().getResourceAsStream("/templates/Infinispan.mustache")),
+                        "infinispan");
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                mustache.execute(out, tempMap);
+                out.close();
             } else if (translator.equals(ExternalSource.FILE.getTranslatorName())
                     || translator.equals(ExternalSource.EXCEL.getTranslatorName())) {
                 Mustache mustache = mf.compile(

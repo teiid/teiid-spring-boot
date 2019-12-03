@@ -22,8 +22,6 @@
 CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer;
 
-SET NAMESPACE 'http://teiid.org/rest' AS REST;
-
 -- create translators and connections to source
 CREATE FOREIGN DATA WRAPPER postgresql;
 CREATE SERVER sampledb FOREIGN DATA WRAPPER postgresql;
@@ -33,6 +31,9 @@ CREATE SERVER samplemango FOREIGN DATA WRAPPER mongodb;
 
 CREATE FOREIGN DATA WRAPPER salesforce;
 CREATE SERVER samplesf FOREIGN DATA WRAPPER salesforce;
+
+CREATE FOREIGN DATA WRAPPER "infinispan-hotrod";
+CREATE SERVER ispn TYPE 'NONE' FOREIGN DATA WRAPPER "infinispan-hotrod";
 
 CREATE FOREIGN DATA WRAPPER odata4;
 CREATE SERVER sampleodata FOREIGN DATA WRAPPER odata4;

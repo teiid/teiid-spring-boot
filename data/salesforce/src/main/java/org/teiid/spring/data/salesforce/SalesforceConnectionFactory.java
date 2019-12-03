@@ -32,7 +32,7 @@ public class SalesforceConnectionFactory extends BaseConnectionFactory<Salesforc
     private SalesforceConnectionImpl connection;
 
     public SalesforceConnectionFactory(SalesforceConfiguration config) {
-        super("salesforce");
+        super("salesforce", "spring.teiid.data.salesforce");
         this.config = config;
         checkVersion(config);
     }

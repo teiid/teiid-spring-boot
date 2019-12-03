@@ -62,6 +62,7 @@ public class VdbMojoTest {
         testSalesforceGeneration(outputDirectory);
         testRestGeneration(outputDirectory);
         testGoogleGeneration(outputDirectory);
+        testInfinispanGeneration(outputDirectory);
     }
 
 
@@ -110,6 +111,14 @@ public class VdbMojoTest {
         assertTrue( dsFile.exists() );
         assertEquals("The files differ!",
                 FileUtils.readFileToString(new File( "target/test-classes/google.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(dsFile, "utf-8").trim());
+    }
+
+    public void testInfinispanGeneration(File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/DataSourcesispn.java");
+        assertTrue( dsFile.exists() );
+        assertEquals("The files differ!",
+                FileUtils.readFileToString(new File( "target/test-classes/infinispan.txt"), "utf-8").trim(),
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 }

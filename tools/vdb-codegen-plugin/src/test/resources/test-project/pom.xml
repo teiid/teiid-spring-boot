@@ -85,6 +85,11 @@
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>42.2.5</version>
-    </dependency>  
+    </dependency>
+    <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-infinispan</artifactId>
+        <version>${teiid.version}</version>
+    </dependency>      
   </dependencies>
 </project>

@@ -154,7 +154,11 @@ public class TeiidServer extends EmbeddedServer {
                     throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
                 }
             } else if (source instanceof BaseConnectionFactory) {
-                model = buildModelFromConnectionFactory(sourceBeanName, (BaseConnectionFactory) source, context);
+                try {
+                    model = buildModelFromConnectionFactory(sourceBeanName, (BaseConnectionFactory) source, context);
+                } catch (AdminException e) {
+                    throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
+                }
             } else {
                 throw new IllegalStateException("Unknown source type is being added");
             }
@@ -400,7 +404,7 @@ public class TeiidServer extends EmbeddedServer {
 
     @SuppressWarnings("rawtypes")
     private ModelMetaData buildModelFromConnectionFactory(String sourceBeanName, BaseConnectionFactory factory,
-            ApplicationContext context) {
+            ApplicationContext context) throws AdminException {
         ModelMetaData model = new ModelMetaData();
         model.setName(sourceBeanName);
         model.setModelType(Model.Type.PHYSICAL);
@@ -419,11 +423,22 @@ public class TeiidServer extends EmbeddedServer {
             throw new IllegalStateException("Failed to load translator " + translatorName, e);
         }
 
+        // add the importer properties from the configuration
+        // note that above defaults can be overridden with this too.
+        Collection<? extends PropertyDefinition> importProperties = getAdmin()
+                .getTranslatorPropertyDefinitions(source.getTranslatorName(), TranlatorPropertyType.IMPORT);
+        importProperties.forEach(prop -> {
+            String key = prop.getName();
+            String value = context.getEnvironment()
+                    .getProperty(factory.getConfigurationPrefix() + "." + sourceBeanName + "." + key);
+            if (value != null) {
+                model.addProperty(key, value);
+            }
+        });
+
         model.addSourceMapping(source);
         return model;
     }
-
-
 
     boolean findAndConfigureViews(VDBMetaData vdb, ApplicationContext context, PhysicalNamingStrategy namingStrategy) {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);

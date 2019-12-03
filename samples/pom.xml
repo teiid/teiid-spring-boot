@@ -64,6 +64,7 @@
     <module>salesforce</module>
     <module>google</module>
     <module>openapi</module>
+    <module>infinispan</module>
   </modules>
 
 </project>

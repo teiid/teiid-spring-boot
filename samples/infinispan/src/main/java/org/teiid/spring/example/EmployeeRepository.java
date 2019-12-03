@@ -14,27 +14,12 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.data;
+package org.teiid.spring.example;
 
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
+public interface EmployeeRepository extends CrudRepository<Employee, Integer>{
 
-import org.teiid.resource.api.ConnectionFactory;
-
-public abstract class BaseConnectionFactory<T extends BaseConnection> implements ConnectionFactory<T> {
-
-    private String translatorName;
-    private String configurationPrefix;
-
-    public BaseConnectionFactory(String translatorName, String configurationPrefix) {
-        this.translatorName = translatorName;
-        this.configurationPrefix = configurationPrefix;
-    }
-
-    public String getTranslatorName() {
-        return translatorName;
-    }
-
-    public String getConfigurationPrefix() {
-        return configurationPrefix;
-    }
 }

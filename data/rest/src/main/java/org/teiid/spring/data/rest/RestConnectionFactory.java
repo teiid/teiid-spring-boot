@@ -68,7 +68,7 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
     private AccessGrant accessGrant;
 
     public RestConnectionFactory() {
-        super("rest");
+        super("rest", "spring.teiid.rest");
         this.template = createRestTemplate();
     }
 
