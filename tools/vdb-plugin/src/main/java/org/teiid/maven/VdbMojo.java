@@ -109,7 +109,7 @@ public class VdbMojo extends AbstractMojo {
 
                         // read import vdbs from files in folder
                         List<String> files = Files.walk(Paths.get(this.vdbFolder.getPath())).map(f -> f.toString())
-                                .filter(f -> f.endsWith("-vdb.ddl")).collect(Collectors.toList());
+                                .filter(f -> f.endsWith("-vdb.ddl")).sorted().collect(Collectors.toList());
 
                         for (String f : files) {
                             File childFile = new File(f);
