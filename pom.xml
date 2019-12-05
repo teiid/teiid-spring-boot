@@ -131,7 +131,7 @@
     <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
     <version.org.mockito>1.10.19</version.org.mockito>
     <version.org.keycloak>4.8.3.Final</version.org.keycloak>
-    <olingo.version>4.7.0-SNAPSHOT</olingo.version>
+    <olingo.version>4.7.0</olingo.version>
     <narayana.version>2.1.0</narayana.version> <!-- me.snowdrop version, not narayana -->
     <version.springfox>2.9.2</version.springfox>
     <google-sheets.version>v4-rev574-1.24.1</google-sheets.version>
