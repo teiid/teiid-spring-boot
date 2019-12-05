@@ -49,6 +49,8 @@ public enum ExternalSource {
             "org.hibernate.dialect.InformixDialect", new String[] {"com.ibm.informix:jdbc"}),
     INGRES("Ingres", new String[] { "com.ingres.jdbc.IngresDriver" }, new String[] {}, "ingres",
             "org.hibernate.dialect.Ingres10Dialect", new String[] {"com.ingres.jdbc:iijdbc"}),
+    JDBCSIMPLE("JDBC Simple", new String[] { "java.sql.Driver" }, new String[] {}, "jdbc-simple",null, null),
+    JDBCANSI("JDBC Ansi", new String[] { "java.sql.Driver" }, new String[] {}, "jdbc-ansi",null, null),
     JTDS("MS-SQL Server", new String[] { "net.sourceforge.jtds.jdbc.Driver" }, new String[] {}, "sqlserver",
             "org.hibernate.dialect.SQLServer2012Dialect", new String[] {"net.sourceforge.jtds:jtds"}),
     MYSQL("MySQL", new String[] { "com.mysql.jdbc.Driver" },
