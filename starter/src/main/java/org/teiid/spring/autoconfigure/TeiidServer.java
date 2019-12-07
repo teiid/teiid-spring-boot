@@ -148,14 +148,14 @@ public class TeiidServer extends EmbeddedServer {
                             );
                 }
                 try {
-                    model = buildModelFromDataSource(sourceBeanName, driverName, context,
+                    model = buildModelFromDataSource(vdb, sourceBeanName, driverName, context,
                             redirectUpdates && sourceBeanName.equals(redirectedDSName));
                 } catch (AdminException e) {
                     throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
                 }
             } else if (source instanceof BaseConnectionFactory) {
                 try {
-                    model = buildModelFromConnectionFactory(sourceBeanName, (BaseConnectionFactory) source, context);
+                    model = buildModelFromConnectionFactory(vdb, sourceBeanName, (BaseConnectionFactory) source, context);
                 } catch (AdminException e) {
                     throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
                 }
@@ -351,8 +351,8 @@ public class TeiidServer extends EmbeddedServer {
         }
     }
 
-    private ModelMetaData buildModelFromDataSource(String dsBeanName, String driverName, ApplicationContext context,
-            boolean createInitTable) throws AdminException {
+    private ModelMetaData buildModelFromDataSource(VDBMetaData vdb, String dsBeanName, String driverName,
+            ApplicationContext context, boolean createInitTable) throws AdminException {
 
         ModelMetaData model = new ModelMetaData();
         model.setName(dsBeanName);
@@ -377,21 +377,24 @@ public class TeiidServer extends EmbeddedServer {
         // load the translator class
         addTranslator(translatorName, context);
 
+        Properties overrideProperties = getTranslatorProperties(context, source.getTranslatorName(), dsBeanName,
+                TranlatorPropertyType.OVERRIDE, new String[] {"spring.datasource", "spring.xa.datasource"});
+        if (!overrideProperties.isEmpty()) {
+            source.setTranslatorName(dsBeanName);
+            VDBTranslatorMetaData t = new VDBTranslatorMetaData();
+            t.setName(dsBeanName);
+            t.setType(translatorName);
+            t.setProperties(overrideProperties);
+            vdb.addOverideTranslator(t);
+        }
+
         // add the importer properties from the configuration
         // note that above defaults can be overridden with this too.
-        Collection<? extends PropertyDefinition> importProperties = getAdmin()
-                .getTranslatorPropertyDefinitions(source.getTranslatorName(), TranlatorPropertyType.IMPORT);
-        importProperties.forEach(prop -> {
-            String key = prop.getName();
-            String value = context.getEnvironment().getProperty("spring.datasource." + dsBeanName + "." + key);
-            if (value == null) {
-                value = context.getEnvironment().getProperty("spring.xa.datasource." + dsBeanName + "." + key);
-            }
-            if (value != null) {
-                model.addProperty(key, value);
-            }
-        });
-
+        Properties importProperties = getTranslatorProperties(context, source.getTranslatorName(), dsBeanName,
+                TranlatorPropertyType.IMPORT, new String[] {"spring.datasource", "spring.xa.datasource"});
+        for (String k : importProperties.stringPropertyNames()) {
+            model.addProperty(k, importProperties.getProperty(k));
+        }
         model.addSourceMapping(source);
 
         // This is to avoid failing on empty schema
@@ -402,9 +405,28 @@ public class TeiidServer extends EmbeddedServer {
         return model;
     }
 
+    Properties getTranslatorProperties(ApplicationContext context, String translatorName, String beanName,
+            TranlatorPropertyType propertyType, String[] propertyPrefix) throws AdminException {
+        Properties read = new Properties();
+        Collection<? extends PropertyDefinition> importProperties = getAdmin()
+                .getTranslatorPropertyDefinitions(translatorName, propertyType);
+        importProperties.forEach(prop -> {
+            String key = prop.getName();
+            for (String prefix : propertyPrefix) {
+                String envKey = prefix + "." + beanName + "." + key;
+                String value = context.getEnvironment().getProperty(envKey);
+                if (value != null) {
+                    read.setProperty(key, value);
+                    break;
+                }
+            }
+        });
+        return read;
+    }
+
     @SuppressWarnings("rawtypes")
-    private ModelMetaData buildModelFromConnectionFactory(String sourceBeanName, BaseConnectionFactory factory,
-            ApplicationContext context) throws AdminException {
+    private ModelMetaData buildModelFromConnectionFactory(VDBMetaData vdb, String sourceBeanName,
+            BaseConnectionFactory factory, ApplicationContext context) throws AdminException {
         ModelMetaData model = new ModelMetaData();
         model.setName(sourceBeanName);
         model.setModelType(Model.Type.PHYSICAL);
@@ -423,18 +445,24 @@ public class TeiidServer extends EmbeddedServer {
             throw new IllegalStateException("Failed to load translator " + translatorName, e);
         }
 
+        Properties overrideProperties = getTranslatorProperties(context, source.getTranslatorName(), sourceBeanName,
+                TranlatorPropertyType.OVERRIDE, new String[] {factory.getConfigurationPrefix()});
+        if (!overrideProperties.isEmpty()) {
+            source.setTranslatorName(sourceBeanName);
+            VDBTranslatorMetaData t = new VDBTranslatorMetaData();
+            t.setName(sourceBeanName);
+            t.setType(translatorName);
+            t.setProperties(overrideProperties);
+            vdb.addOverideTranslator(t);
+        }
+
         // add the importer properties from the configuration
         // note that above defaults can be overridden with this too.
-        Collection<? extends PropertyDefinition> importProperties = getAdmin()
-                .getTranslatorPropertyDefinitions(source.getTranslatorName(), TranlatorPropertyType.IMPORT);
-        importProperties.forEach(prop -> {
-            String key = prop.getName();
-            String value = context.getEnvironment()
-                    .getProperty(factory.getConfigurationPrefix() + "." + sourceBeanName + "." + key);
-            if (value != null) {
-                model.addProperty(key, value);
-            }
-        });
+        Properties importProperties = getTranslatorProperties(context, source.getTranslatorName(), sourceBeanName,
+                TranlatorPropertyType.IMPORT, new String[] {factory.getConfigurationPrefix()});
+        for (String k : importProperties.stringPropertyNames()) {
+            model.addProperty(k, importProperties.getProperty(k));
+        }
 
         model.addSourceMapping(source);
         return model;
@@ -565,7 +593,7 @@ public class TeiidServer extends EmbeddedServer {
                 // reload the redirection model as it has new entries now after schema
                 // generation.
                 try {
-                    vdb.addModel(buildModelFromDataSource(redirectedDSName, driverName, context, false));
+                    vdb.addModel(buildModelFromDataSource(vdb, redirectedDSName, driverName, context, false));
                 } catch (AdminException e) {
                     throw new IllegalStateException("Error adding the source, cause: " + e.getMessage());
                 }
