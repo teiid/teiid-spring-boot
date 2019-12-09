@@ -23,7 +23,6 @@ CREATE DATABASE PetStore OPTIONS (ANNOTATION 'PetStore VDB');
 USE DATABASE PetStore;
 
 -- create translators and connections to source
-CREATE FOREIGN DATA WRAPPER postgresql;
 CREATE SERVER sampledb FOREIGN DATA WRAPPER postgresql OPTIONS ("jndi-name" 'sampledb');
 
 CREATE VIRTUAL SCHEMA pets;
