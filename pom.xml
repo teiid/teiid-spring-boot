@@ -141,7 +141,7 @@
     <version.org.openapitools>4.0.0</version.org.openapitools>
     <version.mustache>0.9.6</version.mustache>
     <version.jackson-databind-nullable>0.1.0</version.jackson-databind-nullable>
-    <version.jackson-core>2.10.0</version.jackson-core>
+    <version.jackson-core>2.9.10</version.jackson-core>
   </properties>
 
   <build>
@@ -352,6 +352,24 @@
         <groupId>org.apache.olingo</groupId>
         <artifactId>odata-client-core</artifactId>
         <version>${olingo.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+            </exclusion>            
+            <exclusion>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
+            </exclusion>                          
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.teiid.connectors</groupId>
@@ -735,7 +753,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>${version.jackson-core}</version>
+        <version>2.9.10.1</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
