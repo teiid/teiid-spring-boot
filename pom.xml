@@ -821,6 +821,11 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <dependency>
+        <groupId>wsdl4j</groupId>
+        <artifactId>wsdl4j</artifactId>
+        <version>1.6.3</version>
+      </dependency>
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
 
     </dependencies>
