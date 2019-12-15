@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.sql.Driver;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,7 +66,6 @@ import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
-import org.teiid.query.metadata.NioZipFileSystem;
 import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.metadata.VirtualFile;
 import org.teiid.runtime.EmbeddedConfiguration;
@@ -177,19 +175,21 @@ public class TeiidAutoConfiguration implements Ordered {
                     DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
                     String db = ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
                     vdb = store.getVDBMetadata(db);
-                    logger.info("Predefined VDB found :" + resources.get(0).getFilename());
+                    logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to parse the VDB defined");
                 }
             } else if (resource.getFilename().endsWith("-vdb.xml")) {
                 try {
-                    vdb =  VDBMetadataParser.unmarshell(resources.get(0).getInputStream());
+                    vdb =  VDBMetadataParser.unmarshall(resource.getInputStream());
+                    logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (XMLStreamException | IOException e) {
                     throw new IllegalStateException("Failed to load the VDB defined", e);
                 }
             } else if (resource.getFilename().endsWith(".vdb")) {
                 try {
-                    vdb = loadVDB(resource.getURL());
+                    vdb = loadVDB(resource);
+                    logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | IOException
                         | URISyntaxException e) {
                     throw new IllegalStateException("Failed to load the VDB defined", e);
@@ -206,9 +206,10 @@ public class TeiidAutoConfiguration implements Ordered {
         return vdb;
     }
 
-    private VDBMetaData loadVDB(URL url) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
+    private VDBMetaData loadVDB(Resource resource) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
     IOException, URISyntaxException {
-        VirtualFile root = NioZipFileSystem.mount(url);
+
+        VirtualFile root = NioZipFileSystem.mount(resource.getInputStream());
         VDBMetaData metadata;
 
         VirtualFile vdbMetadata = root.getChild("/vdb.xml"); //$NON-NLS-1$
@@ -223,7 +224,7 @@ public class TeiidAutoConfiguration implements Ordered {
             }
             InputStream is = vdbMetadata.openStream();
             try {
-                metadata = VDBMetadataParser.unmarshell(is);
+                metadata = VDBMetadataParser.unmarshall(is);
             } catch (XMLStreamException e) {
                 throw new VirtualDatabaseException(e);
             }
@@ -236,11 +237,11 @@ public class TeiidAutoConfiguration implements Ordered {
             try {
                 metadata = store.getVDBMetadata(ObjectConverterUtil.convertToString(vdbMetadata.openStream()));
             } catch (IOException e) {
-                throw new VirtualDatabaseException("Could not find a vdb.xml or vdb.ddl file in " + url);
+                throw new VirtualDatabaseException("Could not find a vdb.xml or vdb.ddl file in " + resource.getFilename());
             }
         }
         VDBResources resources = new VDBResources(root);
-        metadata.addAttchment(VDBResources.class, resources);
+        metadata.addAttachment(VDBResources.class, resources);
         return metadata;
     }
 

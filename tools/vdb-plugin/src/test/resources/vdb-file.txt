@@ -27,7 +27,7 @@ SET SCHEMA virt;
 --############ Schema:accounts ############
 SET SCHEMA accounts;
 
-
+IMPORT FOREIGN SCHEMA MYSCHEMA FROM SERVER "mydb" INTO accounts OPTIONS( "importer.useFullSchemaName" 'false');
 --############ Schema:bar ############
 SET SCHEMA bar;
 

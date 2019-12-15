@@ -44,6 +44,7 @@ import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.core.util.ReaderInputStream;
 import org.teiid.metadata.Datatype;
 import org.teiid.metadata.Grant;
+import org.teiid.metadata.Schema;
 import org.teiid.metadata.Server;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
@@ -148,7 +149,68 @@ public class VdbMojo extends AbstractMojo {
                 File finalVDB = new File(this.outputDirectory.getPath(), "vdb.ddl");
                 finalVDB.getParentFile().mkdirs();
 
-                String vdbDDL = DDLStringVisitor.getDDLString(top.db());
+                DDLStringVisitor visitor = new DDLStringVisitor(null, null) {
+                    @Override
+                    protected void visit(Schema schema) {
+                        super.visit(schema);
+                        if (schema.isPhysical()) {
+                            PluginDatabaseStore.ImportSchema importSchema =  top.getImportSchema(schema.getName());
+                            if (importSchema != null) {
+                                //IMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
+                                append("IMPORT FOREIGN SCHEMA ");
+                                append(importSchema.foreignSchemaName);
+                                append(" FROM SERVER ");
+                                append("\"");
+                                append(importSchema.serverName);
+                                append("\"");
+                                append(" INTO ");
+                                append(importSchema.schemaName);
+                                if (!importSchema.includeTables.isEmpty() || !importSchema.excludeTables.isEmpty()
+                                        || !importSchema.properties.isEmpty()) {
+                                    append(" OPTIONS( ");
+                                    boolean useComma = false;
+                                    if (!importSchema.includeTables.isEmpty()) {
+                                        append("\"importer.includeTables\" '");
+                                        append(String.join(",", importSchema.includeTables));
+                                        append("'");
+                                        useComma = true;
+                                    }
+                                    if (!importSchema.excludeTables.isEmpty()) {
+                                        if (useComma) {
+                                            append(", ");
+                                        }
+                                        append("\"importer.excludeTables\" '");
+                                        append(String.join(",", importSchema.excludeTables));
+                                        append("'");
+                                        useComma = true;
+                                    }
+                                    if (!importSchema.properties.isEmpty()) {
+                                        if (useComma) {
+                                            append(", ");
+                                        }
+                                        int size = importSchema.properties.size();
+                                        int i = 0;
+                                        for (String key : importSchema.properties.keySet()) {
+                                            append("\"");
+                                            append(key);
+                                            append("\" ");
+                                            append("'");
+                                            append(importSchema.properties.get(key));
+                                            append("'");
+                                            if ((i+1) < size) {
+                                                append(", ");
+                                            }
+                                            i++;
+                                        }
+                                    }
+                                    append(");");
+                                }
+                            }
+                        }
+                    }
+                };
+                visitor.visit(top.db());
+                String vdbDDL = visitor.toString();
                 getLog().debug(vdbDDL);
                 ObjectConverterUtil.write(new ReaderInputStream(new StringReader(vdbDDL), Charset.forName("UTF-8")),
                         finalVDB);
