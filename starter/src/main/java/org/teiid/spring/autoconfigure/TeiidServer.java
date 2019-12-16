@@ -302,7 +302,7 @@ public class TeiidServer extends EmbeddedServer {
             }
             if (last && logger.isDebugEnabled()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                VDBMetadataParser.marshell(vdb, out);
+                VDBMetadataParser.marshall(vdb, out);
                 logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
             }
 

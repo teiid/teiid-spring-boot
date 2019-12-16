@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,18 @@ import org.teiid.query.parser.QueryParser;
 public class PluginDatabaseStore extends DatabaseStore {
     private List<VdbImport> vdbImports = new ArrayList<>();
     private  Map<String, Datatype> typeMap;
+    private  Map<String, ImportSchema> importMap = new HashMap<String, PluginDatabaseStore.ImportSchema>();
+
+    static class ImportSchema {
+        String schemaName;
+        String serverType;
+        String serverName;
+        String foreignSchemaName;
+        List<String> includeTables;
+        List<String> excludeTables;
+        Map<String, String> properties;
+    }
+
 
     public PluginDatabaseStore ( Map<String, Datatype> typeMap) {
         this.typeMap = typeMap;
@@ -49,7 +62,19 @@ public class PluginDatabaseStore extends DatabaseStore {
     @Override
     public void importSchema(String schemaName, String serverType, String serverName, String foreignSchemaName,
             List<String> includeTables, List<String> excludeTables, Map<String, String> properties) {
-        // ignore
+        ImportSchema imp = new ImportSchema();
+        imp.schemaName = schemaName;
+        imp.serverType = serverType;
+        imp.serverName = serverName;
+        imp.foreignSchemaName = foreignSchemaName;
+        imp.includeTables = includeTables;
+        imp.excludeTables = excludeTables;
+        imp.properties = properties;
+        this.importMap.put(schemaName, imp);
+    }
+
+    public ImportSchema getImportSchema(String schema) {
+        return this.importMap.get(schema);
     }
 
     @Override

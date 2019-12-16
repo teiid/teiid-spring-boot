@@ -54,7 +54,7 @@ public class RedirectionSchemaBuilder {
         MetadataFactory target = new MetadataFactory(VDBNAME, VDBVERSION,
                 SystemMetadata.getInstance().getRuntimeTypeMap(), model);
         populateRedirectionSchema(source, target);
-        model.addAttchment(MetadataFactory.class, target);
+        model.addAttachment(MetadataFactory.class, target);
         String ddl = DDLStringVisitor.getDDLString(target.getSchema(), null, null);
         model.addSourceMetadata("DDL", ddl);
         return model;
@@ -232,7 +232,7 @@ public class RedirectionSchemaBuilder {
         proc.setQueryPlan(plan.toString());
         return proc;
     }
-    */
+     */
 
     private String buildUpdatePlan(Table srcTable, String redirected, List<Table> assosiatedTables) {
         Consumer<StringBuilder> ifPlan = (sb) -> {
@@ -337,14 +337,14 @@ public class RedirectionSchemaBuilder {
                 String check = table.getName() + "_" + fk.getName() + "_EXISTS";
                 sb.append(TAB).append(TAB);
                 sb.append("DECLARE boolean VARIABLES.").append(check).append(" = (SELECT COUNT(*) > 0 FROM ")
-                    .append(TeiidConstants.EXPOSED_VIEW).append(".").append(table.getName()).append(" WHERE ");
+                .append(TeiidConstants.EXPOSED_VIEW).append(".").append(table.getName()).append(" WHERE ");
 
                 for (int i = 0; i < fk.getColumns().size(); i++) {
                     if (i > 0) {
                         sb.append(" AND ");
                     }
                     sb.append(fk.getColumns().get(i).getName()).append(" = ").append("OLD.")
-                            .append(fk.getReferenceColumns().get(i));
+                    .append(fk.getReferenceColumns().get(i));
                 }
                 sb.append(");\n");
                 sb.append(TAB).append(TAB);
@@ -352,8 +352,8 @@ public class RedirectionSchemaBuilder {
                 sb.append(TAB).append(TAB);
                 sb.append("BEGIN\n");
                 sb.append(TAB).append(TAB).append(TAB)
-                        .append("RAISE SQLEXCEPTION 'referential integrity check failed on ")
-                        .append(table.getName()).append(" table, cascade deletes are not supported';\n");
+                .append("RAISE SQLEXCEPTION 'referential integrity check failed on ")
+                .append(table.getName()).append(" table, cascade deletes are not supported';\n");
                 sb.append(TAB).append(TAB).append("END\n");
             }
         }
@@ -409,7 +409,7 @@ public class RedirectionSchemaBuilder {
             StringBuilder sb) {
         sb.append(TAB);
         sb.append("DECLARE boolean VARIABLES.").append(view.getName()).append("_PK_EXISTS")
-            .append(" = (SELECT true FROM ").append(view.getFullName()).append(" WHERE ").append(args).append(");\n");
+        .append(" = (SELECT true FROM ").append(view.getFullName()).append(" WHERE ").append(args).append(");\n");
         sb.append(TAB);
         sb.append("IF (").append("VARIABLES.").append(view.getName()).append("_PK_EXISTS").append(")\n");
         sb.append(TAB);
@@ -428,7 +428,7 @@ public class RedirectionSchemaBuilder {
         }
     }
 
-/*    void ifExists(Procedure check, String args, Consumer<StringBuilder> ifPlan, Consumer<StringBuilder> elsePlan,
+    /*    void ifExists(Procedure check, String args, Consumer<StringBuilder> ifPlan, Consumer<StringBuilder> elsePlan,
             StringBuilder sb) {
         sb.append(TAB);
         sb.append("DECLARE boolean VARIABLES.X_").append(check.getName())
