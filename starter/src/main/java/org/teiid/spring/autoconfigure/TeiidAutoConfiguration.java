@@ -73,6 +73,7 @@ import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
 import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.spring.identity.SpringSecurityHelper;
+import org.teiid.spring.util.KeystoreUtil;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
 import org.teiid.transport.SocketConfiguration;
@@ -273,6 +274,25 @@ public class TeiidAutoConfiguration implements Ordered {
 
             }
 
+            // check to see if user configured the certificates to open up secured ports for
+            // jdbc or pg. User can also set ssl.keystoreName
+            if (this.properties.isJdbcSecureEnable() || this.properties.isPgSecureEnable()) {
+                if (this.properties.getTlsCertificate() != null && this.properties.getTlsKey() != null) {
+                    try {
+                        KeystoreUtil.createKeystore(this.properties.getTlsKey(), this.properties.getTlsCertificate(),
+                                this.properties.getCaCertificateFile(), "keystore.jks", "changeit");
+                        this.properties.getSsl().setKeystoreFilename("keystore.jks");
+                        logger.info("Created a Java JKS keystore from the tls keys provided.");
+                    } catch (Exception e) {
+                        logger.error("Failed to convert tls.key and tls.crt files into Java keystore "
+                                + "for use in secured JDBC/PG ", e);
+                    }
+                } else {
+                    logger.info("No tls.key and tls.crt files provided for SSL, "
+                            + "going to use SSL configuration directly");
+                }
+            }
+
             if (this.properties.isJdbcSecureEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
                 sc.setBindAddress(this.properties.getHostName());
@@ -303,7 +323,7 @@ public class TeiidAutoConfiguration implements Ordered {
                 sc.setSSLConfiguration(this.properties.getSsl());
                 embeddedConfiguration.addTransport(sc);
                 logger.info("Secure PG is opened on = " + this.properties.getHostName() + ":"
-                        + this.properties.getPgPort());
+                        + this.properties.getPgSecurePort());
             }
         }
 
