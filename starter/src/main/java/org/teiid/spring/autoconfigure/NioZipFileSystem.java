@@ -36,13 +36,13 @@ import org.teiid.query.metadata.NioVirtualFile;
 public class NioZipFileSystem {
 
     /**
-     * Get the root {@link VirtualFile} for the given url.
-     * Any previous filesystem for this url will be closed.
+     * Get the root {@link NioVirtualFile} for the given InputStream.
+     * Any previous filesystem for this InputStream will be closed.
      * The returned file will be used to auto close the filesystem.
      * It should be strongly held until the filesystem is no longer needed.
      *
-     * @param url
-     * @return
+     * @param is
+     * @return NioVirtualFile
      * @throws IOException
      * @throws URISyntaxException
      */
