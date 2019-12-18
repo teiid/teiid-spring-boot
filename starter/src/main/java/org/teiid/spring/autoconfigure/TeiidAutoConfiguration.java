@@ -94,6 +94,8 @@ public class TeiidAutoConfiguration implements Ordered {
     public static ThreadLocal<TeiidServer> serverContext = new ThreadLocal<>();
 
     private static final Log logger = LogFactory.getLog(TeiidAutoConfiguration.class);
+    private static String KEY_STORE_NAME = "keystore.jks";
+    private static String KEY_STORE_PASSWORD = "changeit";
 
     @Autowired(required = false)
     private EmbeddedConfiguration embeddedConfiguration;
@@ -280,8 +282,10 @@ public class TeiidAutoConfiguration implements Ordered {
                 if (this.properties.getTlsCertificate() != null && this.properties.getTlsKey() != null) {
                     try {
                         KeystoreUtil.createKeystore(this.properties.getTlsKey(), this.properties.getTlsCertificate(),
-                                this.properties.getCaCertificateFile(), "keystore.jks", "changeit");
-                        this.properties.getSsl().setKeystoreFilename("keystore.jks");
+                                this.properties.getCaCertificateFile(), KEY_STORE_NAME, KEY_STORE_PASSWORD);
+                        this.properties.getSsl().setKeystoreFilename(KEY_STORE_NAME);
+                        this.properties.getSsl().setKeystorePassword(KEY_STORE_PASSWORD);
+                        this.properties.getSsl().setKeystoreKeyPassword(KEY_STORE_PASSWORD);
                         logger.info("Created a Java JKS keystore from the tls keys provided.");
                     } catch (Exception e) {
                         logger.error("Failed to convert tls.key and tls.crt files into Java keystore "

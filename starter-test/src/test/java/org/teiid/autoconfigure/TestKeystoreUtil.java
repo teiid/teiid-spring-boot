@@ -13,11 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.spring.util;
+package org.teiid.autoconfigure;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.teiid.autoconfigure.JDBCUtils.close;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.sql.DataSource;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.teiid.adminapi.VDB.Status;
+import org.teiid.adminapi.impl.VDBMetaData;
+import org.teiid.spring.autoconfigure.TeiidAutoConfiguration;
+import org.teiid.spring.autoconfigure.TeiidServer;
+import org.teiid.spring.configuration.TestConfiguration;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = {TeiidAutoConfiguration.class, TestConfiguration.class})
 public class TestKeystoreUtil {
+
+    @Autowired
+    TeiidServer teiidServer;
+
+    @Autowired
+    VDBMetaData vdbMetaData;
+
+    @Autowired
+    DataSource datasource;
 
     private static String tlsKey = "-----BEGIN RSA PRIVATE KEY-----\n" +
             "MIIEpAIBAAKCAQEAw7K81Aomo+YmPdaKI2oSNghYeRycmbTTfZxs8zmSKjGK5xiz\n" +
@@ -91,6 +123,21 @@ public class TestKeystoreUtil {
 
     @Test
     public void test() throws Exception {
-        KeystoreUtil.createKeystore(tlsKey, tlsCert, "foo.bar", "target/keystore.jks", "changeit");
+        assertEquals(Status.ACTIVE, vdbMetaData.getStatus());
+        assertEquals("customer", vdbMetaData.getName());
+        assertEquals("1", vdbMetaData.getVersion());
+
+        Connection conn = teiidServer.getDriver().connect("jdbc:teiid:customer", null);
+        testConnection(conn);
+    }
+
+    private void testConnection(Connection conn) throws SQLException {
+        assertNotNull(conn);
+        Statement stmt = conn.createStatement();
+        assertNotNull(stmt);
+        ResultSet rs = stmt.executeQuery("SELECT * FROM SYSADMIN.MatViews");
+        assertNotNull(rs);
+        assertTrue(rs.next());
+        close(rs, stmt, conn);
     }
 }
