@@ -19,6 +19,7 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -94,7 +95,8 @@ public class TeiidAutoConfiguration implements Ordered {
     public static ThreadLocal<TeiidServer> serverContext = new ThreadLocal<>();
 
     private static final Log logger = LogFactory.getLog(TeiidAutoConfiguration.class);
-    private static String KEY_STORE_NAME = "keystore.jks";
+    private static String KEY_STORE_NAME = "keystore";
+    private static String KEY_STORE_TYPE = "jks";
     private static String KEY_STORE_PASSWORD = "changeit";
 
     @Autowired(required = false)
@@ -281,9 +283,12 @@ public class TeiidAutoConfiguration implements Ordered {
             if (this.properties.isJdbcSecureEnable() || this.properties.isPgSecureEnable()) {
                 if (this.properties.getTlsCertificate() != null && this.properties.getTlsKey() != null) {
                     try {
+                        File keystore = File.createTempFile(KEY_STORE_NAME, KEY_STORE_TYPE);
+                        keystore.deleteOnExit();
+                        String keystoreFileName = keystore.getAbsolutePath();
                         KeystoreUtil.createKeystore(this.properties.getTlsKey(), this.properties.getTlsCertificate(),
-                                this.properties.getCaCertificateFile(), KEY_STORE_NAME, KEY_STORE_PASSWORD);
-                        this.properties.getSsl().setKeystoreFilename(KEY_STORE_NAME);
+                                this.properties.getCaCertificateFile(), keystoreFileName, KEY_STORE_PASSWORD);
+                        this.properties.getSsl().setKeystoreFilename(keystoreFileName);
                         this.properties.getSsl().setKeystorePassword(KEY_STORE_PASSWORD);
                         this.properties.getSsl().setKeystoreKeyPassword(KEY_STORE_PASSWORD);
                         logger.info("Created a Java JKS keystore from the tls keys provided.");
