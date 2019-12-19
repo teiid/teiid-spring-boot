@@ -18,6 +18,8 @@ package org.teiid.spring.example;
 
 import java.util.Arrays;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -33,6 +35,7 @@ public class Application implements CommandLineRunner {
         SpringApplication.run(Application.class, args).close();
     }
 
+    @Transactional
     @Override
     public void run(String... args) throws Exception {
 
