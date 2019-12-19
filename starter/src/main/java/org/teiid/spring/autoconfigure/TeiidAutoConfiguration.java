@@ -284,6 +284,7 @@ public class TeiidAutoConfiguration implements Ordered {
                 if (this.properties.getTlsCertificate() != null && this.properties.getTlsKey() != null) {
                     try {
                         File keystore = File.createTempFile(KEY_STORE_NAME, KEY_STORE_TYPE);
+                        keystore.deleteOnExit();
                         String keystoreFileName = keystore.getAbsolutePath();
                         KeystoreUtil.createKeystore(this.properties.getTlsKey(), this.properties.getTlsCertificate(),
                                 this.properties.getCaCertificateFile(), keystoreFileName, KEY_STORE_PASSWORD);
