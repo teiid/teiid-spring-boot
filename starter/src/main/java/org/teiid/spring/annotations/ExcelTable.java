@@ -70,4 +70,12 @@ public @interface ExcelTable {
      * @return sheet name
      */
     String sheetName() default "Sheet1";
+
+    /**
+     * Source name; If overriding the org.teiid.translator.ws.WsExecutionFactory
+     * bean then provide the name of the bean
+     *
+     * @return string
+     */
+    String source() default "file"; // this the default web connection manager
 }

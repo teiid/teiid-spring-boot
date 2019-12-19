@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.boot.Metadata;
+import org.springframework.context.ApplicationContext;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
@@ -34,7 +35,8 @@ public class ExcelTableView extends ViewBuilder<ExcelTable> {
     }
 
     @Override
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, ExcelTable annotation) {
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, ExcelTable annotation,
+            ApplicationContext context) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ").append(columns.toString()).append("FROM ");
         sb.append(entityClazz.getSimpleName().toLowerCase()).append(".").append(annotation.sheetName());

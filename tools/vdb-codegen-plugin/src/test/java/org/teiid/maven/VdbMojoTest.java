@@ -63,6 +63,7 @@ public class VdbMojoTest {
         testRestGeneration(outputDirectory);
         testGoogleGeneration(outputDirectory);
         testInfinispanGeneration(outputDirectory);
+        testAmazonS3Generation(outputDirectory);
     }
 
 
@@ -119,6 +120,14 @@ public class VdbMojoTest {
         assertTrue( dsFile.exists() );
         assertEquals("The files differ!",
                 FileUtils.readFileToString(new File( "target/test-classes/infinispan.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(dsFile, "utf-8").trim());
+    }
+
+    public void testAmazonS3Generation(File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/DataSourcess3.java");
+        assertTrue( dsFile.exists() );
+        assertEquals("The files differ!",
+                FileUtils.readFileToString(new File( "target/test-classes/s3.txt"), "utf-8").trim(),
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 }
