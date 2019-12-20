@@ -48,6 +48,7 @@ import org.teiid.metadata.Schema;
 import org.teiid.metadata.Server;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
+import org.teiid.query.sql.symbol.Constant;
 import org.teiid.query.sql.visitor.SQLStringVisitor;
 
 /**
@@ -191,18 +192,20 @@ public class VdbMojo extends AbstractMojo {
                                             if (useComma) {
                                                 append(", ");
                                             }
-                                            int size = importSchema.properties.size();
                                             int i = 0;
-                                            for (String key : importSchema.properties.keySet()) {
-                                                append("\"");
-                                                append(key);
-                                                append("\" ");
-                                                append("'");
-                                                append(importSchema.properties.get(key));
-                                                append("'");
-                                                if ((i+1) < size) {
+                                            for (Map.Entry<String, String> entry : importSchema.properties.entrySet()) {
+                                                if (i > 0) {
                                                     append(", ");
                                                 }
+                                                append(SQLStringVisitor.escapeSinglePart(entry.getKey()));
+                                                append(" ");
+                                                Object value = entry.getValue();
+                                                if (value != null) {
+                                                    value = new Constant(value);
+                                                } else {
+                                                    value = Constant.NULL_CONSTANT;
+                                                }
+                                                append(value);
                                                 i++;
                                             }
                                         }
