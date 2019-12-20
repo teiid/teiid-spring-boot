@@ -48,6 +48,8 @@ import org.teiid.metadata.Schema;
 import org.teiid.metadata.Server;
 import org.teiid.query.metadata.DDLStringVisitor;
 import org.teiid.query.metadata.SystemMetadata;
+import org.teiid.query.sql.symbol.Constant;
+import org.teiid.query.sql.visitor.SQLStringVisitor;
 
 /**
  * https://stackoverflow.com/questions/1427722/how-do-i-create-a-new-packaging-type-for-maven
@@ -154,56 +156,62 @@ public class VdbMojo extends AbstractMojo {
                     protected void visit(Schema schema) {
                         super.visit(schema);
                         if (schema.isPhysical()) {
-                            PluginDatabaseStore.ImportSchema importSchema =  top.getImportSchema(schema.getName());
-                            if (importSchema != null) {
-                                //IMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
-                                append("IMPORT FOREIGN SCHEMA ");
-                                append(importSchema.foreignSchemaName);
-                                append(" FROM SERVER ");
-                                append("\"");
-                                append(importSchema.serverName);
-                                append("\"");
-                                append(" INTO ");
-                                append(importSchema.schemaName);
-                                if (!importSchema.includeTables.isEmpty() || !importSchema.excludeTables.isEmpty()
-                                        || !importSchema.properties.isEmpty()) {
-                                    append(" OPTIONS( ");
-                                    boolean useComma = false;
-                                    if (!importSchema.includeTables.isEmpty()) {
-                                        append("\"importer.includeTables\" '");
-                                        append(String.join(",", importSchema.includeTables));
-                                        append("'");
-                                        useComma = true;
-                                    }
-                                    if (!importSchema.excludeTables.isEmpty()) {
-                                        if (useComma) {
-                                            append(", ");
-                                        }
-                                        append("\"importer.excludeTables\" '");
-                                        append(String.join(",", importSchema.excludeTables));
-                                        append("'");
-                                        useComma = true;
-                                    }
-                                    if (!importSchema.properties.isEmpty()) {
-                                        if (useComma) {
-                                            append(", ");
-                                        }
-                                        int size = importSchema.properties.size();
-                                        int i = 0;
-                                        for (String key : importSchema.properties.keySet()) {
-                                            append("\"");
-                                            append(key);
-                                            append("\" ");
+                            List<PluginDatabaseStore.ImportSchema> importSchemas =  top.getImportSchemas(schema.getName());
+                            if (importSchemas == null) {
+                                return;
+                            }
+                            for (PluginDatabaseStore.ImportSchema importSchema : importSchemas) {
+                                if (importSchema != null) {
+                                    //IMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
+                                    append("IMPORT FOREIGN SCHEMA ");
+                                    append(SQLStringVisitor.escapeSinglePart(importSchema.foreignSchemaName));
+                                    append(" FROM SERVER ");
+                                    append(SQLStringVisitor.escapeSinglePart(importSchema.serverName));
+                                    append(" INTO ");
+                                    append(SQLStringVisitor.escapeSinglePart(importSchema.schemaName));
+                                    if (!importSchema.includeTables.isEmpty() || !importSchema.excludeTables.isEmpty()
+                                            || !importSchema.properties.isEmpty()) {
+                                        append(" OPTIONS( ");
+                                        boolean useComma = false;
+                                        if (!importSchema.includeTables.isEmpty()) {
+                                            append("\"importer.includeTables\" '");
+                                            append(String.join(",", importSchema.includeTables));
                                             append("'");
-                                            append(importSchema.properties.get(key));
-                                            append("'");
-                                            if ((i+1) < size) {
+                                            useComma = true;
+                                        }
+                                        if (!importSchema.excludeTables.isEmpty()) {
+                                            if (useComma) {
                                                 append(", ");
                                             }
-                                            i++;
+                                            append("\"importer.excludeTables\" '");
+                                            append(String.join(",", importSchema.excludeTables));
+                                            append("'");
+                                            useComma = true;
                                         }
+                                        if (!importSchema.properties.isEmpty()) {
+                                            if (useComma) {
+                                                append(", ");
+                                            }
+                                            int i = 0;
+                                            for (Map.Entry<String, String> entry : importSchema.properties.entrySet()) {
+                                                if (i > 0) {
+                                                    append(", ");
+                                                }
+                                                append(SQLStringVisitor.escapeSinglePart(entry.getKey()));
+                                                append(" ");
+                                                Object value = entry.getValue();
+                                                if (value != null) {
+                                                    value = new Constant(value);
+                                                } else {
+                                                    value = Constant.NULL_CONSTANT;
+                                                }
+                                                append(value);
+                                                i++;
+                                            }
+                                        }
+                                        append(")");
                                     }
-                                    append(");");
+                                    append(";\n");
                                 }
                             }
                         }

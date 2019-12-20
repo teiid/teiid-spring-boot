@@ -33,7 +33,7 @@ import org.teiid.query.parser.QueryParser;
 public class PluginDatabaseStore extends DatabaseStore {
     private List<VdbImport> vdbImports = new ArrayList<>();
     private  Map<String, Datatype> typeMap;
-    private  Map<String, ImportSchema> importMap = new HashMap<String, PluginDatabaseStore.ImportSchema>();
+    private  Map<String, List<ImportSchema>> importMap = new HashMap<String, List<ImportSchema>>();
 
     static class ImportSchema {
         String schemaName;
@@ -62,18 +62,24 @@ public class PluginDatabaseStore extends DatabaseStore {
     @Override
     public void importSchema(String schemaName, String serverType, String serverName, String foreignSchemaName,
             List<String> includeTables, List<String> excludeTables, Map<String, String> properties) {
-        ImportSchema imp = new ImportSchema();
-        imp.schemaName = schemaName;
-        imp.serverType = serverType;
-        imp.serverName = serverName;
-        imp.foreignSchemaName = foreignSchemaName;
-        imp.includeTables = includeTables;
-        imp.excludeTables = excludeTables;
-        imp.properties = properties;
-        this.importMap.put(schemaName, imp);
+        ImportSchema is = new ImportSchema();
+        is.schemaName = schemaName;
+        is.serverType = serverType;
+        is.serverName = serverName;
+        is.foreignSchemaName = foreignSchemaName;
+        is.includeTables = includeTables;
+        is.excludeTables = excludeTables;
+        is.properties = properties;
+
+        List<ImportSchema> imports = this.importMap.get(schemaName);
+        if (imports == null) {
+            imports = new ArrayList<ImportSchema>();
+            this.importMap.put(schemaName, imports);
+        }
+        imports.add(is);
     }
 
-    public ImportSchema getImportSchema(String schema) {
+    public List<ImportSchema> getImportSchemas(String schema) {
         return this.importMap.get(schema);
     }
 
