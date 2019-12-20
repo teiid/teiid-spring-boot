@@ -20,10 +20,13 @@ import java.lang.reflect.Field;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.boot.Metadata;
+import org.springframework.context.ApplicationContext;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.TextTable;
+import org.teiid.spring.common.ExternalSource;
+import org.teiid.spring.data.BaseConnectionFactory;
 
 public class TextTableView extends ViewBuilder<TextTable> {
     private static final Log logger = LogFactory.getLog(TextTableView.class);
@@ -36,9 +39,15 @@ public class TextTableView extends ViewBuilder<TextTable> {
     }
 
     @Override
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, TextTable annotation) {
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, TextTable annotation, ApplicationContext context) {
         String source = annotation.source();
         String file = annotation.file();
+
+        String translator = ExternalSource.FILE.getTranslatorName();
+        BaseConnectionFactory<?> bean = (BaseConnectionFactory<?>)context.getBean(source);
+        if (bean != null) {
+            translator = bean.getTranslatorName();
+        }
 
         view.setSupportsUpdate(false);
 
@@ -46,20 +55,24 @@ public class TextTableView extends ViewBuilder<TextTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (annotation.source().equalsIgnoreCase("file")) {
+        if (translator.equalsIgnoreCase(ExternalSource.FILE.getTranslatorName())) {
             sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
-        } else if (annotation.source().equalsIgnoreCase("rest")) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())) {
             JsonTableView.generateRestProcedure(entityClazz, source, file, sb);
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+            sb.append("EXEC ").append(source).append(".getTextFile('").append(file).append("')");
         } else {
             throw new IllegalStateException("Source type '" + annotation.source() + " not supported on TextTable "
                     + view.getName() + ". Only \"file\" and \"rest\" are supported");
         }
         sb.append(") AS f, ").append("\n");
 
-        if (annotation.source().equals("file")) {
+        if (annotation.source().equals(ExternalSource.FILE.getTranslatorName())) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
-        } else {
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())) {
             sb.append("TEXTTABLE(f.result COLUMNS ").append(columndef.toString());
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+            sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
         }
 
         if (!annotation.delimiter().equals(",")) {
@@ -97,7 +110,7 @@ public class TextTableView extends ViewBuilder<TextTable> {
         if (!annotation.notrim()) {
             sb.append(" NO TRIM");
         }
-        sb.append(") AS tt;");
+        sb.append(") AS tt");
 
         logger.debug("Generated View's Transformation: " + sb.toString());
         view.setSelectTransformation(sb.toString());

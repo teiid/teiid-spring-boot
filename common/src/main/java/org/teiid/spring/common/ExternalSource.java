@@ -85,9 +85,11 @@ public enum ExternalSource {
     VERTICA("Vertica", new String[] { "com.vertica.jdbc.Driver" }, new String[] {}, "vertica", null,
             new String[] {"org.clojars.erp12:jdbc-vertica"}),
 
+    AMAZONS3("amazon-s3", new String[] { "org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory" }, new String[] {},
+            "amazon-s3", null, new String[] { "org.teiid:spring-data-amazon-s3" }),
     EXCEL("excel", new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {}, "excel",
             null, new String[] {"org.teiid:spring-data-excel"}),
-    FILE("file", new String[] { "org.teiid.spring.data.fileFileConnectionFactory" }, new String[] {}, "file", null,
+    FILE("file", new String[] { "org.teiid.spring.data.file.FileConnectionFactory" }, new String[] {}, "file", null,
             new String[] {"org.teiid:teiid-spring-boot-starter"}),
     GOOGLESHEETS("google-spreadsheet", new String[] { "org.teiid.spring.data.google.SpreadsheetConnectionFactory" },
             new String[] {}, "google-spreadsheet", null, new String[] {"org.teiid:spring-data-google"}),

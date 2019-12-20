@@ -18,11 +18,14 @@ package org.teiid.spring.views;
 import java.lang.reflect.Field;
 
 import org.hibernate.boot.Metadata;
+import org.springframework.context.ApplicationContext;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.RestConfiguration;
+import org.teiid.spring.common.ExternalSource;
+import org.teiid.spring.data.BaseConnectionFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -35,9 +38,16 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
     }
 
     @Override
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, JsonTable annotation) {
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, JsonTable annotation,
+            ApplicationContext context) {
         String source = annotation.source();
         String endpoint = annotation.endpoint();
+
+        String translator = "file";
+        BaseConnectionFactory<?> bean = (BaseConnectionFactory<?>)context.getBean(source);
+        if (bean != null) {
+            translator = bean.getTranslatorName();
+        }
 
         view.setSupportsUpdate(false);
 
@@ -45,10 +55,12 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (annotation.source().equalsIgnoreCase("file")) {
+        if (translator.equalsIgnoreCase(ExternalSource.FILE.getTranslatorName())) {
             sb.append("EXEC ").append(source).append(".getFiles('").append(endpoint).append("')");
-        } else if (annotation.source().equalsIgnoreCase("rest")) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())) {
             generateRestProcedure(entityClazz, source, endpoint, sb);
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+            sb.append("EXEC ").append(source).append(".getTextFile('").append(endpoint).append("')");
         } else {
             throw new IllegalStateException("Source type '" + annotation.source() + " not supported on JsonTable "
                     + view.getName() + ". Only \"file\" and \"rest\" are supported");
@@ -64,10 +76,12 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
             root = root.substring(0, root.lastIndexOf('/'));
         }
 
-        if (annotation.source().equals("file")) {
+        if (translator.equals(ExternalSource.FILE.getTranslatorName())) {
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
-        } else {
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())){
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.result) ");
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+            sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
         }
         sb.append("COLUMNS ").append(columndef.toString());
         sb.append(") AS jt");

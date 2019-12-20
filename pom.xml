@@ -443,7 +443,12 @@
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-odata4</artifactId>
         <version>${teiid.version}</version>
-      </dependency>      
+      </dependency> 
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-amazon-s3</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>           
       <dependency>
         <groupId>com.google.apis</groupId>
         <artifactId>google-api-services-sheets</artifactId>
@@ -626,7 +631,12 @@
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-infinispan</artifactId>
         <version>${project.version}</version>
-      </dependency>      
+      </dependency>   
+      <dependency>
+          <groupId>org.teiid</groupId>
+          <artifactId>spring-data-amazon-s3</artifactId>
+          <version>${project.version}</version>
+      </dependency>               
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
@@ -887,6 +897,7 @@
         <module>data/salesforce</module>
         <module>data/google</module>
         <module>data/infinispan</module>
+        <module>data/amazon-s3</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>
@@ -907,6 +918,8 @@
         <module>data/mongodb</module>
         <module>data/salesforce</module>
         <module>data/google</module>
+        <module>data/infinispan</module>
+        <module>data/amazon-s3</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>

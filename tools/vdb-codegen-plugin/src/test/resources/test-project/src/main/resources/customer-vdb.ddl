@@ -37,6 +37,8 @@ CREATE SERVER samplefile FOREIGN DATA WRAPPER file;
 
 CREATE SERVER samplegoogle FOREIGN DATA WRAPPER "google-spreadsheet";
 
+CREATE SERVER s3 FOREIGN DATA WRAPPER "amazon-s3";
+
 -- create schema, then import the metadata from the PostgreSQL database
 CREATE SCHEMA accounts SERVER sampledb;
 CREATE VIRTUAL SCHEMA portfolio;

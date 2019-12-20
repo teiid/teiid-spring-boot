@@ -72,6 +72,11 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
         this.template = createRestTemplate();
     }
 
+    protected RestConnectionFactory(String name, String configPrefix) {
+        super(name, configPrefix);
+        this.template = createRestTemplate();
+    }
+
     @Override
     public RestConnection getConnection() throws Exception {
         if (this.securityType == null) {

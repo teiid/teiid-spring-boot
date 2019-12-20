@@ -18,6 +18,7 @@ package org.teiid.spring.views;
 import javax.persistence.Entity;
 
 import org.hibernate.boot.Metadata;
+import org.springframework.context.ApplicationContext;
 import org.teiid.adminapi.Model;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.metadata.Column;
@@ -42,7 +43,7 @@ public class EntityBaseView extends ViewBuilder<Entity> {
     }
 
     @Override
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, Entity annotation) {
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, Entity annotation, ApplicationContext context) {
         String sourceName = findSourceWhereEntityExists(view.getName());
         if (sourceName == null) {
             throw new IllegalStateException(

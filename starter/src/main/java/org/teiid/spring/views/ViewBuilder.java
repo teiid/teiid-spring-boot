@@ -30,6 +30,7 @@ import org.hibernate.mapping.Index;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.UniqueKey;
+import org.springframework.context.ApplicationContext;
 import org.teiid.core.types.JDBCSQLTypeInfo;
 import org.teiid.dialect.TeiidDialect;
 import org.teiid.hibernate.types.BigDecimalArrayType;
@@ -58,7 +59,7 @@ public class ViewBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public void buildView(Class<?> entityClazz, MetadataFactory mf, T annotation) {
+    public void buildView(Class<?> entityClazz, MetadataFactory mf, T annotation, ApplicationContext context) {
 
         PersistentClass hibernateClass = this.metadata.getEntityBinding(entityClazz.getName());
         org.hibernate.mapping.Table ormTable = hibernateClass.getTable();
@@ -88,10 +89,10 @@ public class ViewBuilder<T> {
         addPrimaryKey(ormTable, view, mf);
         addForeignKeys(ormTable, view, mf);
         addIndexKeys(ormTable, view, mf);
-        onFinish(view, mf, entityClazz, annotation);
+        onFinish(view, mf, entityClazz, annotation, context);
     }
 
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, T annotation) {
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, T annotation, ApplicationContext context) {
     }
 
     void onColumnCreate(Table view, Column column, MetadataFactory mf, Field field, String parent, boolean last,

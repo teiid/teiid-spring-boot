@@ -414,7 +414,7 @@ public class TeiidServer extends EmbeddedServer {
             String key = prop.getName();
             for (String prefix : propertyPrefix) {
                 String envKey = prefix + "." + beanName + "." + key;
-                String value = context.getEnvironment().getProperty(envKey);
+                String value = context.getEnvironment().getProperty(envKey.toLowerCase());
                 if (value != null) {
                     read.setProperty(key, value);
                     break;
@@ -524,17 +524,17 @@ public class TeiidServer extends EmbeddedServer {
                 UserDefinedFunctions udfAnnotation = clazz.getAnnotation(UserDefinedFunctions.class);
 
                 if (textAnnotation != null && entityAnnotation != null) {
-                    new TextTableView(metadata).buildView(clazz, mf, textAnnotation);
+                    new TextTableView(metadata).buildView(clazz, mf, textAnnotation, context);
                 } else if (jsonAnnotation != null && entityAnnotation != null) {
-                    new JsonTableView(metadata).buildView(clazz, mf, jsonAnnotation);
+                    new JsonTableView(metadata).buildView(clazz, mf, jsonAnnotation, context);
                 } else if (selectAnnotation != null && entityAnnotation != null) {
-                    new SimpleView(metadata).buildView(clazz, mf, selectAnnotation);
+                    new SimpleView(metadata).buildView(clazz, mf, selectAnnotation, context);
                 } else if (excelAnnotation != null && entityAnnotation != null) {
-                    new ExcelTableView(metadata).buildView(clazz, mf, excelAnnotation);
+                    new ExcelTableView(metadata).buildView(clazz, mf, excelAnnotation, context);
                 } else if (udfAnnotation != null) {
                     udfProcessor.buildFunctions(clazz, mf, udfAnnotation);
                 } else if (selectAnnotation == null && entityAnnotation != null) {
-                    new EntityBaseView(metadata, vdb, this).buildView(clazz, mf, entityAnnotation);
+                    new EntityBaseView(metadata, vdb, this).buildView(clazz, mf, entityAnnotation, context);
                 }
 
                 // check for sequence
@@ -692,7 +692,7 @@ public class TeiidServer extends EmbeddedServer {
 
         SourceMappingMetadata source = new SourceMappingMetadata();
         source.setName(clazz.getSimpleName().toLowerCase());
-        source.setConnectionJndiName("file");
+        source.setConnectionJndiName(excelAnnotation.source());
         source.setTranslatorName(ExternalSource.EXCEL.getTranslatorName());
         try {
             if (this.getExecutionFactory(ExternalSource.EXCEL.getTranslatorName()) == null) {

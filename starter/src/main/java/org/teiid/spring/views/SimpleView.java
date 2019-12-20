@@ -18,6 +18,7 @@ package org.teiid.spring.views;
 import java.util.List;
 
 import org.hibernate.boot.Metadata;
+import org.springframework.context.ApplicationContext;
 import org.teiid.api.exception.query.QueryParserException;
 import org.teiid.language.DerivedColumn;
 import org.teiid.metadata.Column;
@@ -39,7 +40,8 @@ public class SimpleView extends ViewBuilder<SelectQuery> {
     }
 
     @Override
-    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, SelectQuery annotation) {
+    void onFinish(Table view, MetadataFactory mf, Class<?> entityClazz, SelectQuery annotation,
+            ApplicationContext context) {
         String select = annotation.value();
         validateOrderingOfColumns(select, view, entityClazz);
         view.setSelectTransformation(annotation.value());
