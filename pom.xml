@@ -978,5 +978,66 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>core-release</id>
+      <properties>
+        <basepom.check.skip-javadoc>false</basepom.check.skip-javadoc>
+      </properties>
+      <modules>
+        <module>common</module>
+        <module>tools</module>
+        <module>starter</module>
+        <module>data/rest</module>
+        <module>data/excel</module>
+        <module>data/mongodb</module>
+        <module>data/salesforce</module>
+        <module>data/google</module>
+        <module>data/amazon-s3</module>
+        <module>odata</module>
+        <module>openapi</module>
+        <module>keycloak</module>
+      </modules>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <maxmemory>512m</maxmemory>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>org.apache.maven.scm</groupId>
+                <artifactId>maven-scm-provider-gitexe</artifactId>
+                <version>1.9.5</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
