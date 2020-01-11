@@ -24,6 +24,8 @@ import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
 
 public enum ExternalSource {
+    Athena("Amazon Athena", new String[] { "com.simba.athena.jdbc.Driver" }, new String[] {}, "jdbc-ansi",
+            null, null),
     ACTIAN("Actian", new String[] { "com.ingres.jdbc.IngresDriver" }, new String[] {}, "actian-vector",
             "org.hibernate.dialect.Ingres10Dialect", new String[] {"com.ingres.jdbc:iijdbc"}),
     DB2("DB2", new String[] { "com.ibm.db2.jcc.DB2Driver" }, new String[] { "com.ibm.db2.jcc.DB2XADataSource" }, "db2",
