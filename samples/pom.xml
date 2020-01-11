@@ -66,6 +66,7 @@
     <module>openapi</module>
     <module>infinispan</module>
     <module>amazon-s3</module>
+    <module>athena</module>
   </modules>
 
 </project>
