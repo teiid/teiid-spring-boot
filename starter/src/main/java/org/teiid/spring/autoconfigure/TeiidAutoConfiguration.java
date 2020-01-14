@@ -41,8 +41,10 @@ import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.transaction.jta.JtaAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -52,7 +54,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.Ordered;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.embedded.ConnectionProperties;
@@ -86,9 +87,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 @Configuration
 @ConditionalOnClass({EmbeddedServer.class, ExecutionFactory.class})
 @EnableConfigurationProperties(TeiidProperties.class)
-@Import({ Registrar.class })
+@Import({ Registrar.class, TransactionManagerConfiguration.class })
 @PropertySource("classpath:teiid.properties")
-public class TeiidAutoConfiguration implements Ordered {
+@AutoConfigureAfter(JtaAutoConfiguration.class)
+public class TeiidAutoConfiguration {
 
     static final String IMPLICIT_VDB = "implicit";
 
@@ -102,6 +104,9 @@ public class TeiidAutoConfiguration implements Ordered {
     @Autowired(required = false)
     private EmbeddedConfiguration embeddedConfiguration;
 
+    @Autowired(required = false)
+    private PlatformTransactionManagerAdapter platformTransactionManagerAdapter;
+
     @Autowired
     private TeiidProperties properties;
 
@@ -110,14 +115,6 @@ public class TeiidAutoConfiguration implements Ordered {
 
     @Value("${spring.jpa.hibernate.naming.physical-strategy:org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy}")
     private String hibernateNamingClass;
-
-    @Autowired(required=false)
-    private TransactionManager transactionManager;
-
-    @Override
-    public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE;
-    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -253,7 +250,7 @@ public class TeiidAutoConfiguration implements Ordered {
     @Bean(name = "teiid")
     @ConditionalOnMissingBean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public TeiidServer teiidServer(SpringSecurityHelper securityHelper) {
+    public TeiidServer teiidServer(SpringSecurityHelper securityHelper, TransactionManager transactionManager) {
         logger.info("Starting Teiid Server.");
 
         // turning off PostgreSQL support
@@ -337,15 +334,13 @@ public class TeiidAutoConfiguration implements Ordered {
         }
 
         if (embeddedConfiguration.getTransactionManager() == null) {
-            if (this.transactionManager != null) {
-                logger.info("Transaction Manager found and being registed into Teiid.");
-                embeddedConfiguration.setTransactionManager(this.transactionManager);
+            embeddedConfiguration.setTransactionManager(transactionManager);
+            if (transactionManager == platformTransactionManagerAdapter) {
+                server.setPlatformTransactionManagerAdapter(platformTransactionManagerAdapter);
             } else {
-                PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
-                this.embeddedConfiguration.setTransactionManager(ptma);
-                server.setUsingPlatformTransactionManager(true);
+                logger.info("Transaction Manager found and being registed into Teiid.");
             }
-        } else if (this.transactionManager != null && this.transactionManager != embeddedConfiguration.getTransactionManager()) {
+        } else if (transactionManager != null && transactionManager != embeddedConfiguration.getTransactionManager()) {
             throw new IllegalStateException("TransactionManager defined in both Spring and on the EmbeddedConfiguration.  Only one is expected.");
         }
 
