@@ -40,7 +40,7 @@ public class MultiDataSourceTransactionManagement implements TransactionManageme
     @Bean
     @Primary
     public PlatformTransactionManager platformTransactionManager() {
-        if (this.transactionManager != null) {
+        if (this.transactionManager != null && !(this.transactionManager instanceof PlatformTransactionManagerAdapter)) {
             return new JtaTransactionManager(this.userTransaction, this.transactionManager);
         }
         return new DelegatingPlatformTransactionManager();
