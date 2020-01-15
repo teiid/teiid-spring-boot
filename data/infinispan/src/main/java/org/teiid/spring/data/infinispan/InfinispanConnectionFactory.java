@@ -22,15 +22,18 @@ import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.AuthenticationConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
 import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.teiid.infinispan.api.ProtobufResource;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.translator.TranslatorException;
@@ -42,6 +45,9 @@ public class InfinispanConnectionFactory extends BaseConnectionFactory<Infinispa
     private SerializationContext ctx;
     private InfinispanConfiguration config;
 
+    @Autowired(required = false)
+    private TransactionManager transactionManager;
+
     public InfinispanConnectionFactory(InfinispanConfiguration config) {
         super("infinispan-hotrod", "spring.teiid.data.infinispan");
         this.config = config;
@@ -49,10 +55,19 @@ public class InfinispanConnectionFactory extends BaseConnectionFactory<Infinispa
         buildScriptCacheManager();
     }
 
+    public InfinispanConfiguration getConfig() {
+        return config;
+    }
+
     private void buildCacheManager() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.addServers(config.getUrl());
         builder.marshaller(new ProtoStreamMarshaller());
+        if (config.getTransactionMode() != null) {
+            builder.transaction()
+                .transactionMode(config.getTransactionMode())
+                .transactionManagerLookup(() -> {return transactionManager;});
+        }
 
         handleSecurity(builder);
 
@@ -84,23 +99,7 @@ public class InfinispanConnectionFactory extends BaseConnectionFactory<Infinispa
     }
 
     public void handleSecurity(ConfigurationBuilder builder) {
-        if (config.getSaslMechanism() != null && supportedSasl(config.getSaslMechanism())) {
-            if (config.getUserName() == null) {
-                throw new RuntimeException("No User name supplied");
-            }
-            if (config.getPassword() == null) {
-                throw new RuntimeException("No password supplied");
-            }
-            if (config.getAuthenticationRealm() == null) {
-                throw new RuntimeException("No Authentication Realm supplied");
-            }
-            if (config.getAuthenticationServerName() == null) {
-                throw new RuntimeException("No Authentication server information provided.");
-            }
-            builder.security().authentication().enable().saslMechanism(config.getSaslMechanism())
-            .username(config.getUserName()).realm(config.getAuthenticationRealm())
-            .password(config.getPassword()).serverName(config.getAuthenticationServerName());
-        } else if (config.getSaslMechanism() != null && config.getSaslMechanism().equals("EXTERNAL")) {
+        if (config.getSaslMechanism() != null && config.getSaslMechanism().equals("EXTERNAL")) {
 
             if (config.getKeyStoreFileName() == null || config.getKeyStoreFileName().isEmpty()) {
                 throw new RuntimeException(
@@ -130,16 +129,26 @@ public class InfinispanConnectionFactory extends BaseConnectionFactory<Infinispa
             .keyStorePassword(config.getKeyStorePassword().toCharArray())
             .trustStoreFileName(config.getTrustStoreFileName())
             .trustStorePassword(config.getTrustStorePassword().toCharArray());
-        }
-    }
-
-    private boolean supportedSasl(String saslMechanism) {
-        for (String supported : InfinispanConfiguration.getSaslallowed()) {
-            if (supported.equals(saslMechanism)) {
-                return true;
+        } else if (config.getSaslMechanism() != null || config.getUserName() != null){
+            if (config.getUserName() == null) {
+                throw new RuntimeException("No User name supplied");
+            }
+            if (config.getPassword() == null) {
+                throw new RuntimeException("No password supplied");
+            }
+            if (config.getAuthenticationRealm() == null) {
+                throw new RuntimeException("No Authentication Realm supplied");
+            }
+            if (config.getAuthenticationServerName() == null) {
+                throw new RuntimeException("No Authentication server information provided.");
+            }
+            AuthenticationConfigurationBuilder authBuilder = builder.security().authentication().enable()
+            .username(config.getUserName()).realm(config.getAuthenticationRealm())
+            .password(config.getPassword()).serverName(config.getAuthenticationServerName());
+            if (config.getSaslMechanism() != null) {
+                authBuilder.saslMechanism(config.getSaslMechanism());
             }
         }
-        return false;
     }
 
     public void registerProtobufFile(ProtobufResource protobuf) throws TranslatorException {
