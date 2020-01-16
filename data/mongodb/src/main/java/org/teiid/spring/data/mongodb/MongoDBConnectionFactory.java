@@ -16,20 +16,50 @@
 package org.teiid.spring.data.mongodb;
 
 
+import java.io.IOException;
+
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.teiid.spring.data.BaseConnectionFactory;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 
 public class MongoDBConnectionFactory extends BaseConnectionFactory<MongoDBConnection> {
 
     private MongoTemplate mongoTemplate;
+    private MongoClient mongoClient;
 
     public MongoDBConnectionFactory(MongoTemplate template) {
         super("mongodb", "spring.teiid.data.mongodb");
         this.mongoTemplate = template;
     }
 
+    public MongoDBConnectionFactory(MongoDBConfiguration mongoDBConfiguration) {
+        super("mongodb", "spring.teiid.data.mongodb");
+
+        String database = mongoDBConfiguration.getDatabase();
+        if (mongoDBConfiguration.getUri() != null) {
+            MongoClientURI uri = new MongoClientURI(mongoDBConfiguration.getUri());
+            mongoClient = new MongoClient(uri);
+            database = uri.getDatabase();
+        }
+        if (mongoDBConfiguration.getCredential() == null) {
+            mongoClient = new MongoClient(mongoDBConfiguration.getServers(), mongoDBConfiguration.getOptions());
+        } else {
+            mongoClient = new MongoClient(mongoDBConfiguration.getServers(), mongoDBConfiguration.getCredential(), mongoDBConfiguration.getOptions());
+        }
+        this.mongoTemplate = new MongoTemplate(mongoClient, database);
+    }
+
     @Override
     public MongoDBConnection getConnection() throws Exception {
         return new MongoDBConnection(mongoTemplate);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
     }
 }

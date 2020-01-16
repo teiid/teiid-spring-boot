@@ -21,9 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
@@ -39,21 +37,7 @@ public class MongoDBConfiguration {
 
     private String uri;
 
-    MongoClient mongoClient() {
-        if (uri != null) {
-            MongoClientURI mongoClientURI = new MongoClientURI(uri);
-            this.database = mongoClientURI.getDatabase();
-            return new MongoClient(new MongoClientURI(uri));
-        }
-        if (getCredential() == null) {
-            return new MongoClient(getServers(), getOptions());
-        }
-        else {
-            return new MongoClient(getServers(), getCredential(), getOptions());
-        }
-    }
-
-    private MongoClientOptions getOptions() {
+    public MongoClientOptions getOptions() {
         //if options needed then use URL format
         final MongoClientOptions.Builder builder = MongoClientOptions.builder();
         if (getSsl()) {
