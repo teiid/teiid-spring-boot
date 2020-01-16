@@ -22,6 +22,7 @@ import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.sql.Driver;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.xml.stream.XMLStreamException;
@@ -83,6 +85,7 @@ import org.teiid.transport.WireProtocol;
 import org.xml.sax.SAXException;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.zaxxer.hikari.pool.ProxyConnection;
 
 @Configuration
 @ConditionalOnClass({EmbeddedServer.class, ExecutionFactory.class})
@@ -454,6 +457,18 @@ public class TeiidAutoConfiguration {
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
                 | InvocationTargetException e) {
             return null;
+        }
+    }
+
+    @PostConstruct
+    private void applyErrorStateHack() {
+        try {
+            Field field = ProxyConnection.class.getDeclaredField("ERROR_STATES");
+            field.setAccessible(true);
+            Set<String> errorStates = (Set<String>) field.get(null);
+            errorStates.remove("0A000");
+        } catch (Exception sqle) {
+            logger.warn("Unable to apply error state hack", sqle);
         }
     }
 }
