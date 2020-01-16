@@ -194,4 +194,14 @@ public class InfinispanConnectionFactory extends BaseConnectionFactory<Infinispa
         return new InfinispanConnectionImpl(this.cacheManager, this.scriptCacheManager, config.getCacheName(), this.ctx,
                 this, config.getCacheTemplate());
     }
+
+    @Override
+    public void close() throws IOException {
+        if (this.cacheManager != null) {
+            this.cacheManager.close();
+        }
+        if (this.scriptCacheManager != null) {
+            this.scriptCacheManager.close();
+        }
+    }
 }
