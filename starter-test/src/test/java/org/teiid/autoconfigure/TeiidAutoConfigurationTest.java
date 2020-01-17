@@ -48,13 +48,13 @@ import org.teiid.spring.configuration.TestConfiguration;
 public class TeiidAutoConfigurationTest {
 
     @Autowired
-    TeiidServer teiidServer;
+    private TeiidServer teiidServer;
 
     @Autowired
-    VDBMetaData vdbMetaData;
+    private VDBMetaData vdbMetaData;
 
     @Autowired
-    DataSource datasource;
+    private DataSource datasource;
 
     @Test
     public void testAutowired() {

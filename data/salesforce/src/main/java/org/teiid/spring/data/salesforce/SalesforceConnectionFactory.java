@@ -29,7 +29,6 @@ public class SalesforceConnectionFactory extends BaseConnectionFactory<Salesforc
     private static final Log logger = LogFactory.getLog(SalesforceConnectionFactory.class);
 
     private SalesforceConfiguration config;
-    private SalesforceConnectionImpl connection;
 
     public SalesforceConnectionFactory(SalesforceConfiguration config) {
         super("salesforce", "spring.teiid.data.salesforce");
@@ -59,9 +58,6 @@ public class SalesforceConnectionFactory extends BaseConnectionFactory<Salesforc
 
     @Override
     public SalesforceConnectionImpl getConnection() throws Exception {
-        if (connection == null || !connection.isValid()) {
-            this.connection = new SalesforceConnectionImpl(config);
-        }
-        return this.connection;
+        return new SalesforceConnectionImpl(config);
     }
 }
