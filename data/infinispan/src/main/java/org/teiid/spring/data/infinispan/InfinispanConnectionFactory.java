@@ -18,13 +18,13 @@
 package org.teiid.spring.data.infinispan;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.transaction.TransactionManager;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.AuthenticationConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
@@ -151,29 +151,23 @@ public class InfinispanConnectionFactory extends BaseConnectionFactory<Infinispa
         }
     }
 
-    public void registerProtobufFile(ProtobufResource protobuf) throws TranslatorException {
+    public void registerProtobufFile(ProtobufResource protobuf, Map<String, String> metadataCache) throws TranslatorException {
         try {
-            if (protobuf != null) {
-                // client side
-                this.ctx.registerProtoFiles(
-                        FileDescriptorSource.fromString(protobuf.getIdentifier(), protobuf.getContents()));
+            // client side
+            this.ctx.registerProtoFiles(
+                    FileDescriptorSource.fromString(protobuf.getIdentifier(), protobuf.getContents()));
 
-                // server side
-                RemoteCache<String, String> metadataCache = this.cacheManager
-                        .getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
-                if (metadataCache != null) {
-                    metadataCache.put(protobuf.getIdentifier(), protobuf.getContents());
-                    String errors = metadataCache.get(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX);
-                    // ispn removes leading '/' in a string in the results
-                    String protoSchemaIdent = (protobuf.getIdentifier().startsWith("/"))
-                            ? protobuf.getIdentifier().substring(1) : protobuf.getIdentifier();
-                            if (errors != null && isProtoSchemaInErrors(protoSchemaIdent, errors)) {
-                                throw new TranslatorException("Error occurred during the registration of the protobuf resource: {0}");
+            // server side
+            if (metadataCache != null) {
+                metadataCache.put(protobuf.getIdentifier(), protobuf.getContents());
+                String errors = metadataCache.get(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX);
+                // ispn removes leading '/' in a string in the results
+                String protoSchemaIdent = (protobuf.getIdentifier().startsWith("/"))
+                        ? protobuf.getIdentifier().substring(1) : protobuf.getIdentifier();
+                        if (errors != null && isProtoSchemaInErrors(protoSchemaIdent, errors)) {
+                            throw new TranslatorException("Error occurred during the registration of the protobuf resource: {0}");
 
-                            }
-                }
-            } else {
-                throw new TranslatorException("No protobuf supplied to register");
+                        }
             }
         } catch (Throwable t) {
             throw new TranslatorException(t);

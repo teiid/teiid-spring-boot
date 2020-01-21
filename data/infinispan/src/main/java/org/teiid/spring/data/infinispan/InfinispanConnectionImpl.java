@@ -62,7 +62,7 @@ public class InfinispanConnectionImpl  extends BaseConnection implements Infinis
 
     @Override
     public void registerProtobufFile(ProtobufResource protobuf) throws TranslatorException {
-        this.icf.registerProtobufFile(protobuf);
+        this.icf.registerProtobufFile(protobuf, getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME, false));
     }
 
     @Override
@@ -80,6 +80,10 @@ public class InfinispanConnectionImpl  extends BaseConnection implements Infinis
 
     @Override
     public <K, V> BasicCache<K, V> getCache(String cacheName, boolean createIfNotExists) throws TranslatorException{
+        if (cacheName == null) {
+            return cacheManager.getCache();
+        }
+
         if (cacheName.equals(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME)) {
             //special handling for protobuf - don't create, and it can't be transactional
             return cacheManager.getCache(cacheName, TransactionMode.NONE);
