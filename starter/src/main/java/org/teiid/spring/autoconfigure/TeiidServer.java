@@ -224,7 +224,7 @@ public class TeiidServer extends EmbeddedServer {
                         for (String str: source.getGav()) {
                             sb.append("\n").append(str);
                         }
-                        throw new IllegalStateException("The following Dependencies is missing, \n"
+                        throw new IllegalStateException("The following Dependencies are missing, \n"
                                 + sb.toString() + " \n\nin your pom.xml. Please add these dependencies.");
                     }
                     throw new IllegalStateException("Failed to load translator " + translatorname
