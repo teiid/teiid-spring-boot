@@ -104,7 +104,9 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
                 // case the sources
                 // should auto enlist themselves.
                 ds = (DataSource) bean;
-                transactionManager.addDataSource(ds);
+                if (transactionManager != null) {
+                    transactionManager.addDataSource(ds);
+                }
             }
 
             // initialize databases if any
@@ -116,9 +118,13 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
             VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
             server.addDataSource(vdb, beanName, bean, context);
             logger.info("Non JDBC Datasource added to Teiid = " + beanName);
-            transactionManager.addDataSource((BaseConnectionFactory) bean);
+            if (transactionManager != null) {
+                transactionManager.addDataSource((BaseConnectionFactory) bean);
+            }
         } else if (bean instanceof PlatformTransactionManager) {
-            transactionManager.setPlatformTransactionManager((PlatformTransactionManager) bean);
+            if (transactionManager != null) {
+                transactionManager.setPlatformTransactionManager((PlatformTransactionManager) bean);
+            }
         } else if (bean instanceof ExecutionFactory) {
             TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             server.addTranslator(beanName, (ExecutionFactory)bean);
