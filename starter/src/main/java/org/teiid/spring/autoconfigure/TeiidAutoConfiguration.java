@@ -92,7 +92,7 @@ import com.zaxxer.hikari.pool.ProxyConnection;
 @Configuration
 @ConditionalOnClass({EmbeddedServer.class, ExecutionFactory.class})
 @EnableConfigurationProperties(TeiidProperties.class)
-@Import({ Registrar.class, TransactionManagerConfiguration.class })
+@Import({ Registrar.class })
 @PropertySource("classpath:teiid.properties")
 @AutoConfigureAfter(JtaAutoConfiguration.class)
 @AutoConfigureBefore({ DataSourceAutoConfiguration.class })
@@ -110,9 +110,6 @@ public class TeiidAutoConfiguration {
     @Autowired(required = false)
     private EmbeddedConfiguration embeddedConfiguration;
 
-    @Autowired(required = false)
-    private PlatformTransactionManagerAdapter platformTransactionManagerAdapter;
-
     @Autowired
     private TeiidProperties properties;
 
@@ -121,6 +118,9 @@ public class TeiidAutoConfiguration {
 
     @Value("${spring.jpa.hibernate.naming.physical-strategy:org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy}")
     private String hibernateNamingClass;
+
+    @Autowired(required=false)
+    private TransactionManager transactionManager;
 
     @Bean
     @ConditionalOnMissingBean
@@ -256,7 +256,7 @@ public class TeiidAutoConfiguration {
     @Bean(name = "teiid")
     @ConditionalOnMissingBean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public TeiidServer teiidServer(SpringSecurityHelper securityHelper, TransactionManager transactionManager) {
+    public TeiidServer teiidServer(SpringSecurityHelper securityHelper) {
         logger.info("Starting Teiid Server.");
 
         // turning off PostgreSQL support
@@ -340,13 +340,15 @@ public class TeiidAutoConfiguration {
         }
 
         if (embeddedConfiguration.getTransactionManager() == null) {
-            embeddedConfiguration.setTransactionManager(transactionManager);
-            if (transactionManager == platformTransactionManagerAdapter) {
-                server.setPlatformTransactionManagerAdapter(platformTransactionManagerAdapter);
-            } else {
+            if (this.transactionManager != null) {
                 logger.info("Transaction Manager found and being registed into Teiid.");
+                embeddedConfiguration.setTransactionManager(this.transactionManager);
+            } else {
+                PlatformTransactionManagerAdapter ptma = server.getPlatformTransactionManagerAdapter();
+                this.embeddedConfiguration.setTransactionManager(ptma);
+                server.setUsingPlatformTransactionManager(true);
             }
-        } else if (transactionManager != null && transactionManager != embeddedConfiguration.getTransactionManager()) {
+        } else if (this.transactionManager != null && this.transactionManager != embeddedConfiguration.getTransactionManager()) {
             throw new IllegalStateException("TransactionManager defined in both Spring and on the EmbeddedConfiguration.  Only one is expected.");
         }
 

@@ -17,26 +17,23 @@
  */
 package org.teiid.spring.data.infinispan;
 
-import org.infinispan.client.hotrod.configuration.TransactionMode;
-
 public class InfinispanConfiguration {
     private String url;
     private String cacheName;
 
     // security
+    private static final String[] saslAllowed = {"CRAM-MD5", "DIGEST-MD5", "PLAIN"};
     private String saslMechanism;
     private String userName;
     private String password;
-    private String authenticationRealm = "default";
-    private String authenticationServerName = "infinispan";
+    private String authenticationRealm;
+    private String authenticationServerName;
     private String cacheTemplate;
 
     private String trustStoreFileName = System.getProperty("javax.net.ssl.trustStore");
     private String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
     private String keyStoreFileName = System.getProperty("javax.net.ssl.keyStore");
     private String keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
-
-    private TransactionMode transactionMode;
 
     public String getUrl() {
         return url;
@@ -133,11 +130,7 @@ public class InfinispanConfiguration {
         this.cacheTemplate = cacheTemplate;
     }
 
-    public TransactionMode getTransactionMode() {
-        return transactionMode;
-    }
-
-    public void setTransactionMode(TransactionMode transactionMode) {
-        this.transactionMode = transactionMode;
+    public static String[] getSaslallowed() {
+        return saslAllowed;
     }
 }

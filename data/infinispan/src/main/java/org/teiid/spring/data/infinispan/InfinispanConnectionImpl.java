@@ -21,13 +21,10 @@ import java.util.Map;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.api.BasicCache;
-import org.infinispan.commons.configuration.XMLStringConfiguration;
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContext.MarshallerProvider;
-import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 import org.teiid.infinispan.api.InfinispanConnection;
 import org.teiid.infinispan.api.InfinispanDocument;
 import org.teiid.infinispan.api.ProtobufResource;
@@ -78,31 +75,15 @@ public class InfinispanConnectionImpl  extends BaseConnection implements Infinis
         return defaultCache;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <K, V> BasicCache<K, V> getCache(String cacheName, boolean createIfNotExists) throws TranslatorException{
-        if (cacheName.equals(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME)) {
-            //special handling for protobuf - don't create, and it can't be transactional
-            return cacheManager.getCache(cacheName, TransactionMode.NONE);
+        RemoteCache<Object, Object> cache = cacheManager.getCache(cacheName);
+        if (cache == null && createIfNotExists) {
+            cacheManager.administration().createCache(cacheName, this.cacheTemplate);
+            cache = cacheManager.getCache(cacheName);
         }
-
-        if (createIfNotExists) {
-            TransactionMode transactionMode = icf.getConfig().getTransactionMode();
-            if (cacheTemplate == null && transactionMode != null
-                    && transactionMode != TransactionMode.NONE) {
-                //there doesn't seem to be a default transactional template, so
-                //here's one - TODO externalize
-                return cacheManager.administration().getOrCreateCache(cacheName, new XMLStringConfiguration(
-                        "<infinispan><cache-container>" +
-                        "  <distributed-cache-configuration name=\""+cacheName+"\">" +
-                        "    <locking isolation=\"REPEATABLE_READ\"/>" +
-                        "    <transaction locking=\"PESSIMISTIC\" mode=\""+transactionMode+"\" />" +
-                        "  </distributed-cache-configuration>" +
-                        "</cache-container></infinispan>"));
-            }
-            return cacheManager.administration().getOrCreateCache(cacheName, cacheTemplate);
-        }
-
-        return cacheManager.getCache(cacheName);
+        return (BasicCache<K,V>)cache;
     }
 
     @Override

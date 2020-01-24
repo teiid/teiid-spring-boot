@@ -116,8 +116,9 @@ public class TeiidServer extends EmbeddedServer {
     static final String DIALECT = "dialect";
     private static final Log logger = LogFactory.getLog(TeiidServer.class);
     private MetadataSources metadataSources = new MetadataSources();
-    private PlatformTransactionManagerAdapter platformTransactionManagerAdapter;
+    private PlatformTransactionManagerAdapter platformTransactionManagerAdapter = new PlatformTransactionManagerAdapter();
     private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
+    private boolean usingPlatformTransactionManager;
 
     public TeiidServer() {
         this.cmr = new SBConnectorManagerRepository();
@@ -779,12 +780,11 @@ public class TeiidServer extends EmbeddedServer {
         getConfiguration().setPreParser(bean);
     }
 
-    public boolean isUsingPlatformTransactionManager() {
-        return platformTransactionManagerAdapter != null;
+    public void setUsingPlatformTransactionManager(boolean b) {
+        this.usingPlatformTransactionManager = b;
     }
 
-    public void setPlatformTransactionManagerAdapter(
-            PlatformTransactionManagerAdapter platformTransactionManagerAdapter) {
-        this.platformTransactionManagerAdapter = platformTransactionManagerAdapter;
+    public boolean isUsingPlatformTransactionManager() {
+        return usingPlatformTransactionManager;
     }
 }
