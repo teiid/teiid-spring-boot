@@ -67,6 +67,7 @@
     <module>infinispan</module>
     <module>amazon-s3</module>
     <module>athena</module>
+    <module>example</module>
   </modules>
 
 </project>
