@@ -45,8 +45,8 @@ You’ll build an application that combines the data from two separate tables fr
 ----
 CREATE TABLE customer (
     id bigint NOT NULL PRIMARY KEY,
-    name character varying(25),
-    ssn character varying(25)
+    firstName character varying(25),
+    lastName character varying(25)
 );
 ----
 
@@ -113,41 +113,41 @@ package org.example;
 
 @Configuration
 public class DataSources {
-    @ConfigurationProperties(prefix = "spring.datasource.accountsDS")
+    @ConfigurationProperties(prefix = "spring.datasource.africa")
     @Bean
-    public DataSource accountsDS() {
+    public DataSource africa() {
         return DataSourceBuilder.create().build();
     }
-    @ConfigurationProperties(prefix = "spring.datasource.customerDS")
+    @ConfigurationProperties(prefix = "spring.datasource.europe")
     @Bean
-    public DataSource customerDS() {
+    public DataSource europe() {
         return DataSourceBuilder.create().build();
     }
 }
 ----
 
-NOTE: Keep the data source property name and method name exactly SAME. From above example "accountsDS" in property and accountsDS() method, keep the names same, as additional properties will not be discovered otherwise.
+NOTE: Keep the data source property name and method name exactly *SAME*. From above example "africa" in property and africa() method, keep the names *same*, as additional properties will *not* be discovered otherwise.
 
-We are creating two(2) data source connections, with names "accountDS" and "customerDS". Now we need to provide the corresponding configuration for these data sources. In "application.properties" file, define *your* configuration similar to
+We are creating two(2) data source connections, with names "africa" and "europe". Now we need to provide the corresponding configuration for these data sources. In "application.properties" file, define *your* configuration similar to
 
 [source,text]
 .*src/main/resources/application.properties*
 ----
-spring.datasource.accountsDS.url=jdbc:postgresql://localhost/test
-spring.datasource.accountsDS.username=<username>
-spring.datasource.accountsDS.password=<password>
-spring.datasource.accountsDS.driver-class-name=org.postgresql.Driver
+spring.datasource.africa.url=jdbc:postgresql://localhost/africa
+spring.datasource.africa.username=<username>
+spring.datasource.africa.password=<password>
+spring.datasource.africa.driver-class-name=org.postgresql.Driver
 
 # these Teiid specific source import properties
-spring.datasource.accountsDS.importer.SchemaPattern=public
+spring.datasource.africa.importer.SchemaPattern=public
 
-spring.datasource.customerDS.url=jdbc:postgresql://localhost/customer
-spring.datasource.customerDS.username=<username>
-spring.datasource.customerDS.password=<password>
-spring.datasource.customerDS.driver-class-name=org.postgresql.Driver
+spring.datasource.europe.url=jdbc:postgresql://localhost/europe
+spring.datasource.europe.username=<username>
+spring.datasource.europe.password=<password>
+spring.datasource.europe.driver-class-name=org.postgresql.Driver
 
 # these Teiid specific source import properties
-spring.datasource.customerDS.importer.SchemaPattern=public
+spring.datasource.europe.importer.SchemaPattern=public
 ----
 
 Change the property values above to fit your database environment. The property with "importer.SchemaPattern" post fix defines that database schema that you would like to access tables from. There are lot more properties to restrict/allow what schema objects you want to work with. Check Teiid documentation for JDBC Translator "import" properties.
@@ -162,30 +162,30 @@ package org.teiid.spring.example;
 
 @Entity
 @Table(name="all_customers")
-@SelectQuery("SELECT id, name, ssn FROM accountsDS.Customer "
+@SelectQuery("SELECT id, firstName, lastName FROM africa.Customer "
                 +"UNION ALL "
-                +"SELECT id, name, ssn FROM customerDS.Customer")
+                +"SELECT id, firstName, lastName FROM europe.Customer")
 public class Customer {
     @Id
     long id;
     @Column
-    String name;
+    String firstName;
     @Column
-    String ssn;
+    String lastName;
 
     public Customer() {}
-    public Customer(int id, String name, String ssn) {
+    public Customer(int id, String firstName, String lastName) {
         this.id = id;
-        this.name = name;
-        this.ssn= ssn;
+        this.firstName = firstName;
+        this.lastName= lastName;
     }
     @Override
     public String toString() {
-        return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + "]";
+        return "Customer [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
     }
 }
 ----
-Here you have a Customer class with three attributes, the id, the Name, and the SSN. You also have two constructors. The default constructor only exists for the sake of JPA. You won’t use it directly. The other constructor is the one you’ll use to create instances of Customer to be used from the database.
+Here you have a Customer class with three attributes, the id, the Firstname, and the LastName. You also have two constructors. The default constructor only exists for the sake of JPA. You won’t use it directly. The other constructor is the one you’ll use to create instances of Customer to be used from the database.
 
 NOTE: In this guide, the typical getters and setters and import statements have been left out for brevity.
 
@@ -195,9 +195,9 @@ The Customer’s id property is annotated with `@Id` so that JPA will recognize 
 
 The other two properties, name and ssn are left with out any annotation. It is assumed that they’ll be mapped to columns that share the same name as the properties themselves.
 
-*@SelectQuery* annotation is where most of the magic of Teiid is occurring. This defines a query that joins the tables from two separate data sources. This can be any ANSI compatible SQL query, make sure the entities at data source level are fully qualified. For ex: `accountsDS.Customer`, where `accountDS` represents the data source name you created in `Datasource.java` class.
+*@SelectQuery* annotation is where most of the magic of Teiid is occurring. This defines a query that joins the tables from two separate data sources. This can be any ANSI compatible SQL query, make sure the entities at data source level are fully qualified. For ex: `africa.Customer`, where `africa` represents the *data source* name you created in `Datasource.java` class.
 
-At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to a internal server. To do this annotaion scan, define the application package name in `application.properties` file as below.
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to a internal server. To do this annotation scan, define the application package name in `application.properties` file as below.
 
 [source,text]
 .*src/main/resources/application.properties*
@@ -260,15 +260,16 @@ public class Application implements CommandLineRunner {
 Now when you execute this application, you should see results like below, which are combined results from both of your Postges database tables. 
 
 ----
-Customer [id=1, name=christian, ssn=999-99-9999]
-Customer [id=2, name=john, ssn=888-88-8888]
-Customer [id=1, name=claire, ssn=777-77-7777]
-Customer [id=100, name=foo, ssn=12312312]
+Customer [id=1002, firstName=Joseph, lastName=Smith]
+Customer [id=1003, firstName=Nicholas, lastName=Ferguson]
+Customer [id=1004, firstName=Jane, lastName=Aire]
+Customer [id=1005, firstName=Charles, lastName=Jones]
 ----
 
 If you need to do insert/update/delete with above example you would need to define additional annotations for them. See
 @InsertQuery, @UpdateQuery and @DeleteQuery. If you need to read data from a JSON based payload, see @JsonTable annotation. Using similar techniques you combine data from *any* data source. Currently we have rdbms, file, web-service, excel support but all the data sources that are supported by Teiid will be supported in this framework very soon. If you want to contribute please let us know.
 
+For full working example of this can be found link:../samples/example[here]
 
 == Available Examples
 
