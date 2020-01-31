@@ -26,10 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.sql.Driver;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -65,13 +62,13 @@ import org.springframework.jdbc.datasource.embedded.DataSourceFactory;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory;
 import org.teiid.adminapi.impl.VDBMetaData;
 import org.teiid.adminapi.impl.VDBMetadataParser;
-import org.teiid.cache.Cache;
-import org.teiid.cache.CacheFactory;
+import org.teiid.cache.caffeine.CaffeineCacheFactory;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
+import org.teiid.query.metadata.NioZipFileSystem;
 import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.metadata.VirtualFile;
 import org.teiid.runtime.EmbeddedConfiguration;
@@ -86,7 +83,6 @@ import org.teiid.transport.SocketConfiguration;
 import org.teiid.transport.WireProtocol;
 import org.xml.sax.SAXException;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.zaxxer.hikari.pool.ProxyConnection;
 
 @Configuration
@@ -217,7 +213,7 @@ public class TeiidAutoConfiguration {
     private VDBMetaData loadVDB(Resource resource) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
     IOException, URISyntaxException {
 
-        VirtualFile root = NioZipFileSystem.mount(resource.getInputStream());
+        VirtualFile root = NioZipFileSystem.mount(resource.getURL());
         VDBMetaData metadata;
 
         VirtualFile vdbMetadata = root.getChild("/vdb.xml"); //$NON-NLS-1$
@@ -372,78 +368,6 @@ public class TeiidAutoConfiguration {
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
     public SpringSecurityHelper securityHelper() {
         return new SpringSecurityHelper();
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    static class CaffeineCacheFactory implements CacheFactory {
-        Map<String, Cache> map = new HashMap<>();
-        @Override
-        public <K, V> Cache<K, V> get(String name) {
-            map.put(name, new CaffeineCache<K,V>(name, 256));
-            return map.get(name);
-        }
-        @Override
-        public void destroy() {
-            Set<String> keys = new HashSet<>(map.keySet());
-            keys.forEach(k -> map.get(k).clear());
-            map.clear();
-        }
-    }
-    static class CaffeineCache<K, V> implements Cache<K, V> {
-        private String name;
-        private com.github.benmanes.caffeine.cache.Cache<K,V> delegate;
-
-        CaffeineCache(String cacheName, int maxSize) {
-            this.name = cacheName;
-            this.delegate = Caffeine.newBuilder()
-                    .weakKeys()
-                    .weakValues()
-                    .maximumSize(maxSize < 0 ? 10000 : maxSize)
-                    .build();
-        }
-
-        @Override
-        public V put(K key, V value, Long ttl) {
-            delegate.put(key, value);
-            return delegate.getIfPresent(key);
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
-        public boolean isTransactional() {
-            return false;
-        }
-
-        @Override
-        public V get(K key) {
-            return delegate.getIfPresent(key);
-        }
-
-        @Override
-        public V remove(K key) {
-            V v = delegate.getIfPresent(key);
-            delegate.invalidate(key);
-            return v;
-        }
-
-        @Override
-        public int size() {
-            return Math.toIntExact(delegate.estimatedSize());
-        }
-
-        @Override
-        public void clear() {
-            delegate.invalidateAll();
-        }
-
-        @Override
-        public Set<K> keySet() {
-            return delegate.asMap().keySet();
-        }
     }
 
     @Bean(name="file")

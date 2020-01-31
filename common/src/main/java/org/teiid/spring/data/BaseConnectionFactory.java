@@ -21,9 +21,10 @@ package org.teiid.spring.data;
 import java.io.Closeable;
 import java.io.IOException;
 
+import org.teiid.resource.api.Connection;
 import org.teiid.resource.api.ConnectionFactory;
 
-public abstract class BaseConnectionFactory<T extends BaseConnection> implements ConnectionFactory<T>, Closeable {
+public abstract class BaseConnectionFactory<T extends Connection> implements ConnectionFactory<T>, Closeable {
 
     private String translatorName;
     private String configurationPrefix;
