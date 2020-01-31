@@ -19,7 +19,7 @@ package org.teiid.spring.data.infinispan;
 
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 
-public class InfinispanConfiguration {
+public class InfinispanConfiguration implements org.teiid.infinispan.api.InfinispanConfiguration {
     private String url;
     private String cacheName;
 
@@ -133,11 +133,24 @@ public class InfinispanConfiguration {
         this.cacheTemplate = cacheTemplate;
     }
 
-    public TransactionMode getTransactionMode() {
-        return transactionMode;
-    }
-
     public void setTransactionMode(TransactionMode transactionMode) {
         this.transactionMode = transactionMode;
+    }
+
+    @Override
+    public String getTransactionMode() {
+        if (transactionMode == null) {
+            return null;
+        }
+        return transactionMode.name();
+    }
+
+    @Override
+    public String getRemoteServerList() {
+        return url;
+    }
+
+    public void setRemoteServerList(String remoteSeverList) {
+        this.url = remoteSeverList;
     }
 }
