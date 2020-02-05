@@ -23,7 +23,7 @@ CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer;
 
 -- create translators and connections to source
-CREATE SERVER sampledb FOREIGN DATA WRAPPER postgresql;
+CREATE SERVER sampledb FOREIGN DATA WRAPPER sqlserver;
 
 CREATE SERVER samplemango FOREIGN DATA WRAPPER mongodb;
 
