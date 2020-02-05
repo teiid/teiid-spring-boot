@@ -15,6 +15,8 @@
  */
 package org.teiid.spring.common;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -221,13 +223,14 @@ public enum ExternalSource {
         return null;
     }
 
-    public static ExternalSource find(String sourceName) {
+    public static List<ExternalSource> findByTranslatorName(String sourceName) {
+        ArrayList<ExternalSource> list = new ArrayList<>();
         for (ExternalSource source : ExternalSource.values()) {
-            if (source.name.equalsIgnoreCase(sourceName)) {
-                return source;
+            if (source.translatorName.equalsIgnoreCase(sourceName)) {
+                list.add(source);
             }
         }
-        return null;
+        return list;
     }
 
     public static String[] findDriverNameFromAlias(String sourceName) {
