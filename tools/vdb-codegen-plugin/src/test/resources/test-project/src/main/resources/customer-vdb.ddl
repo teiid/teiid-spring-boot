@@ -23,20 +23,35 @@ CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer;
 
 -- create translators and connections to source
+CREATE FOREIGN DATA WRAPPER sqlserver;
 CREATE SERVER sampledb FOREIGN DATA WRAPPER sqlserver;
 
+CREATE FOREIGN DATA WRAPPER oracle;
+CREATE SERVER sampleoracle FOREIGN DATA WRAPPER oracle;
+
+CREATE FOREIGN DATA WRAPPER mongodb;
 CREATE SERVER samplemango FOREIGN DATA WRAPPER mongodb;
 
+CREATE SERVER sampleathena FOREIGN DATA WRAPPER "amazon-athena";
+
+CREATE SERVER sampleansi FOREIGN DATA WRAPPER "jdbc-ansi";
+
+CREATE FOREIGN DATA WRAPPER salesforce;
 CREATE SERVER samplesf FOREIGN DATA WRAPPER salesforce;
 
+CREATE FOREIGN DATA WRAPPER "infinispan-hotrod";
 CREATE SERVER ispn TYPE 'NONE' FOREIGN DATA WRAPPER "infinispan-hotrod";
 
+CREATE FOREIGN DATA WRAPPER odata4;
 CREATE SERVER sampleodata FOREIGN DATA WRAPPER odata4;
 
+CREATE FOREIGN DATA WRAPPER file;
 CREATE SERVER samplefile FOREIGN DATA WRAPPER file;
 
+CREATE FOREIGN DATA WRAPPER "google-spreadsheet";
 CREATE SERVER samplegoogle FOREIGN DATA WRAPPER "google-spreadsheet";
 
+CREATE FOREIGN DATA WRAPPER "amazon-s3";
 CREATE SERVER s3 FOREIGN DATA WRAPPER "amazon-s3";
 
 -- create schema, then import the metadata from the PostgreSQL database
