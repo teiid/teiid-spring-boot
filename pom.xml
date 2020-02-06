@@ -141,7 +141,7 @@
     <version.mustache>0.9.6</version.mustache>
     <version.jackson-databind-nullable>0.1.0</version.jackson-databind-nullable>
     <version.jackson-core>2.9.10</version.jackson-core>
-    <version.jackson-databind>2.9.10.1</version.jackson-databind>
+    <version.jackson-databind>2.9.10.2</version.jackson-databind>
   </properties>
 
   <build>
@@ -228,6 +228,10 @@
           <exclusion>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -580,6 +584,12 @@
         <groupId>org.teiid</groupId>
         <artifactId>teiid-spring-boot-starter</artifactId>
         <version>${project.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
