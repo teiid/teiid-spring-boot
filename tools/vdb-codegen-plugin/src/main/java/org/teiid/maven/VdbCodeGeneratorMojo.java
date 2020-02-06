@@ -47,7 +47,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.teiid.core.util.ObjectConverterUtil;
-import org.teiid.metadata.DataWrapper;
 import org.teiid.metadata.Database;
 import org.teiid.metadata.Datatype;
 import org.teiid.metadata.Server;
@@ -197,43 +196,60 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     }
 
     private void verifyTranslatorDependencies(Database database) throws Exception {
-        for(DataWrapper dw : database.getDataWrappers()) {
-            ExternalSource source = ExternalSource.find(dw.getName());
-            if (source == null) {
-                throw new MojoExecutionException("No Translator found with name:" + dw.getName());
+        for(Server server : database.getServers()) {
+            List<ExternalSource> sources = ExternalSource.findByTranslatorName(server.getDataWrapper());
+            if (sources == null || sources.isEmpty()) {
+                sources = ExternalSource.find(server.getDataWrapper());
+                if (sources == null || sources.isEmpty()) {
+                    throw new MojoExecutionException("No Translator found with name:" + server.getDataWrapper());
+                }
             }
 
             boolean foundDependency = false;
-            for (String g : source.getGav()) {
-                foundDependency = false;
-                List<Dependency> dependencies = project.getDependencies();
-                for (Dependency d : dependencies) {
-                    String gav = d.getGroupId() + ":" + d.getArtifactId();
-                    if (g.equals(gav)) {
-                        getLog().info("Found dependency:" + gav);
-                        foundDependency = true;
+            for (ExternalSource source:sources) {
+                if(source.getGav() == null) {
+                    continue;
+                }
+                for (String g : source.getGav()) {
+                    foundDependency = false;
+                    List<Dependency> dependencies = project.getDependencies();
+                    for (Dependency d : dependencies) {
+                        String gav = d.getGroupId() + ":" + d.getArtifactId();
+                        if (g.equals(gav)) {
+                            getLog().info("Found dependency:" + gav);
+                            foundDependency = true;
+                        }
+                    }
+                    if (!foundDependency) {
+                        break;
                     }
                 }
-                if (!foundDependency) {
+                if (foundDependency) {
                     break;
                 }
             }
 
             if (!foundDependency) {
-                if (source.getGav() != null) {
-                    StringBuilder sb = new StringBuilder();
-                    for (String g : source.getGav()) {
-                        sb.append("Drivers for translator \"" + dw.getName()
-                        + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
-                        + "    <groupId>" + g.substring(0, g.indexOf(':'))
-                        + "</groupId>\n" + "    <artifactId>"
-                        + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
-                        + "</dependency>\n\n");
+                boolean throwError = false;
+                StringBuilder sb = new StringBuilder();
+                for (ExternalSource source : sources) {
+                    if (source.getGav() != null) {
+                        for (String g : source.getGav()) {
+                            sb.append("Drivers for translator \"" + server.getDataWrapper()
+                            + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
+                            + "    <groupId>" + g.substring(0, g.indexOf(':'))
+                            + "</groupId>\n" + "    <artifactId>"
+                            + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
+                            + "</dependency>\n\n");
+                            throwError = true;
+                        }
+                    } else {
+                        getLog().error("Drivers for translator \"" + server.getDataWrapper()
+                        + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
                     }
+                }
+                if (throwError) {
                     throw new MojoExecutionException(sb.toString());
-                } else {
-                    getLog().error("Drivers for translator \"" + dw.getName()
-                    + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
                 }
             }
         }
