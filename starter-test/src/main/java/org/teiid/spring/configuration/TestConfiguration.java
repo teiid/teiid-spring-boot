@@ -65,6 +65,21 @@ public class TestConfiguration {
     }
 
     @SuppressWarnings("rawtypes")
+    @Bean("amazonAthena")
+    public ConnectionFactory amazonAthena() {
+        return new BaseConnectionFactory("jdbc-ansi", "fake") {
+            @Override
+            public Connection getConnection() throws Exception {
+                return new Connection() {
+                    @Override
+                    public void close() throws Exception {
+                    }
+                };
+            }
+        };
+    }
+
+    @SuppressWarnings("rawtypes")
     @Bean("fakeSource2")
     @DependsOn({"fake2"})
     public ConnectionFactory fakeSource2() {
