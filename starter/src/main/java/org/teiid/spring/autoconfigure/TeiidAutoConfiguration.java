@@ -244,6 +244,7 @@ public class TeiidAutoConfiguration {
                 throw new VirtualDatabaseException("Could not find a vdb.xml or vdb.ddl file in " + resource.getFilename());
             }
         }
+        metadata.addAttachment(VirtualFile.class, root); //for auto cleanup of zip fs
         VDBResources resources = new VDBResources(root);
         metadata.addAttachment(VDBResources.class, resources);
         return metadata;
