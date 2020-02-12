@@ -26,6 +26,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -212,6 +213,17 @@ public class TeiidServer extends EmbeddedServer {
 
     void addTranslator(String translatorname, ApplicationContext context) {
         try {
+            // some times alias name may have been used by the VDB, then create a override for it.
+            // for ex: amazon-athena for "jdbc-ansi", where usage of former required dependency verifications
+            if (ExternalSource.findByTranslatorName(translatorname).isEmpty()) {
+                if (!ExternalSource.find(translatorname).isEmpty()) {
+                    String baseType = ExternalSource.find(translatorname).get(0).getTranslatorName();
+                    addTranslator(baseType, context);
+                    addTranslator(translatorname, baseType, Collections.emptyMap());
+                    return;
+                }
+            }
+
             if (this.getExecutionFactory(translatorname) == null) {
                 String basePackage = getBasePackage(context, true);
                 Class<? extends ExecutionFactory<?, ?>> clazz = ExternalSource.translatorClass(translatorname,
