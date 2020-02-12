@@ -197,7 +197,8 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
     private void verifyTranslatorDependencies(Database database) throws Exception {
         for(Server server : database.getServers()) {
-            List<ExternalSource> sources = ExternalSource.findByTranslatorName(server.getDataWrapper());
+            String translator = getBaseDataWrapper(database, server.getDataWrapper());
+            List<ExternalSource> sources = ExternalSource.findByTranslatorName(translator);
             if (sources == null || sources.isEmpty()) {
                 sources = ExternalSource.find(server.getDataWrapper());
                 if (sources == null || sources.isEmpty()) {
@@ -255,6 +256,16 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         }
     }
 
+    private String getBaseDataWrapper(Database db, String name) {
+        if (db.getDataWrapper(name) != null) {
+            if (db.getDataWrapper(name).getType() == null) {
+                return name;
+            }
+            return getBaseDataWrapper(db, db.getDataWrapper(name).getType());
+        }
+        return name;
+    }
+
     private void createDataSources(MustacheFactory mf, File javaSrcDir, Database database,
             HashMap<String, String> parentMap) throws Exception {
 
@@ -266,7 +277,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
             // Custom data sources are expected to provide their own DataSource classes
             // when application is built
-            String translator = server.getDataWrapper();
+            String translator = getBaseDataWrapper(database, server.getDataWrapper());
             if (translator.equals(ExternalSource.MONGODB.getTranslatorName())) {
                 Mustache mustache = mf.compile(
                         new InputStreamReader(this.getClass().getResourceAsStream("/templates/MongoDB.mustache")),
