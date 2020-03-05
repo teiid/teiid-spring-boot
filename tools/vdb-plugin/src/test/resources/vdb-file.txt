@@ -20,6 +20,10 @@ CREATE SCHEMA bar SERVER mydb;
 CREATE SCHEMA foo SERVER mydb;
 
 
+--############ Roles ############
+CREATE ROLE RoleA WITH FOREIGN ROLE role1;
+
+
 --############ Schema:virt ############
 SET SCHEMA virt;
 
@@ -44,6 +48,14 @@ CREATE FOREIGN TABLE FOO (
 	name string,
 	id integer
 );
+--############ Grants ############
+GRANT INSERT,UPDATE ON TABLE "foo.Foo" TO RoleA;
+
+
+--############ Policies ############
+CREATE POLICY policyFoo ON foo.Foo TO RoleA USING (id < 1000);
+
+
 /*
 ###########################################
 # END DATABASE customer
