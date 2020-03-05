@@ -43,7 +43,7 @@ import org.apache.maven.project.MavenProject;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.core.util.ReaderInputStream;
 import org.teiid.metadata.Datatype;
-import org.teiid.metadata.Grant;
+import org.teiid.metadata.Role;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Server;
 import org.teiid.query.metadata.DDLStringVisitor;
@@ -293,8 +293,8 @@ public class VdbMojo extends AbstractMojo {
                 });
 
                 if (importee.isImportPolicies()) {
-                    for (Grant grant : child.db().getGrants()) {
-                        top.grantCreated(grant);
+                    for (Role role : child.db().getRoles()) {
+                        top.roleCreated(role);
                     }
                 }
                 matched = importee;

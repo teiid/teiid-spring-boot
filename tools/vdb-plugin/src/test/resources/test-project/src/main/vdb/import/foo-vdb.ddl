@@ -7,3 +7,7 @@ CREATE SCHEMA foo SERVER mydb;
 SET SCHEMA foo;
 
 CREATE FOREIGN TABLE FOO(name string, id integer);
+
+CREATE ROLE RoleA WITH JAAS ROLE role1;
+GRANT INSERT, UPDATE ON TABLE foo.Foo TO RoleA;
+CREATE POLICY policyFoo ON foo.Foo TO RoleA USING (id < 1000);
