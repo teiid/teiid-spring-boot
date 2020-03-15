@@ -19,6 +19,7 @@ import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
+import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -34,6 +35,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -72,10 +74,11 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         super.configure(http);
+        http.addFilterBefore(new ForwardedHeaderFilter(), KeycloakPreAuthActionsFilter.class);
         http.authorizeRequests()
-                .antMatchers("/static/**", "/actuator/health", "/odata/$metadata", "/odata/swagger.json",
-                        "/odata/openapi.json", "/odata/**/$metadata", "/odata/**/swagger.json", "/odata/**/openapi.json")
-                .permitAll()
+        .antMatchers("/static/**", "/actuator/health", "/odata/$metadata", "/odata/swagger.json",
+                "/odata/openapi.json", "/odata/**/$metadata", "/odata/**/swagger.json", "/odata/**/openapi.json")
+        .permitAll()
         .and()
         .authorizeRequests().anyRequest().authenticated();
     }
