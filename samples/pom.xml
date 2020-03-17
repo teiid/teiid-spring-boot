@@ -68,6 +68,7 @@
     <module>amazon-s3</module>
     <module>athena</module>
     <module>example</module>
+    <module>openapi-consume</module>
   </modules>
 
 </project>
