@@ -137,7 +137,7 @@
     <google-sheets.version>v4-rev574-1.24.1</google-sheets.version>
     <javax.servlet.version>4.0.1</javax.servlet.version>
     <version.swagger-parser>1.0.44</version.swagger-parser>
-    <version.io.swagger>1.5.21</version.io.swagger>
+    <version.io.swagger>1.5.22</version.io.swagger>
     <version.org.openapitools>4.0.0</version.org.openapitools>
     <version.mustache>0.9.6</version.mustache>
     <version.jackson-databind-nullable>0.1.0</version.jackson-databind-nullable>
@@ -177,6 +177,8 @@
             <ignoredResourcePattern>about\.html</ignoredResourcePattern>
             <ignoredResourcePattern>\.gitkeep</ignoredResourcePattern>
             <ignoredResourcePattern>features.xml</ignoredResourcePattern>
+            <ignoredResourcePattern>draftv3/schema</ignoredResourcePattern>
+            <ignoredResourcePattern>draftv4/schema</ignoredResourcePattern>
           </ignoredResourcePatterns>
           <ignoredDependencies>
             <ignoredDependency>
@@ -331,8 +333,18 @@
       </dependency>
       <dependency>
         <groupId>org.teiid.connectors</groupId>
-        <artifactId>translator-swagger</artifactId>
+        <artifactId>translator-openapi</artifactId>
         <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.mail</groupId>
+            <artifactId>mailapi</artifactId>
+          </exclusion>
+        </exclusions>        
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
@@ -651,7 +663,12 @@
           <groupId>org.teiid</groupId>
           <artifactId>spring-data-amazon-s3</artifactId>
           <version>${project.version}</version>
-      </dependency>               
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-openapi</artifactId>
+        <version>${project.version}</version>
+      </dependency>                     
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
@@ -785,7 +802,17 @@
         <groupId>com.fasterxml.jackson.dataformat</groupId>
         <artifactId>jackson-dataformat-xml</artifactId>
         <version>${version.jackson-core}</version>
-      </dependency>      
+      </dependency> 
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-yaml</artifactId>
+        <version>${version.jackson-core}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>${version.jackson-core}</version>
+      </dependency>                  
       <dependency>
         <groupId>com.fasterxml.jackson.module</groupId>
         <artifactId>jackson-module-jaxb-annotations</artifactId>
@@ -913,6 +940,7 @@
         <module>data/google</module>
         <module>data/infinispan</module>
         <module>data/amazon-s3</module>
+        <module>data/openapi</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>
@@ -935,6 +963,7 @@
         <module>data/google</module>
         <module>data/infinispan</module>
         <module>data/amazon-s3</module>
+        <module>data/openapi</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>
