@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>org.teiid</groupId>
 		<artifactId>samples</artifactId>
-		<version>1.4.0</version>
+		<version>1.4.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>spring-redirection-example</artifactId>

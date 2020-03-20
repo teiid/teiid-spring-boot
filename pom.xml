@@ -25,7 +25,7 @@
 
   <groupId>org.teiid</groupId>
   <artifactId>teiid-spring-boot-starter-parent</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>teiid-spring-boot-starter-parent</name>
   <url>http://teiid.org</url>
@@ -48,7 +48,7 @@
     <connection>scm:git:git@github.com:teiid/teiid-spring-boot.git</connection>
     <developerConnection>scm:git:git@github.com:teiid/teiid-spring-boot.git</developerConnection>
     <url>https://github.com/teiid/teiid-spring-boot</url>
-    <tag>teiid-spring-boot-starter-parent-1.4.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
