@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+@Ignore // this test dependent on the service, it is always changing
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { Application.class, TestConfiguration.class })
 public class TestExample {
