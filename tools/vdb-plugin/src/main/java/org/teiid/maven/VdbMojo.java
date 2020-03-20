@@ -235,11 +235,14 @@ public class VdbMojo extends AbstractMojo {
                         archive.addToArchive(d.getFile(), "/lib/" + d.getFile().getName());
                     }
                 }
+            } catch (IllegalStateException e) {
+                throw new MojoExecutionException("ALTER or DROP statements are "
+                        + "currently not supported when using with IMPORT FOREIGN SCHEMA... statments ", e);
             } catch (Exception e) {
-                throw new MojoExecutionException("Exception when creating artifact archive.", e);
+                throw new MojoExecutionException(e.getMessage(), e);
             }
         } catch (MojoExecutionException e) {
-            throw new MojoExecutionException("Error running the vdb-plugin.", e);
+            throw new MojoExecutionException(e.getMessage(), e);
         } finally {
             Thread.currentThread().setContextClassLoader(oldCL);
         }
