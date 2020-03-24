@@ -115,7 +115,9 @@ public enum ExternalSource {
     SALESFORCE("salesforce", new String[] { "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" },
             new String[] {}, "salesforce", null, new String[] {"org.teiid:spring-data-salesforce"}),
     SAP_GATEWAY("sap-gateway", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "sap-gateway", null,
-            new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata"});
+            new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata"}),
+    SOAP("soap", new String[] { "org.teiid.spring.data.soap.SoapConnectionFactory" }, new String[] {}, "ws", null,
+            new String[] {"org.teiid:spring-data-soap"});
 
     private String name;
     private String[] driverNames;
