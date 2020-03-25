@@ -17,19 +17,29 @@
 /*
  * GENERATED CODE - DO NOT EDIT
  */
+
 package com.example;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.file.FileConnectionFactory;
+import org.teiid.spring.data.soap.SoapConfiguration;
+import org.teiid.spring.data.soap.SoapConnectionFactory;
 
 @Configuration
-public class DataSourcessamplefile {
+public class DataSourcessoapy {
 
-    @ConfigurationProperties(prefix = "spring.teiid.file.samplefile")
-    @Bean(name="samplefile")
-    public FileConnectionFactory samplefile() {
-        return new FileConnectionFactory();
+    @Bean(name="soapy")
+    @Autowired
+    public SoapConnectionFactory soapy(@Qualifier("soapy-config") SoapConfiguration config) {
+        return new SoapConnectionFactory(config);
+    }
+
+    @Bean(name="soapy-config")
+    @ConfigurationProperties("spring.teiid.data.soap.soapy")
+    public SoapConfiguration soapyConfig() {
+        return new SoapConfiguration();
     }
 }

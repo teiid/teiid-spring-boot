@@ -32,9 +32,13 @@ public class SoapConnectionFactory extends BaseConnectionFactory<WSConnection> {
 
     private WSConnectionFactory wsConnectionFactory;
 
-    public SoapConnectionFactory(SoapConfiguration config) throws TranslatorException {
+    public SoapConnectionFactory(SoapConfiguration config) {
         super("soap", "spring.teiid.data.soap");
-        this.wsConnectionFactory = new WSConnectionFactory(config);
+        try {
+            this.wsConnectionFactory = new WSConnectionFactory(config);
+        } catch (TranslatorException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

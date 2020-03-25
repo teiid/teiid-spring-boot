@@ -18,6 +18,7 @@ package org.teiid.maven;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
@@ -25,6 +26,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.testing.MojoRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.teiid.spring.common.SourceType;
+
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.MustacheFactory;
 
 // this is variation where it uses a .vdb file instead of .ddl file
 public class VdbGenerationMojoTest {
@@ -64,6 +69,17 @@ public class VdbGenerationMojoTest {
         testRestGeneration(outputDirectory);
     }
 
+    @Test
+    public void testSourceTypes() throws Exception {
+        MustacheFactory mf = new DefaultMustacheFactory();
+        for (SourceType source : SourceType.values()) {
+            try {
+                assertNotNull(source.name(), VdbCodeGeneratorMojo.loadMustache(mf, source));
+            } catch (Exception e) {
+                fail("problem with " + source + " mustache " + e.getMessage());
+            }
+        }
+    }
 
     public void testDataSourceGeneration(File outputDirectory)throws Exception {
         File dsFile = new File(outputDirectory, "com/example/DataSourcessampledb.java");
