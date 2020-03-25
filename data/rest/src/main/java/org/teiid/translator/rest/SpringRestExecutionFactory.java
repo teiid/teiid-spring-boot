@@ -42,9 +42,16 @@ public class SpringRestExecutionFactory extends WSExecutionFactory{
 
     private static final String SPRING_HTTP = "springHttp";
 
+    public SpringRestExecutionFactory() {
+        this.setDefaultBinding(Binding.HTTP);
+    }
+
     @Override
     public void getMetadata(MetadataFactory metadataFactory, WSConnection conn) throws TranslatorException {
         super.getMetadata(metadataFactory, conn);
+
+        //only expose invokeHttp.  technically invoke with http binding is supportable
+        metadataFactory.getSchema().removeProcedure("invoke");
 
         Procedure p = metadataFactory.addProcedure(SPRING_HTTP);
         p.setAnnotation("Invokes a webservice that returns an binary result"); //$NON-NLS-1$
