@@ -27,13 +27,13 @@ import org.teiid.translator.ws.WSConnection;
 import org.teiid.ws.cxf.BaseWSConnection;
 import org.teiid.ws.cxf.WSConnectionFactory;
 
-@ConfigurationProperties(prefix="spring.teiid.soap")
+@ConfigurationProperties(prefix="spring.teiid.data.soap")
 public class SoapConnectionFactory extends BaseConnectionFactory<WSConnection> {
 
     private WSConnectionFactory wsConnectionFactory;
 
     public SoapConnectionFactory(SoapConfiguration config) throws TranslatorException {
-        super("soap", "spring.teiid.soap");
+        super("soap", "spring.teiid.data.soap");
         this.wsConnectionFactory = new WSConnectionFactory(config);
     }
 
