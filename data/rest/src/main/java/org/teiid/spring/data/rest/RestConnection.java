@@ -53,10 +53,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.teiid.core.TeiidRuntimeException;
 import org.teiid.core.types.InputStreamFactory;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.spring.data.BaseConnection;
 import org.teiid.translator.ws.WSConnection;
+import org.teiid.translator.ws.WSExecutionFactory;
 import org.teiid.util.WSUtil;
 
 public class RestConnection extends BaseConnection implements WSConnection {
@@ -205,12 +207,15 @@ public class RestConnection extends BaseConnection implements WSConnection {
 
     @Override
     public <T> Dispatch<T> createDispatch(Class<T> type, Mode mode) throws IOException {
-        throw new IOException("SOAP calling not supported yet.");
+        throw new IOException("SOAP calling not supported by Spring Rest support, use the soap translator instead.");
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> Dispatch<T> createDispatch(String binding, String endpoint, Class<T> type, Mode mode) {
+        if (!WSExecutionFactory.Binding.HTTP.getBindingId().equals(binding)) {
+            throw new TeiidRuntimeException("SOAP calling not supported by Spring Rest support, use the soap translator instead.");
+        }
         if (endpoint != null) {
             try {
                 new URL(endpoint);

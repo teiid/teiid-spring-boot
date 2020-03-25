@@ -14,22 +14,28 @@
  * limitations under the License.
  */
 
-/*
- * GENERATED CODE - DO NOT EDIT
- */
-package com.example;
+package org.teiid.spring.example;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.file.FileConnectionFactory;
+import org.teiid.spring.data.soap.SoapConfiguration;
+import org.teiid.spring.data.soap.SoapConnectionFactory;
+import org.teiid.translator.TranslatorException;
 
 @Configuration
-public class DataSourcessamplefile {
+public class DataSources {
 
-    @ConfigurationProperties(prefix = "spring.teiid.file.samplefile")
-    @Bean(name="samplefile")
-    public FileConnectionFactory samplefile() {
-        return new FileConnectionFactory();
+    @Bean(name="country")
+    public SoapConnectionFactory accounts(@Autowired @Qualifier("countryConfig") SoapConfiguration config) throws TranslatorException {
+        return new SoapConnectionFactory(config);
+    }
+
+    @Bean(name="countryConfig")
+    @ConfigurationProperties("spring.teiid.data.soap.country")
+    public SoapConfiguration countryConfig() {
+        return new SoapConfiguration();
     }
 }

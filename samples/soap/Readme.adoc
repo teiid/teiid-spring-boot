@@ -1,0 +1,110 @@
+= Reading Data from a SOAP Source
+
+This article shows an example of how to call a SOAP service.  It shows using XML construction and processing logic to handle building the request message and processing the results respectively. 
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies for Teiid Spring Boot
+
+[source,xml]
+.*teiid-spring-boot-starter,data-soap*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>spring-data-soap</artifactId>
+</dependency>
+----
+
+Create an application.properties with the SOAP service connection details.
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.data.soap.country.wsdl=http://www.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL
+spring.teiid.data.soap.country.namespaceUri=http://www.oorsprong.org/websamples.countryinfo
+spring.teiid.data.soap.country.serviceName=CountryInfoService
+spring.teiid.data.soap.country.endPointName=CountryInfoServiceSoap12
+----
+
+=== Create DataSource class
+
+To create a connection to the Infinispan cache, we need to create connection class, in Spring Boot it can be done as
+
+----
+@Configuration
+public class DataSources {
+
+    @Bean(name="country")
+    public SoapConnectionFactory accounts(@Autowired @Qualifier("countryConfig") SoapConfiguration config) throws TranslatorException {
+        return new SoapConnectionFactory(config);
+    }
+
+    @Bean(name="countryConfig")
+    @ConfigurationProperties("spring.teiid.data.soap.country")
+    public SoapConfiguration countryConfig() {
+        return new SoapConfiguration();
+    }
+}
+----
+
+Please note the bean name as 'country' matches with the configuration name.
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        //this just gets the response as a string, it could also be processed by xmltable, xmlquery, etc.
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("select xmlserialize(CapitalCitySoapResponse as string) as xmlstring from ("
+                + "call CapitalCity("
+                //construct the body
+                + " xmlelement(\"CapitalCity\", "
+                + "   xmlnamespaces(default 'http://www.oorsprong.org/websamples.countryinfo'), "
+                + "   xmlelement(\"sCountryISOCode\", 'BF')))"
+                + ") x");
+        System.out.println(list);
+    }
+}
+----
+
+Now when you execute this application, you should see results like below.
+
+----
+[{xmlstring=<?xml version='1.0' encoding='utf-8'?><m:CapitalCityResponse xmlns:m="http://www.oorsprong.org/websamples.countryinfo">
+      <m:CapitalCityResult>Ouagadougou</m:CapitalCityResult>
+    </m:CapitalCityResponse>}]
+----
+
+Note: You can always integrate data from multiple different types of data sources using Teiid.

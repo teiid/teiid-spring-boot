@@ -69,6 +69,7 @@
     <module>athena</module>
     <module>example</module>
     <module>openapi-consume</module>
+    <module>soap</module>
   </modules>
 
 </project>

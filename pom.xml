@@ -119,7 +119,7 @@
     <!-- Project Dependencies -->
     <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
     <spring-social.version>1.1.6.RELEASE</spring-social.version>
-    <teiid.version>13.1.0</teiid.version>
+    <teiid.version>14.0.0-SNAPSHOT</teiid.version>
     <version.xml-apis>1.4.01</version.xml-apis>
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
     <hibernate.version>5.3.10.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
@@ -129,6 +129,7 @@
     <version.httpclient>4.5.8</version.httpclient>
     <version.javax.annotation>1.3.2</version.javax.annotation>
     <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
+    <version.javax.jws-api>1.1</version.javax.jws-api>
     <version.org.mockito>1.10.19</version.org.mockito>
     <version.org.keycloak>4.8.3.Final</version.org.keycloak>
     <olingo.version>4.7.1</olingo.version>
@@ -330,6 +331,36 @@
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-ws</artifactId>
         <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.jws</groupId>
+        <artifactId>javax.jws-api</artifactId>
+        <version>${version.javax.jws-api}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.wildfly.connectors</groupId>
+        <artifactId>ws-cxf</artifactId>
+        <version>${teiid.version}</version>
+        <exclusions>
+          <!-- these are effectively duplicate dependencies -->
+          <exclusion>
+            <groupId>org.jboss.spec.javax.annotation</groupId>
+            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+          </exclusion>
+          <!-- these conflict slightly with the spring managed versions -->
+          <exclusion>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.teiid.connectors</groupId>
@@ -632,6 +663,11 @@
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-rest</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-soap</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -941,6 +977,7 @@
         <module>data/infinispan</module>
         <module>data/amazon-s3</module>
         <module>data/openapi</module>
+        <module>data/soap</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>

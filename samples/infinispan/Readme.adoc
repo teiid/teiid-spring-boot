@@ -1,4 +1,4 @@
-= Reading Data from Infinispan Based Source
+= Reading Data from an Infinispan Based Source
 
 This article shows an example to read/write data from Infinispan Cache. Basically, when a user defines a Proto Definition file and registers with the Infinispan cache, then Teiid can be used to read/write Messages defined in the protobuf file as JPA entities. Care must be taken such that each high level Message is defined in its own cache. Please see Teiid documention on Infinispan on how to annotate the Message in protobuf file. 
 
@@ -32,7 +32,7 @@ and create pom.xml file of your choosing and add following maven dependencies Sp
 
 The following are the Teiid related dependencies
 [source,xml]
-.*teiid-spring-boot-starter,data-excel*
+.*teiid-spring-boot-starter,data-infinispan*
 ----
 <dependency>
    <groupId>org.teiid</groupId>
@@ -75,8 +75,6 @@ At application boot time, Teiid Spring Boot scans the application's packages for
 ----
 spring.teiid.model.package=org.example
 ----
-
-Since we are reading the Excel file from a directory define the parent directory in `application.properties` file as following 
 
 In absence of this property entire classpath is scanned, that could take significant time depending upon all the libraries in your application.
 

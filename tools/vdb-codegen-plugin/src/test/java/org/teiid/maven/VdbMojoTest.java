@@ -57,77 +57,23 @@ public class VdbMojoTest {
         assertNotNull( outputDirectory );
         assertTrue( outputDirectory.exists() );
 
-        testDataSourceGeneration(outputDirectory);
-        testMongoGeneration(outputDirectory);
-        testSalesforceGeneration(outputDirectory);
-        testRestGeneration(outputDirectory);
-        testGoogleGeneration(outputDirectory);
-        testInfinispanGeneration(outputDirectory);
-        testAmazonS3Generation(outputDirectory);
+        testGeneration("datasource", "sampledb", outputDirectory);
+        testGeneration("mongo", "samplemango", outputDirectory);
+        testGeneration("salesforce", "samplesf", outputDirectory);
+        testGeneration("rest", "sampleodata", outputDirectory);
+        testGeneration("file", "samplefile", outputDirectory);
+        testGeneration("google", "samplegoogle", outputDirectory);
+        testGeneration("infinispan", "ispn", outputDirectory);
+        testGeneration("s3", "s3", outputDirectory);
+        testGeneration("soap", "soapy", outputDirectory);
     }
 
-
-    public void testDataSourceGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessampledb.java");
+    public void testGeneration(String expected, String name, File outputDirectory)throws Exception {
+        File dsFile = new File(outputDirectory, "com/example/DataSources"+name+".java");
         assertTrue( dsFile.exists() );
         assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/datasource.txt"), "utf-8").trim(),
+                FileUtils.readFileToString(new File( "target/test-classes/"+expected+".txt"), "utf-8").trim(),
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 
-    public void testMongoGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplemango.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/mongo.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
-
-    public void testSalesforceGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplesf.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/salesforce.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
-
-    public void testRestGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessampleodata.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/rest.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
-
-    public void testFileGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplefile.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/file.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
-
-    public void testGoogleGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcessamplegoogle.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/google.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
-
-    public void testInfinispanGeneration(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcesispn.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/infinispan.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
-
-    public void testAmazonS3Generation(File outputDirectory)throws Exception {
-        File dsFile = new File(outputDirectory, "com/example/DataSourcess3.java");
-        assertTrue( dsFile.exists() );
-        assertEquals("The files differ!",
-                FileUtils.readFileToString(new File( "target/test-classes/s3.txt"), "utf-8").trim(),
-                FileUtils.readFileToString(dsFile, "utf-8").trim());
-    }
 }

@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -56,6 +57,7 @@ import org.teiid.query.metadata.DatabaseStore.Mode;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.spring.common.ExternalSource;
+import org.teiid.spring.common.SourceType;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -269,6 +271,13 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     private void createDataSources(MustacheFactory mf, File javaSrcDir, Database database,
             HashMap<String, String> parentMap) throws Exception {
 
+        TreeMap<String, ExternalSource> sources = new TreeMap<>();
+        for (ExternalSource source : ExternalSource.values()) {
+            //there is a utility method that returns a list of sources,
+            //but that's a linear scan and we only need the source type
+            sources.put(source.getTranslatorName(), source);
+        }
+
         for (Server server : database.getServers()) {
             HashMap<String, String> tempMap = new HashMap<String, String>(parentMap);
             tempMap.put("dsName", server.getName());
@@ -278,72 +287,21 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             // Custom data sources are expected to provide their own DataSource classes
             // when application is built
             String translator = getBaseDataWrapper(database, server.getDataWrapper());
-            if (translator.equals(ExternalSource.MONGODB.getTranslatorName())) {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(this.getClass().getResourceAsStream("/templates/MongoDB.mustache")),
-                        "mongodb");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else if (translator.equals(ExternalSource.SALESFORCE.getTranslatorName())) {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(getClass().getResourceAsStream("/templates/Salesforce.mustache")),
-                        "salesforce");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else if (translator.equals(ExternalSource.GOOGLESHEETS.getTranslatorName())) {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(getClass().getResourceAsStream("/templates/GoogleSheets.mustache")),
-                        "googlesheets");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else if (translator.equals(ExternalSource.INFINISPAN.getTranslatorName())) {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(getClass().getResourceAsStream("/templates/Infinispan.mustache")),
-                        "infinispan");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else if (translator.equals(ExternalSource.AMAZONS3.getTranslatorName())) {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(getClass().getResourceAsStream("/templates/AmazonS3.mustache")),
-                        "amazon-s3");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else if (translator.equals(ExternalSource.FILE.getTranslatorName())
-                    || translator.equals(ExternalSource.EXCEL.getTranslatorName())) {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(getClass().getResourceAsStream("/templates/File.mustache")),
-                        "file");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else if (isRestBasedTranslator(translator)) {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(getClass().getResourceAsStream("/templates/Rest.mustache")),
-                        "rest");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else {
-                Mustache mustache = mf.compile(
-                        new InputStreamReader(getClass().getResourceAsStream("/templates/Jdbc.mustache")), "jdbc");
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            }
+
+            ExternalSource source = sources.get(translator);
+
+            Mustache mustache = loadMustache(mf, source==null?SourceType.Jdbc:source.getSourceType());
+            Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+            mustache.execute(out, tempMap);
+            out.close();
         }
     }
 
-    private boolean isRestBasedTranslator(String translator) {
-        return (ExternalSource.REST.getTranslatorName().equalsIgnoreCase(translator)) ||
-                (ExternalSource.OPENAPI.getTranslatorName().equalsIgnoreCase(translator)) ||
-                (ExternalSource.SAP_GATEWAY.getTranslatorName().equalsIgnoreCase(translator)) ||
-                (ExternalSource.ODATA.getTranslatorName().equalsIgnoreCase(translator)) ||
-                (ExternalSource.ODATA4.getTranslatorName().equalsIgnoreCase(translator));
+    static Mustache loadMustache(MustacheFactory mf, SourceType source) {
+        Mustache mustache = mf.compile(
+                new InputStreamReader(VdbCodeGeneratorMojo.class.getResourceAsStream("/templates/"+ source.name() + ".mustache")),
+                source.name().toLowerCase());
+        return mustache;
     }
 
     private File getVDBFile() throws MojoExecutionException, IOException {
