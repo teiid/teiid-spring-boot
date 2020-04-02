@@ -276,6 +276,8 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             //there is a utility method that returns a list of sources,
             //but that's a linear scan and we only need the source type
             sources.put(source.getTranslatorName(), source);
+            //we're using translator and alias name interchangeably
+            sources.put(source.getName(), source);
         }
 
         for (Server server : database.getServers()) {
