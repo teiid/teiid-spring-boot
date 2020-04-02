@@ -38,7 +38,7 @@ public class Application implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         //this just gets the response as a string, it could also be processed by xmltable, xmlquery, etc.
-        List<Map<String, Object>> list = jdbcTemplate.queryForList("select xmlserialize(CapitalCitySoapResponse as string) as xmlstring from ("
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("select xpathValue(CapitalCitySoapResponse, '//*:CapitalCityResult\') as xmlstring from ("
                 + "call CapitalCity("
                 //construct the body
                 + " xmlelement(\"CapitalCity\", "

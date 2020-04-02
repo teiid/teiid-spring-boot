@@ -29,7 +29,7 @@ import org.teiid.translator.TranslatorException;
 public class DataSources {
 
     @Bean(name="country")
-    public SoapConnectionFactory accounts(@Autowired @Qualifier("countryConfig") SoapConfiguration config) throws TranslatorException {
+    public SoapConnectionFactory country(@Autowired @Qualifier("countryConfig") SoapConfiguration config) throws TranslatorException {
         return new SoapConnectionFactory(config);
     }
 
