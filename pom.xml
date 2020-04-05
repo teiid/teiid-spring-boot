@@ -672,6 +672,11 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>spring-data-ftp</artifactId>
+        <version>${project.version}</version>
+      </dependency>      
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>spring-data-mongodb</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -978,6 +983,7 @@
         <module>data/amazon-s3</module>
         <module>data/openapi</module>
         <module>data/soap</module>
+        <module>data/ftp</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>
@@ -1001,6 +1007,8 @@
         <module>data/infinispan</module>
         <module>data/amazon-s3</module>
         <module>data/openapi</module>
+        <module>data/soap</module>
+        <module>data/ftp</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>

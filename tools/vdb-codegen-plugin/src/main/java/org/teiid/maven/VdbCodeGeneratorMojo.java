@@ -273,11 +273,13 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
         TreeMap<String, ExternalSource> sources = new TreeMap<>();
         for (ExternalSource source : ExternalSource.values()) {
-            //there is a utility method that returns a list of sources,
-            //but that's a linear scan and we only need the source type
-            sources.put(source.getTranslatorName(), source);
             //we're using translator and alias name interchangeably
             sources.put(source.getName(), source);
+            //there is a utility method that returns a list of sources,
+            //but that's a linear scan and we only need the source type
+            if (sources.get(source.getTranslatorName()) == null) {
+                sources.put(source.getTranslatorName(), source);
+            }
         }
 
         for (Server server : database.getServers()) {

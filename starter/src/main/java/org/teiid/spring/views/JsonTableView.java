@@ -55,15 +55,17 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (translator.equalsIgnoreCase(ExternalSource.FILE.getTranslatorName())) {
+        if (translator.equalsIgnoreCase(ExternalSource.FILE.getName())) {
             sb.append("EXEC ").append(source).append(".getFiles('").append(endpoint).append("')");
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())) {
             generateRestProcedure(entityClazz, source, endpoint, sb);
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
             sb.append("EXEC ").append(source).append(".getTextFile('").append(endpoint).append("')");
-        } else {
+        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
+            sb.append("EXEC ").append(source).append(".getFiles('").append(endpoint).append("')");
+        }else {
             throw new IllegalStateException("Source type '" + annotation.source() + " not supported on JsonTable "
-                    + view.getName() + ". Only \"file\" and \"rest\" are supported");
+                    + view.getName() + ". Only \"file\", \"rest\", \"amazon-s3\" and \"ftp\" are supported");
         }
         sb.append(") AS f, ").append("\n");
 
@@ -76,11 +78,13 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
             root = root.substring(0, root.lastIndexOf('/'));
         }
 
-        if (translator.equals(ExternalSource.FILE.getTranslatorName())) {
+        if (translator.equals(ExternalSource.FILE.getName())) {
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())){
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())){
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.result) ");
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
+            sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
+        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
         }
         sb.append("COLUMNS ").append(columndef.toString());

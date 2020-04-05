@@ -66,6 +66,7 @@ public class VdbMojoTest {
         testGeneration("infinispan", "ispn", outputDirectory);
         testGeneration("s3", "s3", outputDirectory);
         testGeneration("soap", "soapy", outputDirectory);
+        testGeneration("ftp", "sampleftp", outputDirectory);
     }
 
     public void testGeneration(String expected, String name, File outputDirectory)throws Exception {

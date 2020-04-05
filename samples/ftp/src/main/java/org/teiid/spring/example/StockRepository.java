@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package org.teiid.spring.common;
+package org.teiid.spring.example;
 
-/**
- * The underlying source types for {@link ExternalSource}s
- */
-public enum SourceType {
-    AmazonS3,
-    File,
-    Ftp,
-    GoogleSheets,
-    Infinispan,
-    Jdbc,
-    MongoDB,
-    Rest,
-    Salesforce,
-    Soap
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface StockRepository extends CrudRepository<StockPrice, String> {
+
 }
