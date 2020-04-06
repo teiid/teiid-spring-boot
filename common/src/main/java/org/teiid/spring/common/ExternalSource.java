@@ -113,7 +113,7 @@ public enum ExternalSource {
     REST("rest", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "rest", null,
             new String[] {"org.teiid:spring-data-rest"}, SourceType.Rest),
     SALESFORCE("salesforce", new String[] { "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" },
-            new String[] {}, "salesforce", null, new String[] {"org.teiid:spring-data-salesforce"}, SourceType.Salesforce),
+            new String[] {}, "salesforce-41", null, new String[] {"org.teiid:spring-data-salesforce"}, SourceType.Salesforce),
     SAP_GATEWAY("sap-gateway", new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "sap-gateway", null,
             new String[] {"org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata"}, SourceType.Rest),
     SOAP("soap", new String[] { "org.teiid.spring.data.soap.SoapConnectionFactory" }, new String[] {}, "ws", null,
@@ -263,4 +263,5 @@ public enum ExternalSource {
     public SourceType getSourceType() {
         return sourceType;
     }
+
 }
