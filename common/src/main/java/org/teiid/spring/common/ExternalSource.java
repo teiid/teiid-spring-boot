@@ -95,6 +95,8 @@ public enum ExternalSource {
             null, new String[] {"org.teiid:spring-data-excel"}, SourceType.File),
     FILE("file", new String[] { "org.teiid.spring.data.file.FileConnectionFactory" }, new String[] {}, "file", null,
             new String[] {"org.teiid:teiid-spring-boot-starter"}, SourceType.File),
+    FTP("ftp", new String[] { "org.teiid.spring.data.ftp.FtpConnectionFactory" }, new String[] {}, "file", null,
+            new String[] {"org.teiid:spring-data-ftp"}, SourceType.Ftp),
     GOOGLESHEETS("google-spreadsheet", new String[] { "org.teiid.spring.data.google.SpreadsheetConnectionFactory" },
             new String[] {}, "google-spreadsheet", null, new String[] {"org.teiid:spring-data-google"}, SourceType.GoogleSheets),
     INFINISPAN("infinispan-hotrod", new String[] { "org.teiid.spring.data.infinispan.InfinispanConnectionFactory" },

@@ -97,6 +97,11 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
+      <artifactId>spring-data-ftp</artifactId>
+      <version>${teiid.version}</version>
+    </dependency>    
+    <dependency>
+      <groupId>org.teiid</groupId>
       <artifactId>spring-data-amazon-s3</artifactId>
       <version>${teiid.version}</version>
     </dependency>

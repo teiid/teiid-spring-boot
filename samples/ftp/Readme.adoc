@@ -1,0 +1,195 @@
+= Reading Data from FTP Based Source
+
+This article shows an example to read data from file in a FTP based source. There may be many examples doing the similar task of reading Text files. However this example is little different, here the data is loaded into a JPA Entity class that can be used exactly as RDBMS based entity, i.e. you can issue queries against it. Yes, that is correct!, you can issue JPA queries against a Text document to filter the data, or join the entity with another entity to integrate data using Teiid.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 1.11 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies Spring Boot
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+----
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter,data-excel*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>spring-data-ftp</artifactId>
+</dependency>
+----
+
+in this example, we will create Entity class that can read a CSV data from a ftp source, that has following structure
+
+----
+SYMBOL,PRICE
+RHT,30.00
+BA,42.75
+MON,78.75
+PNRA,84.97
+SY,24.30
+BTU,41.25
+IBM,80.89
+DELL,10.75
+HPQ,31.52
+GE,16.45
+----
+
+=== Define the Data Sources
+In this example, first we need to define all the data sources that in play. To capture data source information, create the following Java class that represents a connection to a FTP source.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+
+    @Bean(name="mysite")
+    @Autowired
+    public FtpConnectionFactory mysite(@Qualifier("mysite-config") FtpConfiguration config) {
+        return new FtpConnectionFactory(config);
+    }
+
+    @Bean(name="mysite-config")
+    @ConfigurationProperties("spring.teiid.data.ftp.mysite")
+    public FtpConfiguration mysiteConfig() {
+        return new FtpConfiguration();
+    }
+}
+----
+
+Above we are defining a set of configuration to capture the details of the FTP connection and then using that configuration to create FTP connection factory to be used to fetch the data.
+
+=== Define View/Entity Class
+Now it is time to define the main Entity or View class. First we will define a class to read CSV file based data. 
+
+[source,java]
+.src/main/java/com/example/StockPrice.java
+----
+@Entity
+@TextTable(file="marketdata-price.txt", source="mysite") 
+public class StockPrice {
+    @Id
+    String symbol;
+    double price;
+    
+    //getters and setters
+----
+
+The Entity class defines two attributes that define data from CSV file. The class also defines a annotation @TextTable, which configures the file name to read the data from and connection to use. During the application start up time the classpath is scanned for classes with @TextTable annotation and respective metadata is generated for the Teiid engine to read data from CSV file from a FTP site. Note, you are not limited to just reading CSV files, you can read any type of files using this connection, however, how you process that file into a entity might differ. For example, if you are reading a JSON file, using @JsonTable annotation to design as entity. Now you can access this JPA entity in other entities, which you will see in below code example.
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file.
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+Since we are reading the Excel file from a directory define the parent directory in `application.properties` file as following 
+
+In absence of this property entire classpath is scanned, that could take significant time depending upon all the libraries in your application.
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.data.ftp.mysite.host=localhost
+spring.teiid.data.ftp.mysite.port=21
+spring.teiid.data.ftp.mysite.username=user
+spring.teiid.data.ftp.mysite.password=mypass
+spring.teiid.data.ftp.mysite.parentDirectory=/home/rareddy/testing/vdbs/marketdata
+----
+
+Here yo are providing host and port and credentials to access a FTP server. 
+
+=== Create Spring Data Repository class
+
+Spring Data JPA focuses on using JPA to store data in a relational database. Its most compelling feature is the ability to create repository implementations automatically, at runtime, from a repository interface.
+
+To see how this works, create a repository interface that works with StockPrice entities:
+
+[source,java]
+.src/main/java/org/example/StockRepository.java
+----
+@Repository
+public interface StockRepository extends CrudRepository<StockPrice, String>{
+}
+----
+
+StockRepository extends the CrudRepository interface. The type of entity and ID that it works with, StockProce and String, are specified in the generic parameters on CrudRepository. By extending CrudRepository, StockRepository inherits several methods for working with Stock persistence, including methods for saving, deleting, and finding Stock entities.
+
+Spring Data JPA also allows you to define other query methods by simply declaring their method signature. In a typical Java application, you’d expect to write a class that implements StockRepository. But that’s what makes Spring Data JPA so powerful: You don’t have to write an implementation of the repository interface. Spring Data JPA creates an implementation on the fly when you run the application.
+
+Let’s wire this up and see what it looks like
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private StockRepository stocksRepository;
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        stocksRepository.findAll().forEach(c -> System.out.println(c));
+    }
+}
+----
+
+Now when you execute this application, you should see results like below.
+
+----
+StockPrice [symbol=RHT, price=30.0]
+StockPrice [symbol=BA, price=42.75]
+StockPrice [symbol=MON, price=78.75]
+StockPrice [symbol=PNRA, price=84.97]
+StockPrice [symbol=SY, price=24.3]
+StockPrice [symbol=BTU, price=41.25]
+StockPrice [symbol=IBM, price=150.0]
+StockPrice [symbol=DELL, price=10.75]
+StockPrice [symbol=HPQ, price=31.52]
+StockPrice [symbol=GE, price=16.45]
+----
+
+You can instead of calling `employeeRepository.findAll()` call any other query or use `JDBCTemplate` class to issue a custom query, and Teiid engine will treat the CSV document data exactly any RDBMS data and apply any filters or aggregations for you and return the data. Since it is not a relational source, and read only files, any updates, deletes will not work against this data and such queries will fail.
+
+Note: You can always integrate data from multiple different types of data sources using Teiid.

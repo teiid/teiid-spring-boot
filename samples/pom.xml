@@ -70,6 +70,7 @@
     <module>example</module>
     <module>openapi-consume</module>
     <module>soap</module>
+    <module>ftp</module>
   </modules>
 
 </project>

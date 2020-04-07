@@ -55,23 +55,27 @@ public class TextTableView extends ViewBuilder<TextTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (translator.equalsIgnoreCase(ExternalSource.FILE.getTranslatorName())) {
+        if (translator.equalsIgnoreCase(ExternalSource.FILE.getName())) {
             sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())) {
             JsonTableView.generateRestProcedure(entityClazz, source, file, sb);
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
             sb.append("EXEC ").append(source).append(".getTextFile('").append(file).append("')");
+        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
+            sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
         } else {
-            throw new IllegalStateException("Source type '" + annotation.source() + " not supported on TextTable "
-                    + view.getName() + ". Only \"file\" and \"rest\" are supported");
+            throw new IllegalStateException("Source type '" + annotation.source() + "' not supported on TextTable "
+                    + view.getName() + ". Only \"file\",\"rest\",\"amazon-s3\" and \"ftp\" are supported");
         }
         sb.append(") AS f, ").append("\n");
 
-        if (annotation.source().equals(ExternalSource.FILE.getTranslatorName())) {
+        if (annotation.source().equals(ExternalSource.FILE.getName())) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getTranslatorName())) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())) {
             sb.append("TEXTTABLE(f.result COLUMNS ").append(columndef.toString());
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getTranslatorName())) {
+        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
+            sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
+        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
         }
 
