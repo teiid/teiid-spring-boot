@@ -285,6 +285,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         for (Server server : database.getServers()) {
             HashMap<String, String> tempMap = new HashMap<String, String>(parentMap);
             tempMap.put("dsName", server.getName());
+            tempMap.put("sanitized-dsName", removeCamelCase(server.getName()));
 
             getLog().info("Building DataSource.java for source :" + server.getName());
 
@@ -299,6 +300,31 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             mustache.execute(out, tempMap);
             out.close();
         }
+    }
+
+    static String removeCamelCase(String name) throws MojoExecutionException {
+        StringBuilder sb = new StringBuilder();
+
+        boolean lastCharIsCaptital = false;
+        for (int i = 0; i < name.length(); i++) {
+            Character ch = name.charAt(i);
+            if (Character.isWhitespace(ch) || ch == '.') {
+                throw new MojoExecutionException("Space or dot (.) are not allowed in a property name : " + name);
+            } else if (Character.isUpperCase(ch)) {
+                if (!lastCharIsCaptital && i > 0) {
+                    sb.append('-');
+                    sb.append(Character.toLowerCase(ch));
+                    lastCharIsCaptital = true;
+                } else {
+                    sb.append(Character.toLowerCase(ch));
+                    lastCharIsCaptital = true;
+                }
+            } else {
+                sb.append(ch);
+                lastCharIsCaptital = false;
+            }
+        }
+        return sb.toString();
     }
 
     static Mustache loadMustache(MustacheFactory mf, SourceType source) {

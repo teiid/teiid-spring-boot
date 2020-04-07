@@ -43,7 +43,7 @@ public class DataSources{{dsName}} {
     }
 
     @Bean(name="{{dsName}}-config")
-    @ConfigurationProperties("spring.teiid.data.mongodb.{{dsName}}")
+    @ConfigurationProperties("spring.teiid.data.mongodb.{{sanitized-dsName}}")
     public MongoDBConfiguration {{dsName}}Config() {
         return new MongoDBConfiguration();
     }

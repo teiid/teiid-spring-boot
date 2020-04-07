@@ -38,7 +38,7 @@ public class DataSources{{dsName}} {
     }
 
     @Bean(name="{{dsName}}-config")
-    @ConfigurationProperties("spring.teiid.data.infinispan.{{dsName}}")
+    @ConfigurationProperties("spring.teiid.data.infinispan.{{sanitized-dsName}}")
     public InfinispanConfiguration {{dsName}}Config() {
         return new InfinispanConfiguration();
     }

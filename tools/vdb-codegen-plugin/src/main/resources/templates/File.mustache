@@ -27,7 +27,7 @@ import org.teiid.spring.data.file.FileConnectionFactory;
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.file.{{dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.file.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
     public FileConnectionFactory {{dsName}}() {
         return new FileConnectionFactory();

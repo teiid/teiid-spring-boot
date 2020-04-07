@@ -29,17 +29,17 @@ import org.teiid.spring.data.soap.SoapConfiguration;
 import org.teiid.spring.data.soap.SoapConnectionFactory;
 
 @Configuration
-public class DataSourcessoapy {
+public class DataSourcessoapyCountry {
 
-    @Bean(name="soapy")
+    @Bean(name="soapyCountry")
     @Autowired
-    public SoapConnectionFactory soapy(@Qualifier("soapy-config") SoapConfiguration config) {
+    public SoapConnectionFactory soapyCountry(@Qualifier("soapyCountry-config") SoapConfiguration config) {
         return new SoapConnectionFactory(config);
     }
 
-    @Bean(name="soapy-config")
-    @ConfigurationProperties("spring.teiid.data.soap.soapy")
-    public SoapConfiguration soapyConfig() {
+    @Bean(name="soapyCountry-config")
+    @ConfigurationProperties("spring.teiid.data.soap.soapy-country")
+    public SoapConfiguration soapyCountryConfig() {
         return new SoapConfiguration();
     }
 }
