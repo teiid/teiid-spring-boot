@@ -38,7 +38,7 @@ public class DataSources{{dsName}} {
     }
 
     @Bean(name="{{dsName}}-config")
-    @ConfigurationProperties("spring.teiid.data.salesforce.{{dsName}}")
+    @ConfigurationProperties("spring.teiid.data.salesforce.{{sanitized-dsName}}")
     public SalesforceConfiguration {{dsName}}Config() {
         return new SalesforceConfiguration();
     }

@@ -37,7 +37,7 @@ public class DataSources{{dsName}} {
     }
 
     @Bean(name="{{dsName}}-config")
-    @ConfigurationProperties("spring.teiid.data.ftp.{{dsName}}")
+    @ConfigurationProperties("spring.teiid.data.ftp.{{sanitized-dsName}}")
     public FtpConfiguration {{dsName}}Config() {
         return new FtpConfiguration();
     }

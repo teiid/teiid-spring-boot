@@ -27,7 +27,7 @@ import org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory;
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.data.amazon-s3.{{dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.data.amazon-s3.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
     public AmazonS3ConnectionFactory {{dsName}}() {
         return new AmazonS3ConnectionFactory();

@@ -65,7 +65,7 @@ public class VdbMojoTest {
         testGeneration("google", "samplegoogle", outputDirectory);
         testGeneration("infinispan", "ispn", outputDirectory);
         testGeneration("s3", "s3", outputDirectory);
-        testGeneration("soap", "soapy", outputDirectory);
+        testGeneration("soap", "soapyCountry", outputDirectory);
         testGeneration("ftp", "sampleftp", outputDirectory);
     }
 
