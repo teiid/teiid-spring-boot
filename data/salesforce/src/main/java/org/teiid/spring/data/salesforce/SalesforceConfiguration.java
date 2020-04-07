@@ -19,10 +19,10 @@ package org.teiid.spring.data.salesforce;
 
 import org.springframework.web.client.RestTemplate;
 
-public class SalesforceConfiguration {
+public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceConfiguration {
     private String url = "https://login.salesforce.com/services/Soap/u/45.0";
-    private Integer requestTimeout = Integer.MAX_VALUE;
-    private Integer connectTimeout = Integer.MAX_VALUE;
+    private Long requestTimeout = Long.MAX_VALUE;
+    private Long connectTimeout = Long.MAX_VALUE;
     private Integer pollingInterval = 500;
     private String clientId;
     private String clientSecret;
@@ -47,19 +47,29 @@ public class SalesforceConfiguration {
         return template;
     }
 
-    public Integer getRequestTimeout() {
+    @Override
+    public String getURL() {
+        return url;
+    }
+
+    @Override
+    public String getUsername() {
+        return userName;
+    }
+
+    public Long getRequestTimeout() {
         return requestTimeout;
     }
 
-    public void setRequestTimeout(Integer requestTimeout) {
+    public void setRequestTimeout(Long requestTimeout) {
         this.requestTimeout = requestTimeout;
     }
 
-    public Integer getConnectTimeout() {
+    public Long getConnectTimeout() {
         return connectTimeout;
     }
 
-    public void setConnectTimeout(Integer connectTimeout) {
+    public void setConnectTimeout(Long connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
 
