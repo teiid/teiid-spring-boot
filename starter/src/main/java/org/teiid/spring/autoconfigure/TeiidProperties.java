@@ -34,10 +34,6 @@ public class TeiidProperties {
     private int pgSecurePort = 35443;
     private boolean allowAlter = false;
     private String hostName = "0.0.0.0";
-    private String tlsCertificate;
-    private String tlsKey;
-    // this is designed for Kubernetes
-    private String caCertificateFile = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
 
     private SSLConfiguration ssl = new SSLConfiguration();
 
@@ -147,37 +143,5 @@ public class TeiidProperties {
 
     public void setHostName(String hostName) {
         this.hostName = hostName;
-    }
-
-    public String getTlsCertificate() {
-        return tlsCertificate;
-    }
-
-    /**
-     * Base64 Encoded
-     * @param tlsCertificate
-     */
-    public void setTlsCertificate(String tlsCertificate) {
-        this.tlsCertificate = tlsCertificate;
-    }
-
-    public String getTlsKey() {
-        return tlsKey;
-    }
-
-    /**
-     * Base64 encoded
-     * @param tlsKey
-     */
-    public void setTlsKey(String tlsKey) {
-        this.tlsKey = tlsKey;
-    }
-
-    public String getCaCertificateFile() {
-        return caCertificateFile;
-    }
-
-    public void setCaCertificateFile(String caCertificateFile) {
-        this.caCertificateFile = caCertificateFile;
     }
 }

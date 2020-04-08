@@ -48,6 +48,9 @@ public class SpringRestExecutionFactory extends WSExecutionFactory{
 
     @Override
     public void getMetadata(MetadataFactory metadataFactory, WSConnection conn) throws TranslatorException {
+
+        metadataFactory.getModelProperties().setProperty("importer.importWSDL", "false");
+
         super.getMetadata(metadataFactory, conn);
 
         //only expose invokeHttp.  technically invoke with http binding is supportable
