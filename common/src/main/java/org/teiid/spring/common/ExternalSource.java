@@ -15,8 +15,6 @@
  */
 package org.teiid.spring.common;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -75,7 +73,10 @@ public enum ExternalSource {
     REDSHIFT("redshift", new String[] { "com.amazon.redshift.jdbc42.Driver" },
             new String[] {}, "redshift", null, new String[] {"com.amazon.redshift:redshift-jdbc42"}, SourceType.Jdbc),
     SAPIQ("spaiq", new String[] { "com.sybase.jdbc4.jdbc.SybDriver" },new String[] {}, "sap-iq", null, null, SourceType.Jdbc),
-    SQLSERVER("mssql-server", new String[] { "com.microsoft.sqlserver.jdbc.SQLServerDriver" },
+    MSSQLSERVER("mssql-server", new String[] { "com.microsoft.sqlserver.jdbc.SQLServerDriver" },
+            new String[] { "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" }, "sqlserver",
+            "org.hibernate.dialect.SQLServer2012Dialect", new String[] {"com.microsoft.sqlserver:mssql-jdbc"}, SourceType.Jdbc),
+    SQLSERVER("sqlserver", new String[] { "com.microsoft.sqlserver.jdbc.SQLServerDriver" },
             new String[] { "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" }, "sqlserver",
             "org.hibernate.dialect.SQLServer2012Dialect", new String[] {"com.microsoft.sqlserver:mssql-jdbc"}, SourceType.Jdbc),
     SYBASE("sybase", new String[] { "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" },
@@ -162,32 +163,16 @@ public enum ExternalSource {
         return gav;
     }
 
-    public static String findTransaltorNameFromDriverName(String driverName) {
+    public static ExternalSource findByDriverName(String driverName) {
         for (ExternalSource source : ExternalSource.values()) {
             for (String driver : source.driverNames) {
                 if (driver.equals(driverName)) {
-                    return source.getTranslatorName();
+                    return source;
                 }
             }
             for (String driver : source.datasourceNames) {
                 if (driver.equals(driverName)) {
-                    return source.getTranslatorName();
-                }
-            }
-        }
-        return "loopback";
-    }
-
-    public static String findDialectFromDriverName(String driverName) {
-        for (ExternalSource source : ExternalSource.values()) {
-            for (String driver : source.driverNames) {
-                if (driver.equals(driverName)) {
-                    return source.getDialect();
-                }
-            }
-            for (String driver : source.datasourceNames) {
-                if (driver.equals(driverName)) {
-                    return source.getDialect();
+                    return source;
                 }
             }
         }
@@ -224,39 +209,10 @@ public enum ExternalSource {
         return null;
     }
 
-    public static String findTransaltorNameFromAlias(String sourceName) {
+    public static ExternalSource find(String sourceName) {
         for (ExternalSource source : ExternalSource.values()) {
             if (source.name.equalsIgnoreCase(sourceName)) {
-                return source.getTranslatorName();
-            }
-        }
-        return null;
-    }
-
-    public static List<ExternalSource> findByTranslatorName(String sourceName) {
-        ArrayList<ExternalSource> list = new ArrayList<>();
-        for (ExternalSource source : ExternalSource.values()) {
-            if (source.translatorName.equalsIgnoreCase(sourceName)) {
-                list.add(source);
-            }
-        }
-        return list;
-    }
-
-    public static List<ExternalSource> find(String sourceName) {
-        ArrayList<ExternalSource> list = new ArrayList<>();
-        for (ExternalSource source : ExternalSource.values()) {
-            if (source.name.equalsIgnoreCase(sourceName)) {
-                list.add(source);
-            }
-        }
-        return list;
-    }
-
-    public static String[] findDriverNameFromAlias(String sourceName) {
-        for (ExternalSource source : ExternalSource.values()) {
-            if (source.name.equalsIgnoreCase(sourceName)) {
-                return source.getDriverNames();
+                return source;
             }
         }
         return null;
@@ -265,5 +221,4 @@ public enum ExternalSource {
     public SourceType getSourceType() {
         return sourceType;
     }
-
 }

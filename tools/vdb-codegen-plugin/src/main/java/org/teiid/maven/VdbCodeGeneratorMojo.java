@@ -200,20 +200,14 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     private void verifyTranslatorDependencies(Database database) throws Exception {
         for(Server server : database.getServers()) {
             String translator = getBaseDataWrapper(database, server.getDataWrapper());
-            List<ExternalSource> sources = ExternalSource.findByTranslatorName(translator);
-            if (sources == null || sources.isEmpty()) {
-                sources = ExternalSource.find(server.getDataWrapper());
-                if (sources == null || sources.isEmpty()) {
-                    throw new MojoExecutionException("No Translator found with name:" + server.getDataWrapper());
-                }
+            ExternalSource es = ExternalSource.find(translator);
+            if (es == null) {
+                throw new MojoExecutionException("No supported source found with name:" + server.getDataWrapper());
             }
 
             boolean foundDependency = false;
-            for (ExternalSource source:sources) {
-                if(source.getGav() == null) {
-                    continue;
-                }
-                for (String g : source.getGav()) {
+            if(es.getGav() != null) {
+                for (String g : es.getGav()) {
                     foundDependency = false;
                     List<Dependency> dependencies = project.getDependencies();
                     for (Dependency d : dependencies) {
@@ -227,29 +221,24 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                         break;
                     }
                 }
-                if (foundDependency) {
-                    break;
-                }
             }
 
             if (!foundDependency) {
                 boolean throwError = false;
                 StringBuilder sb = new StringBuilder();
-                for (ExternalSource source : sources) {
-                    if (source.getGav() != null) {
-                        for (String g : source.getGav()) {
-                            sb.append("Drivers for translator \"" + server.getDataWrapper()
-                            + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
-                            + "    <groupId>" + g.substring(0, g.indexOf(':'))
-                            + "</groupId>\n" + "    <artifactId>"
-                            + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
-                            + "</dependency>\n\n");
-                            throwError = true;
-                        }
-                    } else {
-                        getLog().error("Drivers for translator \"" + server.getDataWrapper()
-                        + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
+                if (es.getGav() != null) {
+                    for (String g : es.getGav()) {
+                        sb.append("Drivers for translator \"" + server.getDataWrapper()
+                        + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
+                        + "    <groupId>" + g.substring(0, g.indexOf(':'))
+                        + "</groupId>\n" + "    <artifactId>"
+                        + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
+                        + "</dependency>\n\n");
+                        throwError = true;
                     }
+                } else {
+                    getLog().error("Drivers for translator \"" + server.getDataWrapper()
+                    + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
                 }
                 if (throwError) {
                     throw new MojoExecutionException(sb.toString());

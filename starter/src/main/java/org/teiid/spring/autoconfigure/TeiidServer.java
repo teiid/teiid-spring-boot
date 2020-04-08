@@ -26,8 +26,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -204,52 +202,37 @@ public class TeiidServer extends EmbeddedServer {
     void addOverrideTranslator(VDBTranslatorMetaData translator, ApplicationContext context) {
         try {
             String type = translator.getType();
-            addTranslator(type, context);
+            ExternalSource es = ExternalSource.find(type);
+            if (es == null) {
+                throw new IllegalStateException("Failed to load translator " + translator.getName()
+                + " can't find source type " + type);
+            }
+            addTranslator(es, context);
             addTranslator(translator.getName(), type, translator.getPropertiesMap());
         } catch (TranslatorException e) {
             throw new IllegalStateException("Failed to load translator " + translator.getName(), e);
         }
     }
 
-    void addTranslator(String translatorname, ApplicationContext context) {
+    void addTranslator(ExternalSource source, ApplicationContext context) {
         try {
-            // some times alias name may have been used by the VDB, then create a override for it.
-            // for ex: amazon-athena for "jdbc-ansi", where usage of former required dependency verifications
-            if (ExternalSource.findByTranslatorName(translatorname).isEmpty()) {
-                if (!ExternalSource.find(translatorname).isEmpty()) {
-                    String baseType = ExternalSource.find(translatorname).get(0).getTranslatorName();
-                    addTranslator(baseType, context);
-                    addTranslator(translatorname, baseType, Collections.emptyMap());
-                    return;
-                }
-            }
-
-            if (this.getExecutionFactory(translatorname) == null) {
+            if (this.getExecutionFactory(source.getTranslatorName()) == null) {
                 String basePackage = getBasePackage(context, true);
-                Class<? extends ExecutionFactory<?, ?>> clazz = ExternalSource.translatorClass(translatorname,
-                        basePackage);
+                Class<? extends ExecutionFactory<?, ?>> clazz = ExternalSource
+                        .translatorClass(source.getTranslatorName(), basePackage);
                 if (clazz != null) {
                     addTranslator(clazz);
                 } else {
-                    List<ExternalSource> sources = ExternalSource.findByTranslatorName(translatorname);
-                    if (sources == null || sources.isEmpty()) {
-                        throw new IllegalStateException("Failed to load translator " + translatorname
-                                + ". Check to make sure @Translator annotation is added on your custom translator "
-                                + "and also set the 'spring.teiid.model.package' set to package where the translator "
-                                + "is defined");
-                    }
-                    StringBuilder sb = new StringBuilder();
-                    for (ExternalSource source: sources) {
-                        for (String str: source.getGav()) {
-                            sb.append("\n").append(str);
-                        }
-                    }
-                    throw new IllegalStateException("The following Dependencies are missing, \n"
-                            + sb.toString() + " \n\nin your pom.xml. Please add these dependencies.");
+                    throw new IllegalStateException("Failed to load translator " + source.getName()
+                    + ". Check to make sure @Translator annotation is added on your custom translator "
+                    + "and also set the 'spring.teiid.model.package' set to package where the translator "
+                    + "is defined. Otherwise, the following Dependencies are missing,\n"
+                    + source.getGav()
+                    + "\n\n in your pom.xml. Please add these dependencies. ");
                 }
             }
         } catch (ConnectorManagerException | TranslatorException e) {
-            throw new IllegalStateException("Failed to load translator " + translatorname, e);
+            throw new IllegalStateException("Failed to load translator " + source.getName(), e);
         }
     }
 
@@ -327,7 +310,12 @@ public class TeiidServer extends EmbeddedServer {
                     if (translator != null) {
                         addOverrideTranslator(translator, context);
                     } else {
-                        addTranslator(smm.getTranslatorName(), context);
+                        ExternalSource es = ExternalSource.find(smm.getTranslatorName());
+                        if (es == null) {
+                            throw new IllegalStateException(
+                                    "Failed to load translator for " + "source type " + smm.getTranslatorName());
+                        }
+                        addTranslator(es, context);
                     }
 
                     if (smm.getConnectionJndiName() != null) {
@@ -381,15 +369,19 @@ public class TeiidServer extends EmbeddedServer {
         source.setName(dsBeanName);
         source.setConnectionJndiName(dsBeanName);
 
-        String translatorName = ExternalSource.findTransaltorNameFromDriverName(driverName);
-        source.setTranslatorName(translatorName);
-        String dialect = ExternalSource.findDialectFromDriverName(driverName);
+        ExternalSource es = ExternalSource.findByDriverName(driverName);
+        if (es == null) {
+            throw new IllegalStateException("Failed to find component that supports jdbc driver " + driverName);
+        }
+        source.setTranslatorName(es.getTranslatorName());
+
+        String dialect = es.getDialect();
         if (dialect != null) {
             model.addProperty(DIALECT, dialect);
         }
 
         // load the translator class
-        addTranslator(translatorName, context);
+        addTranslator(es, context);
 
         Properties overrideProperties = getTranslatorProperties(context, source.getTranslatorName(), dsBeanName,
                 TranlatorPropertyType.OVERRIDE, new String[] {"spring.datasource", "spring.xa.datasource"});
@@ -397,7 +389,7 @@ public class TeiidServer extends EmbeddedServer {
             source.setTranslatorName(dsBeanName);
             VDBTranslatorMetaData t = new VDBTranslatorMetaData();
             t.setName(dsBeanName);
-            t.setType(translatorName);
+            t.setType(es.getTranslatorName());
             t.setProperties(overrideProperties);
             vdb.addOverideTranslator(t);
         }
@@ -449,14 +441,15 @@ public class TeiidServer extends EmbeddedServer {
         source.setName(sourceBeanName);
         source.setConnectionJndiName(sourceBeanName);
 
-        String translatorName = ExternalSource.findTransaltorNameFromAlias(factory.getTranslatorName());
-        source.setTranslatorName(translatorName);
+        ExternalSource es = ExternalSource.find(factory.getTranslatorName());
+        source.setTranslatorName(es.getTranslatorName());
         try {
-            if (this.getExecutionFactory(translatorName) == null) {
-                addTranslator(translatorName, context);
+            if (this.getExecutionFactory(es.getTranslatorName()) == null) {
+                addTranslator(es, context);
             }
         } catch (ConnectorManagerException e) {
-            throw new IllegalStateException("Failed to load translator " + translatorName, e);
+            throw new IllegalStateException("Failed to load translator " + es.getTranslatorName()
+            + ", make sure maven dependency \n" + es.getGav() + "\n\n is available in your pom.xml file", e);
         }
 
         Properties overrideProperties = getTranslatorProperties(context, source.getTranslatorName(), sourceBeanName,
@@ -465,7 +458,7 @@ public class TeiidServer extends EmbeddedServer {
             source.setTranslatorName(sourceBeanName);
             VDBTranslatorMetaData t = new VDBTranslatorMetaData();
             t.setName(sourceBeanName);
-            t.setType(translatorName);
+            t.setType(source.getTranslatorName());
             t.setProperties(overrideProperties);
             vdb.addOverideTranslator(t);
         }
@@ -710,7 +703,7 @@ public class TeiidServer extends EmbeddedServer {
         source.setTranslatorName(ExternalSource.EXCEL.getTranslatorName());
         try {
             if (this.getExecutionFactory(ExternalSource.EXCEL.getTranslatorName()) == null) {
-                addTranslator(ExternalSource.EXCEL.getTranslatorName(), context);
+                addTranslator(ExternalSource.EXCEL, context);
             }
         } catch (ConnectorManagerException e) {
             throw new IllegalStateException("Failed to load translator " + ExternalSource.EXCEL.getTranslatorName(), e);
