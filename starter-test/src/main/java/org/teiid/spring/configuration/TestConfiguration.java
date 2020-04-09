@@ -37,46 +37,19 @@ public class TestConfiguration {
     @SuppressWarnings("rawtypes")
     @Bean("fakeSource")
     public ConnectionFactory fakeSource() {
-        return new BaseConnectionFactory("fake", "fake") {
-            @Override
-            public Connection getConnection() throws Exception {
-                return new Connection() {
-                    @Override
-                    public void close() throws Exception {
-                    }
-                };
-            }
-        };
+        return new FakeConnectionFactory();
     }
 
     @SuppressWarnings("rawtypes")
     @Bean("fakeSource3")
     public ConnectionFactory fakeSource3() {
-        return new BaseConnectionFactory("fake", "fake") {
-            @Override
-            public Connection getConnection() throws Exception {
-                return new Connection() {
-                    @Override
-                    public void close() throws Exception {
-                    }
-                };
-            }
-        };
+        return new FakeConnectionFactory();
     }
 
     @SuppressWarnings("rawtypes")
     @Bean("amazonAthena")
     public ConnectionFactory amazonAthena() {
-        return new BaseConnectionFactory("jdbc-ansi", "fake") {
-            @Override
-            public Connection getConnection() throws Exception {
-                return new Connection() {
-                    @Override
-                    public void close() throws Exception {
-                    }
-                };
-            }
-        };
+        return new AthenaConnectionFactory();
     }
 
     @SuppressWarnings("rawtypes")

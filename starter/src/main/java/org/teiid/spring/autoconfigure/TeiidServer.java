@@ -90,12 +90,14 @@ import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.runtime.EmbeddedServer;
+import org.teiid.spring.annotations.ConnectionFactoryConfiguration;
 import org.teiid.spring.annotations.ExcelTable;
 import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.TextTable;
 import org.teiid.spring.annotations.UserDefinedFunctions;
 import org.teiid.spring.common.ExternalSource;
+import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.views.EntityBaseView;
 import org.teiid.spring.views.ExcelTableView;
@@ -203,10 +205,6 @@ public class TeiidServer extends EmbeddedServer {
         try {
             String type = translator.getType();
             ExternalSource es = ExternalSource.find(type);
-            if (es == null) {
-                throw new IllegalStateException("Failed to load translator " + translator.getName()
-                + " can't find source type " + type);
-            }
             addTranslator(es, context);
             addTranslator(translator.getName(), type, translator.getPropertiesMap());
         } catch (TranslatorException e) {
@@ -311,10 +309,6 @@ public class TeiidServer extends EmbeddedServer {
                         addOverrideTranslator(translator, context);
                     } else {
                         ExternalSource es = ExternalSource.find(smm.getTranslatorName());
-                        if (es == null) {
-                            throw new IllegalStateException(
-                                    "Failed to load translator for " + "source type " + smm.getTranslatorName());
-                        }
                         addTranslator(es, context);
                     }
 
@@ -370,9 +364,6 @@ public class TeiidServer extends EmbeddedServer {
         source.setConnectionJndiName(dsBeanName);
 
         ExternalSource es = ExternalSource.findByDriverName(driverName);
-        if (es == null) {
-            throw new IllegalStateException("Failed to find component that supports jdbc driver " + driverName);
-        }
         source.setTranslatorName(es.getTranslatorName());
 
         String dialect = es.getDialect();
@@ -794,5 +785,16 @@ public class TeiidServer extends EmbeddedServer {
     public void setPlatformTransactionManagerAdapter(
             PlatformTransactionManagerAdapter platformTransactionManagerAdapter) {
         this.platformTransactionManagerAdapter = platformTransactionManagerAdapter;
+    }
+
+    public void registerSource(Object bean, ApplicationContext context) {
+        if (bean.getClass().isAnnotationPresent(ConnectionFactoryConfiguration.class)) {
+            ConnectionFactoryConfiguration annonation = bean.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
+            String dialect = annonation.dialect();
+            ExternalSource source = new ExternalSource(annonation.alias(), new String[] { bean.getClass().getName() },
+                    new String[] {}, annonation.translatorName(), dialect.isEmpty() ? null : dialect,
+                            annonation.dependencies(), SourceType.Jdbc);
+            ExternalSource.addSource(source);
+        }
     }
 }

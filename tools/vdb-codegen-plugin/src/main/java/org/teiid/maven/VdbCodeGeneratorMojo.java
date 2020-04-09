@@ -261,7 +261,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             HashMap<String, String> parentMap) throws Exception {
 
         TreeMap<String, ExternalSource> sources = new TreeMap<>();
-        for (ExternalSource source : ExternalSource.values()) {
+        for (ExternalSource source : ExternalSource.SOURCES) {
             //we're using translator and alias name interchangeably
             sources.put(source.getName(), source);
             //there is a utility method that returns a list of sources,

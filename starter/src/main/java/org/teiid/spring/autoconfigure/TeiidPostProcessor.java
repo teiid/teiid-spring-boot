@@ -116,6 +116,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         } else if (bean instanceof BaseConnectionFactory) {
             TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
             VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
+            server.registerSource(bean, context);
             server.addDataSource(vdb, beanName, bean, context);
             logger.info("Non JDBC Datasource added to Teiid = " + beanName);
             if (transactionManager != null) {
@@ -145,6 +146,7 @@ class TeiidPostProcessor implements BeanPostProcessor, Ordered, ApplicationListe
         boolean deploy = true;
         VDBMetaData vdb = this.beanFactory.getBean(VDBMetaData.class);
         TeiidServer server = this.beanFactory.getBean(TeiidServer.class);
+
         if (Boolean.valueOf(vdb.getPropertyValue(TeiidAutoConfiguration.IMPLICIT_VDB))) {
             PhysicalNamingStrategy namingStrategy = this.beanFactory.getBean(PhysicalNamingStrategy.class);
             deploy = server.findAndConfigureViews(vdb, event.getApplicationContext(), namingStrategy);
