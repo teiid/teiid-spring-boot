@@ -1,1 +1,1 @@
-provides: teiid-spring-boot-starter, translator-openapi
+provides: teiid-spring-boot-common, translator-openapi, spring-data-rest, teiid-api

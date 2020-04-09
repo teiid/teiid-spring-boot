@@ -17,9 +17,7 @@
 package org.teiid.spring.data.rest;
 
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -28,12 +26,13 @@ import java.util.Map;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -59,6 +58,13 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
     private String accessTokenUrl;
     private String scope;
     private String endpoint;
+    private boolean disableTrustManager = true;
+    private boolean disableHostNameVerification;
+
+    @Value("${teiid.ssl.trustStoreFileName:/etc/tls/private/truststore.pkcs12}")
+    private String trustStoreFileName;
+    @Value("${teiid.ssl.trustStorePassword:changeit}")
+    private String trustStorePassword;
 
     private RestTemplate template;
 
@@ -69,16 +75,17 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
 
     public RestConnectionFactory() {
         super("rest", "spring.teiid.rest");
-        this.template = createRestTemplate();
     }
 
     protected RestConnectionFactory(String name, String configPrefix) {
         super(name, configPrefix);
-        this.template = createRestTemplate();
     }
 
     @Override
     public RestConnection getConnection() throws Exception {
+        if (this.template == null) {
+            this.template = createRestTemplate();
+        }
         if (this.securityType == null) {
             Map<String, List<String>> headers = new HashMap<>();
             return new RestConnection(template, beanFactory, this.endpoint, headers);
@@ -134,9 +141,23 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
 
     protected RestTemplate createRestTemplate() {
         try {
-            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(
-                    SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
-                    NoopHostnameVerifier.INSTANCE);
+            SSLConnectionSocketFactory csf = null;
+            if (this.disableTrustManager) {
+                csf = new SSLConnectionSocketFactory(
+                        SSLContexts.custom().loadTrustMaterial(null, new TrustAllStrategy()).build(),
+                        NoopHostnameVerifier.INSTANCE);
+            } else {
+                if (this.trustStoreFileName == null || !(new File(this.trustStoreFileName)).exists()) {
+                    throw new IllegalStateException("Truststore name is not provided for Rest based datasource, "
+                            + "if `https` verification is not required then turn on 'disableTrustManager` to "
+                            + "skip the certifictate verification");
+                }
+                File trustStore = new File(this.trustStoreFileName);
+                csf = new SSLConnectionSocketFactory(SSLContexts.custom()
+                        .loadTrustMaterial(trustStore, this.trustStorePassword.toCharArray()).build(),
+                        this.disableHostNameVerification ? NoopHostnameVerifier.INSTANCE : null);
+            }
+
             CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
             HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
             requestFactory.setHttpClient(httpClient);
@@ -146,8 +167,8 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             restTemplate.setErrorHandler(new LoggingErrorHandler());
             return restTemplate;
-        } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-            return null;
+        } catch (Exception e) {
+            throw new IllegalStateException("failed to create Rest cleint for making outgoing API calls", e);
         }
     }
 
@@ -229,5 +250,37 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public boolean isDisableTrustManager() {
+        return disableTrustManager;
+    }
+
+    public void setDisableTrustManager(boolean disableTrustManager) {
+        this.disableTrustManager = disableTrustManager;
+    }
+
+    public boolean isDisableHostNameVerification() {
+        return disableHostNameVerification;
+    }
+
+    public void setDisableHostNameVerification(boolean disableHostNameVerification) {
+        this.disableHostNameVerification = disableHostNameVerification;
+    }
+
+    public String getTrustStoreFileName() {
+        return trustStoreFileName;
+    }
+
+    public void setTrustStoreFileName(String trustStoreFileName) {
+        this.trustStoreFileName = trustStoreFileName;
+    }
+
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    public void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword;
     }
 }

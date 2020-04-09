@@ -19,17 +19,19 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
 import java.sql.Driver;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.xml.stream.XMLStreamException;
@@ -68,6 +70,7 @@ import org.teiid.deployers.VDBRepository;
 import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
+import org.teiid.net.socket.SocketUtil;
 import org.teiid.query.metadata.NioZipFileSystem;
 import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.metadata.VirtualFile;
@@ -76,7 +79,6 @@ import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
 import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.spring.identity.SpringSecurityHelper;
-import org.teiid.spring.util.KeystoreUtil;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.TranslatorException;
 import org.teiid.transport.SocketConfiguration;
@@ -95,13 +97,8 @@ import com.zaxxer.hikari.pool.ProxyConnection;
 public class TeiidAutoConfiguration {
 
     static final String IMPLICIT_VDB = "implicit";
-
     public static ThreadLocal<TeiidServer> serverContext = new ThreadLocal<>();
-
     private static final Log logger = LogFactory.getLog(TeiidAutoConfiguration.class);
-    private static String KEY_STORE_NAME = "keystore";
-    private static String KEY_STORE_TYPE = "jks";
-    private static String KEY_STORE_PASSWORD = "changeit";
 
     @Autowired(required = false)
     private EmbeddedConfiguration embeddedConfiguration;
@@ -278,30 +275,6 @@ public class TeiidAutoConfiguration {
 
             }
 
-            // check to see if user configured the certificates to open up secured ports for
-            // jdbc or pg. User can also set ssl.keystoreName
-            if (this.properties.isJdbcSecureEnable() || this.properties.isPgSecureEnable()) {
-                if (this.properties.getTlsCertificate() != null && this.properties.getTlsKey() != null) {
-                    try {
-                        File keystore = File.createTempFile(KEY_STORE_NAME, KEY_STORE_TYPE);
-                        keystore.deleteOnExit();
-                        String keystoreFileName = keystore.getAbsolutePath();
-                        KeystoreUtil.createKeystore(this.properties.getTlsKey(), this.properties.getTlsCertificate(),
-                                this.properties.getCaCertificateFile(), keystoreFileName, KEY_STORE_PASSWORD);
-                        this.properties.getSsl().setKeystoreFilename(keystoreFileName);
-                        this.properties.getSsl().setKeystorePassword(KEY_STORE_PASSWORD);
-                        this.properties.getSsl().setKeystoreKeyPassword(KEY_STORE_PASSWORD);
-                        logger.info("Created a Java JKS keystore from the tls keys provided.");
-                    } catch (Exception e) {
-                        logger.error("Failed to convert tls.key and tls.crt files into Java keystore "
-                                + "for use in secured JDBC/PG ", e);
-                    }
-                } else {
-                    logger.info("No tls.key and tls.crt files provided for SSL, "
-                            + "going to use SSL configuration directly");
-                }
-            }
-
             if (this.properties.isJdbcSecureEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
                 sc.setBindAddress(this.properties.getHostName());
@@ -398,5 +371,34 @@ public class TeiidAutoConfiguration {
         } catch (Exception sqle) {
             logger.warn("Unable to apply error state hack", sqle);
         }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public KeyManager keyManager() throws IOException {
+        try {
+            KeyManager[] km = this.properties.getSsl().getKeyManagers();
+            if (km != null && km.length > 0) {
+                return km[0];
+            }
+        } catch (GeneralSecurityException e) {
+            throw new IOException(e);
+        }
+        return null;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TrustManager trustManager() throws IOException {
+        try {
+            TrustManager[] tm = this.properties.getSsl().getTrustManagers();
+            if (tm != null && tm.length > 0) {
+                return tm[0];
+            }
+        } catch (GeneralSecurityException e) {
+            throw new IOException(e);
+        }
+        // if there are no trust managers configured then trust-all?
+        return SocketUtil.getTrustAllManagers()[0];
     }
 }

@@ -18,6 +18,7 @@
 package org.teiid.spring.data.infinispan;
 
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.springframework.beans.factory.annotation.Value;
 
 public class InfinispanConfiguration implements org.teiid.infinispan.api.InfinispanConfiguration {
     private String url;
@@ -31,10 +32,14 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
     private String authenticationServerName = "infinispan";
     private String cacheTemplate;
 
-    private String trustStoreFileName = System.getProperty("javax.net.ssl.trustStore");
-    private String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-    private String keyStoreFileName = System.getProperty("javax.net.ssl.keyStore");
-    private String keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+    @Value("${teiid.ssl.trustStoreFileName:/etc/tls/private/truststore.pkcs12}")
+    private String trustStoreFileName;
+    @Value("${teiid.ssl.trustStorePassword:changeit}")
+    private String trustStorePassword;
+    @Value("${teiid.ssl.keyStoreFileName:/etc/tls/private/keystore.pkcs12}")
+    private String keyStoreFileName;
+    @Value("${teiid.ssl.keyStorePassword:changeit}")
+    private String keyStorePassword;
 
     private TransactionMode transactionMode;
 
@@ -46,6 +51,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.url = url;
     }
 
+    @Override
     public String getCacheName() {
         return cacheName;
     }
@@ -53,6 +59,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
     public void setCacheName(String cacheName) {
         this.cacheName = cacheName;
     }
+    @Override
     public String getSaslMechanism() {
         return saslMechanism;
     }
@@ -61,6 +68,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.saslMechanism = saslMechanism;
     }
 
+    @Override
     public String getUserName() {
         return userName;
     }
@@ -69,6 +77,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.userName = userName;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
@@ -77,6 +86,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.password = password;
     }
 
+    @Override
     public String getAuthenticationRealm() {
         return authenticationRealm;
     }
@@ -85,6 +95,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.authenticationRealm = authenticationRealm;
     }
 
+    @Override
     public String getAuthenticationServerName() {
         return authenticationServerName;
     }
@@ -93,6 +104,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.authenticationServerName = authenticationServerName;
     }
 
+    @Override
     public String getTrustStoreFileName() {
         return trustStoreFileName;
     }
@@ -101,6 +113,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.trustStoreFileName = trustStoreFileName;
     }
 
+    @Override
     public String getTrustStorePassword() {
         return trustStorePassword;
     }
@@ -109,6 +122,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.trustStorePassword = trustStorePassword;
     }
 
+    @Override
     public String getKeyStoreFileName() {
         return keyStoreFileName;
     }
@@ -117,6 +131,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.keyStoreFileName = keyStoreFileName;
     }
 
+    @Override
     public String getKeyStorePassword() {
         return keyStorePassword;
     }
@@ -125,6 +140,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
         this.keyStorePassword = keyStorePassword;
     }
 
+    @Override
     public String getCacheTemplate() {
         return cacheTemplate;
     }
