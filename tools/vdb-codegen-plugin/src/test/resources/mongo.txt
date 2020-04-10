@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.mongodb.MongoDBTemplate;
 import org.teiid.spring.data.mongodb.MongoDBConfiguration;
 import org.teiid.spring.data.mongodb.MongoDBConnectionFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -38,8 +37,7 @@ public class DataSourcessamplemango {
     @Bean(name="samplemango")
     @Autowired
     public MongoDBConnectionFactory samplemango(@Qualifier("samplemango-config") MongoDBConfiguration config) {
-        MongoDBTemplate template = new MongoDBTemplate(config);
-        return new MongoDBConnectionFactory(template);
+        return new MongoDBConnectionFactory(config);
     }
 
     @Bean(name="samplemango-config")
