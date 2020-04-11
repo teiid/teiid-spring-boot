@@ -16,21 +16,24 @@
 
 package org.teiid.spring.data.file;
 
+import java.io.IOException;
 import java.util.Map;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.teiid.core.util.StringUtil;
+import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
-@ConfigurationProperties(prefix="spring.teiid.file")
+@ConnectionFactoryConfiguration(
+        alias = "file",
+        translatorName = "file",
+        propertyPrefix= "spring.teiid.data.file",
+        sourceType=SourceType.File
+        )
 public class FileConnectionFactory extends BaseConnectionFactory<FileConnection> {
     private String parentDirectory;
     private String fileMapping;
     private boolean allowParentPaths = true;
-
-    public FileConnectionFactory() {
-        super("file", "spring.teiid.data.file");
-    }
 
     @Override
     public FileConnection getConnection() throws Exception {
@@ -64,5 +67,10 @@ public class FileConnectionFactory extends BaseConnectionFactory<FileConnection>
 
     public void setAllowParentPaths(Boolean allowParentPaths) {
         this.allowParentPaths = allowParentPaths != null && allowParentPaths;
+    }
+
+    @Override
+    public void close() throws IOException {
+        // close connections
     }
 }

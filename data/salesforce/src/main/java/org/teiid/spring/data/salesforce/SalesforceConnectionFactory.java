@@ -17,21 +17,30 @@
  */
 package org.teiid.spring.data.salesforce;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 import com.sforce.soap.partner.Connector;
 
+@ConnectionFactoryConfiguration(
+        alias = "salesforce",
+        translatorName = "salesforce",
+        dependencies = {"org.teiid:spring-data-salesforce"},
+        propertyPrefix= "spring.teiid.data.salesforce",
+        sourceType=SourceType.Salesforce
+        )
 public class SalesforceConnectionFactory extends BaseConnectionFactory<SalesforceConnectionImpl> {
     private static final Log logger = LogFactory.getLog(SalesforceConnectionFactory.class);
 
     private SalesforceConfiguration config;
 
     public SalesforceConnectionFactory(SalesforceConfiguration config) {
-        super("salesforce", "spring.teiid.data.salesforce");
         this.config = config;
         checkVersion(config);
     }
@@ -59,5 +68,10 @@ public class SalesforceConnectionFactory extends BaseConnectionFactory<Salesforc
     @Override
     public SalesforceConnectionImpl getConnection() throws Exception {
         return new SalesforceConnectionImpl(config);
+    }
+
+    @Override
+    public void close() throws IOException {
+        // close connections
     }
 }

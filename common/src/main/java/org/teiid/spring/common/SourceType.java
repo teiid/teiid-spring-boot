@@ -21,7 +21,7 @@ package org.teiid.spring.common;
  */
 public enum SourceType {
     AmazonS3,
-    //Custom,
+    Custom,
     File,
     Ftp,
     GoogleSheets,

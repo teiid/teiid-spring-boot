@@ -15,13 +15,17 @@
  */
 package org.teiid.spring.data.amazon.s3;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.teiid.spring.common.SourceType;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.data.rest.RestConnectionFactory;
 
-@ConfigurationProperties(prefix="spring.teiid.data.amazon-s3")
+@ConnectionFactoryConfiguration(
+        alias = "amazon-s3",
+        translatorName = "amazon-s3",
+        dependencies = {"org.teiid:spring-data-amazon-s3"},
+        propertyPrefix= "spring.teiid.data.amazon-s3",
+        sourceType=SourceType.AmazonS3
+        )
 public class AmazonS3ConnectionFactory extends RestConnectionFactory {
 
-    public AmazonS3ConnectionFactory() {
-        super("amazon-s3", "spring.teiid.data.amazon-s3");
-    }
 }

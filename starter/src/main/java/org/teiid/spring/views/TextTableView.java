@@ -25,7 +25,6 @@ import org.teiid.metadata.Column;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.TextTable;
-import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.data.BaseConnectionFactory;
 
 public class TextTableView extends ViewBuilder<TextTable> {
@@ -43,10 +42,10 @@ public class TextTableView extends ViewBuilder<TextTable> {
         String source = annotation.source();
         String file = annotation.file();
 
-        String translator = ExternalSource.FILE.getTranslatorName();
+        String alias = "file";
         BaseConnectionFactory<?> bean = (BaseConnectionFactory<?>)context.getBean(source);
         if (bean != null) {
-            translator = bean.getTranslatorName();
+            alias = bean.getAlias();
         }
 
         view.setSupportsUpdate(false);
@@ -55,13 +54,13 @@ public class TextTableView extends ViewBuilder<TextTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (translator.equalsIgnoreCase(ExternalSource.FILE.getName())) {
+        if (alias.equalsIgnoreCase("file")) {
             sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())) {
+        } else if (alias.equalsIgnoreCase("rest")) {
             JsonTableView.generateRestProcedure(entityClazz, source, file, sb);
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
+        } else if (alias.equalsIgnoreCase("amazon-s3")) {
             sb.append("EXEC ").append(source).append(".getTextFile('").append(file).append("')");
-        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
+        } else if (alias.equalsIgnoreCase("ftp")) {
             sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
         } else {
             throw new IllegalStateException("Source type '" + annotation.source() + "' not supported on TextTable "
@@ -69,13 +68,13 @@ public class TextTableView extends ViewBuilder<TextTable> {
         }
         sb.append(") AS f, ").append("\n");
 
-        if (annotation.source().equals(ExternalSource.FILE.getName())) {
+        if (annotation.source().equals("file")) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())) {
+        } else if (alias.equalsIgnoreCase("rest")) {
             sb.append("TEXTTABLE(f.result COLUMNS ").append(columndef.toString());
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
+        } else if (alias.equalsIgnoreCase("amazon-s3")) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
-        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
+        } else if (alias.equalsIgnoreCase("ftp")) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
         }
 

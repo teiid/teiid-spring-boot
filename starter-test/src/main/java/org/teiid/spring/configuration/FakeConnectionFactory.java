@@ -16,16 +16,14 @@
 
 package org.teiid.spring.configuration;
 
-import org.teiid.spring.annotations.ConnectionFactoryConfiguration;
+import java.io.IOException;
+
 import org.teiid.spring.data.BaseConnection;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
-@ConnectionFactoryConfiguration(alias="fake", translatorName="fake")
+@ConnectionFactoryConfiguration(alias="fake", translatorName="fake", propertyPrefix="fake")
 public class FakeConnectionFactory extends BaseConnectionFactory<BaseConnection>{
-
-    public FakeConnectionFactory() {
-        super("fake", "fake.prefix");
-    }
 
     @Override
     public BaseConnection getConnection() throws Exception {
@@ -34,5 +32,9 @@ public class FakeConnectionFactory extends BaseConnectionFactory<BaseConnection>
             public void close() throws Exception {
             }
         };
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }

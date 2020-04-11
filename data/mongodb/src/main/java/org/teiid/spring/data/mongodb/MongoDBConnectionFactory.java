@@ -19,24 +19,30 @@ package org.teiid.spring.data.mongodb;
 import java.io.IOException;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
+@ConnectionFactoryConfiguration(
+        alias = "mongodb",
+        translatorName = "mongodb",
+        dependencies = {"org.teiid:spring-data-mongodb"},
+        propertyPrefix= "spring.teiid.data.mongodb",
+        sourceType=SourceType.MongoDB
+        )
 public class MongoDBConnectionFactory extends BaseConnectionFactory<MongoDBConnection> {
 
     private MongoTemplate mongoTemplate;
     private MongoClient mongoClient;
 
     public MongoDBConnectionFactory(MongoTemplate template) {
-        super("mongodb", "spring.teiid.data.mongodb");
         this.mongoTemplate = template;
     }
 
     public MongoDBConnectionFactory(MongoDBConfiguration mongoDBConfiguration) {
-        super("mongodb", "spring.teiid.data.mongodb");
-
         String database = mongoDBConfiguration.getDatabase();
         if (mongoDBConfiguration.getUri() != null) {
             MongoClientURI uri = new MongoClientURI(mongoDBConfiguration.getUri());

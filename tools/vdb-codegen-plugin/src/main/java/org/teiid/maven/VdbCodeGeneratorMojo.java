@@ -42,11 +42,16 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.metadata.Database;
 import org.teiid.metadata.Datatype;
@@ -58,12 +63,14 @@ import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.common.SourceType;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
-@Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
+@Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.COMPILE,
+requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true, threadSafe=true)
 public class VdbCodeGeneratorMojo extends AbstractMojo {
     public static final SystemFunctionManager SFM = SystemMetadata.getInstance().getSystemFunctionManager();
 
@@ -87,6 +94,9 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${basedir}/src/main/resources/openapi.json")
     private File openApiFile;
+
+    @Parameter( defaultValue = "${plugin}", readonly = true )
+    private PluginDescriptor pluginDescriptor;
 
     public File getOutputDirectory() {
         return outputDirectory;
@@ -116,6 +126,8 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (!javaSrcDir.exists()) {
                 javaSrcDir.mkdirs();
             }
+
+            discoverConnectionFactories();
 
             File vdbfile = this.getVDBFile();
             Database database = getDatabase(vdbfile);
@@ -156,6 +168,47 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             throw new MojoExecutionException("Error running the vdb-codegen-plugin.", e);
         } finally {
             Thread.currentThread().setContextClassLoader(oldCL);
+        }
+    }
+
+    private void discoverConnectionFactories() throws MojoExecutionException {
+
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.setResourceLoader(new ResourceLoader() {
+            @Override
+            public org.springframework.core.io.Resource getResource(String location) {
+                return null;
+            }
+            @Override
+            public ClassLoader getClassLoader() {
+                try {
+                    return VdbCodeGeneratorMojo.this.getClassLoader();
+                } catch (MojoExecutionException e) {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            }
+        });
+        scanner.addIncludeFilter(new AnnotationTypeFilter(ConnectionFactoryConfiguration.class));
+
+        Set<BeanDefinition> components = scanner.findCandidateComponents("org.teiid.spring.data");
+        for (BeanDefinition c : components) {
+            try {
+                Class<?> clazz = Class.forName(c.getBeanClassName());
+                ConnectionFactoryConfiguration annotation = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
+
+                String dialect = annotation.dialect();
+                ExternalSource source = new ExternalSource(annotation.alias(), new String[] { clazz.getName() },
+                        new String[] {}, annotation.translatorName(), dialect.isEmpty() ? null : dialect,
+                                annotation.dependencies(), annotation.sourceType(), annotation.propertyPrefix());
+                if (source.getSourceType() == SourceType.Custom) {
+                }
+                getLog().info("Found connection factory for : " + annotation.alias() + " Mustache :");
+
+                ExternalSource.addSource(source);
+
+            } catch (ClassNotFoundException e) {
+                throw new MojoExecutionException("Error scanning classpath for Connection Factories", e);
+            }
         }
     }
 

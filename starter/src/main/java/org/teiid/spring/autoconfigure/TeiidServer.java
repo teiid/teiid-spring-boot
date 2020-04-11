@@ -90,15 +90,14 @@ import org.teiid.query.metadata.TransformationMetadata;
 import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.runtime.EmbeddedServer;
-import org.teiid.spring.annotations.ConnectionFactoryConfiguration;
 import org.teiid.spring.annotations.ExcelTable;
 import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.TextTable;
 import org.teiid.spring.annotations.UserDefinedFunctions;
 import org.teiid.spring.common.ExternalSource;
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.views.EntityBaseView;
 import org.teiid.spring.views.ExcelTableView;
 import org.teiid.spring.views.JsonTableView;
@@ -432,7 +431,7 @@ public class TeiidServer extends EmbeddedServer {
         source.setName(sourceBeanName);
         source.setConnectionJndiName(sourceBeanName);
 
-        ExternalSource es = ExternalSource.find(factory.getTranslatorName());
+        ExternalSource es = ExternalSource.find(factory.getAlias());
         source.setTranslatorName(es.getTranslatorName());
         try {
             if (this.getExecutionFactory(es.getTranslatorName()) == null) {
@@ -691,13 +690,13 @@ public class TeiidServer extends EmbeddedServer {
         SourceMappingMetadata source = new SourceMappingMetadata();
         source.setName(clazz.getSimpleName().toLowerCase());
         source.setConnectionJndiName(excelAnnotation.source());
-        source.setTranslatorName(ExternalSource.EXCEL.getTranslatorName());
+        source.setTranslatorName("excel");
         try {
-            if (this.getExecutionFactory(ExternalSource.EXCEL.getTranslatorName()) == null) {
-                addTranslator(ExternalSource.EXCEL, context);
+            if (this.getExecutionFactory("excel") == null) {
+                addTranslator(ExternalSource.find("excel"), context);
             }
         } catch (ConnectorManagerException e) {
-            throw new IllegalStateException("Failed to load translator " + ExternalSource.EXCEL.getTranslatorName(), e);
+            throw new IllegalStateException("Failed to load translator " + "excel", e);
         }
         model.addSourceMapping(source);
 
@@ -793,7 +792,7 @@ public class TeiidServer extends EmbeddedServer {
             String dialect = annonation.dialect();
             ExternalSource source = new ExternalSource(annonation.alias(), new String[] { bean.getClass().getName() },
                     new String[] {}, annonation.translatorName(), dialect.isEmpty() ? null : dialect,
-                            annonation.dependencies(), SourceType.Jdbc);
+                            annonation.dependencies(), annonation.sourceType(), annonation.propertyPrefix());
             ExternalSource.addSource(source);
         }
     }

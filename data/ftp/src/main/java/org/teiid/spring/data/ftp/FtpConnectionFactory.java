@@ -17,19 +17,34 @@
  */
 package org.teiid.spring.data.ftp;
 
-import org.teiid.file.ftp.FtpFileConnection;
-import org.teiid.spring.data.BaseConnectionFactory;
+import java.io.IOException;
 
+import org.teiid.file.ftp.FtpFileConnection;
+import org.teiid.spring.common.SourceType;
+import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
+
+@ConnectionFactoryConfiguration(
+        alias = "ftp",
+        translatorName = "ftp",
+        dependencies = {"org.teiid:spring-data-ftp"},
+        propertyPrefix= "spring.teiid.data.ftp",
+        sourceType=SourceType.Ftp
+        )
 public class FtpConnectionFactory extends BaseConnectionFactory<FtpConnection> {
     private FtpConfiguration config;
 
     public FtpConnectionFactory(FtpConfiguration config) {
-        super("ftp", "spring.teiid.data.ftp");
         this.config = config;
     }
 
     @Override
     public FtpConnection getConnection() throws Exception {
         return new FtpConnection(new FtpFileConnection(this.config));
+    }
+
+    @Override
+    public void close() throws IOException {
+        // close connections
     }
 }

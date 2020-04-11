@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.spring.annotations;
+package org.teiid.spring.data;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -21,8 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.teiid.spring.data.BaseConnection;
-import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.common.SourceType;
 
 /**
  * The Bean that has this annotation represents a Custom Source in Teiid Spring
@@ -65,4 +64,16 @@ public @interface ConnectionFactoryConfiguration {
      * @return
      */
     String dialect() default "";
+
+    /**
+     * Property prefix for the data source properties
+     * @return
+     */
+    String propertyPrefix();
+
+    /**
+     * Source Type of the source
+     * @return
+     */
+    SourceType sourceType() default SourceType.Custom;
 }

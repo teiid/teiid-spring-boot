@@ -26,24 +26,34 @@ import org.teiid.resource.api.ConnectionFactory;
 
 public abstract class BaseConnectionFactory<T extends Connection> implements ConnectionFactory<T>, Closeable {
 
-    private String translatorName;
-    private String configurationPrefix;
-
-    public BaseConnectionFactory(String translatorName, String configurationPrefix) {
-        this.translatorName = translatorName;
-        this.configurationPrefix = configurationPrefix;
-    }
-
     public String getTranslatorName() {
-        return translatorName;
+        ConnectionFactoryConfiguration cfc = this.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
+        if (cfc != null) {
+            return cfc.translatorName();
+        }
+        throw new IllegalStateException("@ConnectionFactoryAnnotation is not defined on class "
+                + this.getClass().getName());
     }
 
     public String getConfigurationPrefix() {
-        return configurationPrefix;
+        ConnectionFactoryConfiguration cfc = this.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
+        if (cfc != null) {
+            return cfc.propertyPrefix();
+        }
+        throw new IllegalStateException("@ConnectionFactoryAnnotation is not defined on class "
+                + this.getClass().getName());
+    }
+
+    public String getAlias() {
+        ConnectionFactoryConfiguration cfc = this.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
+        if (cfc != null) {
+            return cfc.alias();
+        }
+        throw new IllegalStateException("@ConnectionFactoryAnnotation is not defined on class "
+                + this.getClass().getName());
     }
 
     @Override
     public void close() throws IOException {
-
     }
 }

@@ -16,16 +16,14 @@
 
 package org.teiid.spring.configuration;
 
-import org.teiid.spring.annotations.ConnectionFactoryConfiguration;
+import java.io.IOException;
+
 import org.teiid.spring.data.BaseConnection;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
-@ConnectionFactoryConfiguration(alias="athena", translatorName="jdbc-ansi")
+@ConnectionFactoryConfiguration(alias="athena", translatorName="jdbc-ansi", propertyPrefix="athena")
 public class AthenaConnectionFactory extends BaseConnectionFactory<BaseConnection>{
-
-    public AthenaConnectionFactory() {
-        super("jdbc-ansi", "athena.prefix");
-    }
 
     @Override
     public BaseConnection getConnection() throws Exception {
@@ -34,5 +32,9 @@ public class AthenaConnectionFactory extends BaseConnectionFactory<BaseConnectio
             public void close() throws Exception {
             }
         };
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }

@@ -18,6 +18,7 @@ package org.teiid.spring.data.rest;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -33,7 +34,6 @@ import org.apache.http.ssl.SSLContexts;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -42,9 +42,17 @@ import org.springframework.social.support.FormMapHttpMessageConverter;
 import org.springframework.social.support.LoggingErrorHandler;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
-@ConfigurationProperties(prefix="spring.teiid.rest")
+@ConnectionFactoryConfiguration(
+        alias = "rest",
+        translatorName = "rest",
+        dependencies = {"org.teiid:spring-data-rest"},
+        propertyPrefix= "spring.teiid.data.rest",
+        sourceType=SourceType.Rest
+        )
 public class RestConnectionFactory extends BaseConnectionFactory<RestConnection> {
     private static final String AUTHORIZATION = "Authorization"; //$NON-NLS-1$
 
@@ -74,11 +82,6 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
     private AccessGrant accessGrant;
 
     public RestConnectionFactory() {
-        super("rest", "spring.teiid.rest");
-    }
-
-    protected RestConnectionFactory(String name, String configPrefix) {
-        super(name, configPrefix);
     }
 
     @Override
@@ -282,5 +285,12 @@ public class RestConnectionFactory extends BaseConnectionFactory<RestConnection>
 
     public void setTrustStorePassword(String trustStorePassword) {
         this.trustStorePassword = trustStorePassword;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (this.template != null) {
+            this.template  = null;
+        }
     }
 }

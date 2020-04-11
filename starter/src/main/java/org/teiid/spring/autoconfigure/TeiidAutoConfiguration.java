@@ -346,6 +346,7 @@ public class TeiidAutoConfiguration {
 
     @Bean(name="file")
     @ConditionalOnMissingBean
+    @ConfigurationProperties(prefix="spring.teiid.file")
     public FileConnectionFactory fileConnectionFactory() {
         return new FileConnectionFactory();
     }
