@@ -17,28 +17,29 @@
 /*
  * GENERATED CODE - DO NOT EDIT
  */
-package com.example;
+
+package org.teiid.spring.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.ftp.FtpConfiguration;
-import org.teiid.spring.data.ftp.FtpConnectionFactory;
+import org.teiid.spring.data.soap.SoapConfiguration;
+import org.teiid.spring.data.soap.SoapConnectionFactory;
 
 @Configuration
-public class DataSourcessampleftp {
+public class DataSourcessoapyCountry {
 
-    @Bean(name="sampleftp")
+    @Bean(name="soapyCountry")
     @Autowired
-    public FtpConnectionFactory sampleftp(@Qualifier("sampleftp-config") FtpConfiguration config) {
-        return new FtpConnectionFactory(config);
+    public SoapConnectionFactory soapyCountry(@Qualifier("soapyCountry-config") SoapConfiguration config) {
+        return new SoapConnectionFactory(config);
     }
 
-    @Bean(name="sampleftp-config")
-    @ConfigurationProperties("spring.teiid.data.ftp.sampleftp")
-    public FtpConfiguration sampleftpConfig() {
-        return new FtpConfiguration();
+    @Bean(name="soapyCountry-config")
+    @ConfigurationProperties("spring.teiid.data.soap.soapy-country")
+    public SoapConfiguration soapyCountryConfig() {
+        return new SoapConfiguration();
     }
 }

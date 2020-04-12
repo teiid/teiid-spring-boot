@@ -18,31 +18,28 @@
  * GENERATED CODE - DO NOT EDIT
  */
 
-package com.example;
+package org.teiid.spring.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.mongodb.MongoDBConfiguration;
-import org.teiid.spring.data.mongodb.MongoDBConnectionFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.teiid.spring.data.salesforce.SalesforceConfiguration;
+import org.teiid.spring.data.salesforce.SalesforceConnectionFactory;
 
 @Configuration
-@EnableAutoConfiguration(exclude = {MongoAutoConfiguration.class})
-public class DataSourcessamplemango {
+public class DataSourcessamplesf {
 
-    @Bean(name="samplemango")
+    @Bean(name="samplesf")
     @Autowired
-    public MongoDBConnectionFactory samplemango(@Qualifier("samplemango-config") MongoDBConfiguration config) {
-        return new MongoDBConnectionFactory(config);
+    public SalesforceConnectionFactory samplesf(@Qualifier("samplesf-config") SalesforceConfiguration config) {
+        return new SalesforceConnectionFactory(config);
     }
 
-    @Bean(name="samplemango-config")
-    @ConfigurationProperties("spring.teiid.data.mongodb.samplemango")
-    public MongoDBConfiguration samplemangoConfig() {
-        return new MongoDBConfiguration();
+    @Bean(name="samplesf-config")
+    @ConfigurationProperties("spring.teiid.data.salesforce.samplesf")
+    public SalesforceConfiguration samplesfConfig() {
+        return new SalesforceConfiguration();
     }
 }

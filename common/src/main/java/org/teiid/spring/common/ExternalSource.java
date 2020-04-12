@@ -160,86 +160,14 @@ public class ExternalSource {
             new String[] {}, "vertica", null, new String[] { "org.clojars.erp12:jdbc-vertica" }, SourceType.Jdbc,
             "spring.datasource");
 
-    //    public static ExternalSource AMAZONS3 = new ExternalSource("amazon-s3",
-    //            new String[] { "org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory" }, new String[] {}, "amazon-s3",
-    //            null, new String[] { "org.teiid:spring-data-amazon-s3" }, SourceType.AmazonS3,
-    //            "spring.teiid.data.amazon-s3");
-
-    //    public static ExternalSource EXCEL = new ExternalSource("excel",
-    //            new String[] { "org.teiid.spring.data.excel.ExcelConnectionFactory" }, new String[] {}, "excel", null,
-    //            new String[] { "org.teiid:spring-data-excel" }, SourceType.File, "spring.teiid.data.excel");
-
-    //    public static ExternalSource FILE = new ExternalSource("file",
-    //            new String[] { "org.teiid.spring.data.file.FileConnectionFactory" }, new String[] {}, "file", null,
-    //            new String[] { "org.teiid:teiid-spring-boot-starter" }, SourceType.File, "spring.teiid.data.file");
-
-    //    public static ExternalSource FTP = new ExternalSource("ftp",
-    //            new String[] { "org.teiid.spring.data.ftp.FtpConnectionFactory" }, new String[] {}, "file", null,
-    //            new String[] { "org.teiid:spring-data-ftp" }, SourceType.Ftp, "spring.teiid.data.ftp");
-
-    //    public static ExternalSource GOOGLESHEETS = new ExternalSource("google-spreadsheet",
-    //            new String[] { "org.teiid.spring.data.google.SpreadsheetConnectionFactory" }, new String[] {},
-    //            "google-spreadsheet", null, new String[] { "org.teiid:spring-data-google" }, SourceType.GoogleSheets,
-    //            "spring.teiid.data.google.sheets");
-
-    //    public static ExternalSource INFINISPAN = new ExternalSource("infinispan-hotrod",
-    //            new String[] { "org.teiid.spring.data.infinispan.InfinispanConnectionFactory" }, new String[] {},
-    //            "infinispan-hotrod", null, new String[] { "org.teiid:spring-data-infinispan" }, SourceType.Infinispan,
-    //            "spring.teiid.data.infinispan");
-
     public static ExternalSource LOOPBACK = new ExternalSource("loopback", new String[] {}, new String[] {}, "loopback",
             null, new String[] { "org.teiid:teiid-spring-boot-starter" }, null, "spring.teiid.data.loopback");
 
-    //    public static ExternalSource MONGODB = new ExternalSource("mongodb",
-    //            new String[] { "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" }, new String[] {}, "mongodb", null,
-    //            new String[] { "org.teiid:spring-data-mongodb" }, SourceType.MongoDB, "spring.teiid.data.mongodb");
-
-    //    public static ExternalSource ODATA = new ExternalSource("odata",
-    //            new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "odata", null,
-    //            new String[] { "org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata" }, SourceType.Rest,
-    //            "spring.teiid.rest");
-
-    //    public static ExternalSource ODATA4 = new ExternalSource("odata4",
-    //            new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "odata4", null,
-    //            new String[] { "org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata4" }, SourceType.Rest,
-    //            "spring.teiid.rest");
-
-    //    public static ExternalSource OPENAPI = new ExternalSource("openapi",
-    //            new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "openapi", null,
-    //            new String[] { "org.teiid:spring-data-openapi" }, SourceType.Rest, "spring.teiid.rest");
-    //
-    //    public static ExternalSource SWAGGER = new ExternalSource("swagger",
-    //            new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "swagger", null,
-    //            new String[] { "org.teiid:spring-data-openapi" }, SourceType.Rest, "spring.teiid.rest");
-
-    //    public static ExternalSource REST = new ExternalSource("rest",
-    //            new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "rest", null,
-    //            new String[] { "org.teiid:spring-data-rest" }, SourceType.Rest, "spring.teiid.rest");
-
-    //    public static ExternalSource SALESFORCE = new ExternalSource("salesforce",
-    //            new String[] { "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" }, new String[] {},
-    //            "salesforce-41", null, new String[] { "org.teiid:spring-data-salesforce" }, SourceType.Salesforce,
-    //            "spring.teiid.data.salesforce");
-
-    //    public static ExternalSource SAPGATEWAY = new ExternalSource("sap-gateway",
-    //            new String[] { "org.teiid.spring.data.rest.RestConnectionFactory" }, new String[] {}, "sap-gateway", null,
-    //            new String[] { "org.teiid:spring-data-rest", "org.teiid.connectors:translator-odata" }, SourceType.Rest,
-    //            "spring.teiid.rest");
-
-    //    public static ExternalSource SOAP = new ExternalSource("soap",
-    //            new String[] { "org.teiid.spring.data.soap.SoapConnectionFactory" }, new String[] {}, "ws", null,
-    //            new String[] { "org.teiid:spring-data-soap" }, SourceType.Soap, "spring.teiid.data.soap");
-
-    //    public static ExternalSource WS = new ExternalSource("ws",
-    //            new String[] { "org.teiid.spring.data.soap.SoapConnectionFactory" }, new String[] {}, "ws", null,
-    //            new String[] { "org.teiid:spring-data-soap" }, SourceType.Soap, "spring.teiid.data.soap");
 
     private static ExternalSource[] STATICSOURCES = new ExternalSource[] { ATHENA, ACTIAN, DB2, DERBY, EXASOL, H2, HANA,
             HBASE, HIVE, HSQL, IMPALA, INFORMIX, INGRES, JDBCSIMPLE, JDBCANSI, JTDS, MYSQL, NETEZZA, ORACLE, OSISOFTPI,
             POSTGRESQL, PHOENIX, PRESTODB, REDSHIFT, SAPIQ, MSSQLSERVER, SQLSERVER, SYBASE, TEIID, TERADATA, UCANACCESS,
             VERTICA, LOOPBACK };
-    //AMAZONS3, EXCEL, FILE, FTP, GOOGLESHEETS, INFINISPAN, MONGODB, ODATA, ODATA4, OPENAPI,;
-    //SWAGGER, REST, SALESFORCE, SAPGATEWAY, SOAP, WS };
 
     public static ArrayList<ExternalSource> SOURCES = new ArrayList<>(Arrays.asList(STATICSOURCES));
 

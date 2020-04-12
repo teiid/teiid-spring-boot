@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 /*
  * GENERATED CODE - DO NOT EDIT
  */
-package com.example;
+package org.teiid.spring.example;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.file.FileConnectionFactory;
+import org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory;
 
 @Configuration
-public class DataSourcessamplefile {
+public class DataSourcess3 {
 
-    @ConfigurationProperties(prefix = "spring.teiid.file.samplefile")
-    @Bean(name="samplefile")
-    public FileConnectionFactory samplefile() {
-        return new FileConnectionFactory();
-    }
+    @ConfigurationProperties(prefix = "spring.teiid.data.amazon-s3.s3")
+    @Bean(name="s3")
+    public AmazonS3ConnectionFactory s3() {
+        return new AmazonS3ConnectionFactory();
+    }    
 }

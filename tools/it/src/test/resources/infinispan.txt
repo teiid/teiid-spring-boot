@@ -14,28 +14,32 @@
  * limitations under the License.
  */
 
-package com.example;
+/*
+ * GENERATED CODE - DO NOT EDIT
+ */
+
+package org.teiid.spring.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.google.SpreadSheetConfiguration;
-import org.teiid.spring.data.google.SpreadsheetConnectionFactory;
+import org.teiid.spring.data.infinispan.InfinispanConfiguration;
+import org.teiid.spring.data.infinispan.InfinispanConnectionFactory;
 
 @Configuration
-public class DataSourcessamplegoogle {
+public class DataSourcesispn {
 
-    @Bean(name="samplegoogle")
-    @Autowired    
-    public SpreadsheetConnectionFactory source(@Qualifier("samplegoogle-config") SpreadSheetConfiguration config) {
-        return new SpreadsheetConnectionFactory(config);
+    @Bean(name="ispn")
+    @Autowired
+    public InfinispanConnectionFactory ispn(@Qualifier("ispn-config") InfinispanConfiguration config) {
+        return new InfinispanConnectionFactory(config);
     }
 
-    @Bean(name="samplegoogle-config")
-    @ConfigurationProperties("spring.teiid.data.google.sheets.samplegoogle")
-    public SpreadSheetConfiguration samplegoogleConfig() {
-        return new SpreadSheetConfiguration();
+    @Bean(name="ispn-config")
+    @ConfigurationProperties("spring.teiid.data.infinispan.ispn")
+    public InfinispanConfiguration ispnConfig() {
+        return new InfinispanConfiguration();
     }
 }

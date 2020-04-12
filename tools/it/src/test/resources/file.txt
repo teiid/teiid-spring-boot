@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /*
  * GENERATED CODE - DO NOT EDIT
  */
-package com.example;
+package org.teiid.spring.example;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.rest.RestConnectionFactory;
+import org.teiid.spring.data.file.FileConnectionFactory;
 
 @Configuration
-public class DataSourcessampleodata {
+public class DataSourcessamplefile {
 
-    @ConfigurationProperties(prefix = "spring.teiid.rest.sampleodata")
-    @Bean(name="sampleodata")
-    public RestConnectionFactory sampleodata() {
-        return new RestConnectionFactory();
+    @ConfigurationProperties(prefix = "spring.teiid.file.samplefile")
+    @Bean(name="samplefile")
+    public FileConnectionFactory samplefile() {
+        return new FileConnectionFactory();
     }
-    
 }
-

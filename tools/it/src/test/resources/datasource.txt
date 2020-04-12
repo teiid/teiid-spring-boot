@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /*
  * GENERATED CODE - DO NOT EDIT
  */
-package com.example;
 
+package org.teiid.spring.example;
+
+import javax.sql.DataSource;
+
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory;
 
 @Configuration
-public class DataSourcess3 {
+public class DataSourcessampledb {
 
-    @ConfigurationProperties(prefix = "spring.teiid.data.amazon-s3.s3")
-    @Bean(name="s3")
-    public AmazonS3ConnectionFactory s3() {
-        return new AmazonS3ConnectionFactory();
-    }    
+    @ConfigurationProperties(prefix = "spring.datasource.sampledb")
+    @Bean(name="sampledb")
+    public DataSource sampledb() {
+        return DataSourceBuilder.create().build();
+    }
 }
