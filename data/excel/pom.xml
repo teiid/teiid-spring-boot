@@ -36,8 +36,8 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>teiid-spring-boot-starter</artifactId>
-    </dependency>    
+      <artifactId>spring-data-file</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.teiid.connectors</groupId>
       <artifactId>translator-excel</artifactId>

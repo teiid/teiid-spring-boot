@@ -98,6 +98,7 @@ import org.teiid.spring.annotations.UserDefinedFunctions;
 import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
+import org.teiid.spring.data.excel.ExcelConnectionFactory;
 import org.teiid.spring.views.EntityBaseView;
 import org.teiid.spring.views.ExcelTableView;
 import org.teiid.spring.views.JsonTableView;
@@ -471,6 +472,7 @@ public class TeiidServer extends EmbeddedServer {
         provider.addIncludeFilter(new AnnotationTypeFilter(javax.persistence.Embeddable.class));
         provider.addIncludeFilter(new AnnotationTypeFilter(SelectQuery.class));
         provider.addIncludeFilter(new AnnotationTypeFilter(UserDefinedFunctions.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(ConnectionFactoryConfiguration.class));
 
         String basePackage = getBasePackage(context, false);
 
@@ -480,8 +482,18 @@ public class TeiidServer extends EmbeddedServer {
         for (BeanDefinition c : components) {
             try {
                 Class<?> clazz = Class.forName(c.getBeanClassName());
+                ConnectionFactoryConfiguration cfc = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
+                if(cfc != null) {
+                    ExternalSource.addSource(ExternalSource.build(cfc, c.getBeanClassName()));
+                }
+            } catch (ClassNotFoundException e) {
+                logger.warn("Error loading entity classes");
+            }
+        }
+        for (BeanDefinition c : components) {
+            try {
+                Class<?> clazz = Class.forName(c.getBeanClassName());
                 ExcelTable excelAnnotation = clazz.getAnnotation(ExcelTable.class);
-
                 if (excelAnnotation != null) {
                     addExcelModel(vdb, clazz, excelAnnotation, context);
                     load = true;
@@ -490,6 +502,7 @@ public class TeiidServer extends EmbeddedServer {
                 logger.warn("Error loading entity classes");
             }
         }
+
 
         ModelMetaData model = new ModelMetaData();
         model.setName(EXPOSED_VIEW);
@@ -693,7 +706,8 @@ public class TeiidServer extends EmbeddedServer {
         source.setTranslatorName("excel");
         try {
             if (this.getExecutionFactory("excel") == null) {
-                addTranslator(ExternalSource.find("excel"), context);
+                ConnectionFactoryConfiguration cfc = ExcelConnectionFactory.class.getAnnotation(ConnectionFactoryConfiguration.class);
+                addTranslator(ExternalSource.build(cfc, ExcelConnectionFactory.class.getName()), context);
             }
         } catch (ConnectorManagerException e) {
             throw new IllegalStateException("Failed to load translator " + "excel", e);
@@ -788,11 +802,8 @@ public class TeiidServer extends EmbeddedServer {
 
     public void registerSource(Object bean, ApplicationContext context) {
         if (bean.getClass().isAnnotationPresent(ConnectionFactoryConfiguration.class)) {
-            ConnectionFactoryConfiguration annonation = bean.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
-            String dialect = annonation.dialect();
-            ExternalSource source = new ExternalSource(annonation.alias(), new String[] { bean.getClass().getName() },
-                    new String[] {}, annonation.translatorName(), dialect.isEmpty() ? null : dialect,
-                            annonation.dependencies(), annonation.sourceType(), annonation.propertyPrefix());
+            ConnectionFactoryConfiguration annotation = bean.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
+            ExternalSource source = ExternalSource.build(annotation, bean.getClass().getName());
             ExternalSource.addSource(source);
         }
     }

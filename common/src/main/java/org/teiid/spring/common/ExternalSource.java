@@ -22,6 +22,7 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.translator.ExecutionFactory;
 import org.teiid.translator.Translator;
 
@@ -350,5 +351,13 @@ public class ExternalSource {
         if (find(source.getName()) == null) {
             SOURCES.add(source);
         }
+    }
+
+    public static ExternalSource build(ConnectionFactoryConfiguration annotation, String className) {
+        String dialect = annotation.dialect();
+        ExternalSource source = new ExternalSource(annotation.alias(), new String[] { className },
+                new String[] {}, annotation.translatorName(), dialect.isEmpty() ? null : dialect,
+                        annotation.dependencies(), annotation.sourceType(), annotation.propertyPrefix());
+        return source;
     }
 }
