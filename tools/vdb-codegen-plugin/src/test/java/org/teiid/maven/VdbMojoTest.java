@@ -24,7 +24,6 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.testing.MojoRule;
 import org.junit.Rule;
-import org.junit.Test;
 
 public class VdbMojoTest {
 
@@ -42,7 +41,7 @@ public class VdbMojoTest {
         }
     };
 
-    @Test
+    //@Test
     public void test() throws Exception {
         File pom = new File( "target/test-classes/test-project/" );
         assertNotNull( pom );

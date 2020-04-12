@@ -13,20 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.spring.data.soap;
+ 
+/*
+ * GENERATED CODE - DO NOT EDIT
+ */
+package {{packageName}};
 
-import org.teiid.spring.common.SourceType;
-import org.teiid.spring.data.ConnectionFactoryConfiguration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.teiid.spring.data.sap.SapGatewayConnectionFactory;
 
-@ConnectionFactoryConfiguration(
-        alias = "ws",
-        translatorName = "ws",
-        dependencies = {"org.teiid:spring-data-soap"},
-        propertyPrefix= "spring.teiid.data.soap",
-        sourceType=SourceType.Soap
-        )
-public class WsConnectionFactory extends SoapConnectionFactory {
-    public WsConnectionFactory(SoapConfiguration config) {
-        super(config);
+@Configuration
+public class DataSources{{dsName}} {
+
+    @ConfigurationProperties(prefix = "spring.teiid.rest.{{sanitized-dsName}}")
+    @Bean(name="{{dsName}}")
+    public SapGatewayConnectionFactory {{dsName}}() {
+        return new SapGatewayConnectionFactory();
     }
 }
+

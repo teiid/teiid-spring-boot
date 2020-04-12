@@ -38,16 +38,19 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.ResourceLoader;
@@ -65,19 +68,20 @@ import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
+import com.github.jknack.handlebars.internal.text.StringTokenizer;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
-@Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.COMPILE,
-requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true, threadSafe=true)
+
+@Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyCollection=ResolutionScope.COMPILE, requiresDependencyResolution = ResolutionScope.RUNTIME_PLUS_SYSTEM, requiresProject = true, threadSafe=true)
 public class VdbCodeGeneratorMojo extends AbstractMojo {
     public static final SystemFunctionManager SFM = SystemMetadata.getInstance().getSystemFunctionManager();
 
     @Parameter(defaultValue = "${basedir}/src/main/resources/teiid.ddl")
     private File vdbFile;
 
-    @Parameter(defaultValue = "${project}", readonly = true)
+    @Parameter( defaultValue = "${project}", readonly = true )
     private MavenProject project;
 
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/teiid-sb")
@@ -97,6 +101,15 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
     @Parameter( defaultValue = "${plugin}", readonly = true )
     private PluginDescriptor pluginDescriptor;
+
+    @Component
+    private RepositorySystem repos;
+
+    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
+    private ArtifactRepository localRepo;
+
+    @Parameter
+    private String componentScanPackageNames = "org.teiid.spring.data";
 
     public File getOutputDirectory() {
         return outputDirectory;
@@ -127,7 +140,11 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 javaSrcDir.mkdirs();
             }
 
-            discoverConnectionFactories();
+            // find connection factories
+            StringTokenizer st = new StringTokenizer(componentScanPackageNames, ",");
+            while (st.hasNext()) {
+                discoverConnectionFactories(pluginClassloader, st.next());
+            }
 
             File vdbfile = this.getVDBFile();
             Database database = getDatabase(vdbfile);
@@ -143,7 +160,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 createApplication(mf, javaSrcDir, database, parentMap);
             }
             if (this.generateDataSourceClasses) {
-                createDataSources(mf, javaSrcDir, database, parentMap);
+                createDataSources(mf, javaSrcDir, database, parentMap, pluginClassloader);
             }
             verifyTranslatorDependencies(database);
 
@@ -171,8 +188,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private void discoverConnectionFactories() throws MojoExecutionException {
-
+    private void discoverConnectionFactories(final ClassLoader loader, String packageName) throws Exception {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.setResourceLoader(new ResourceLoader() {
             @Override
@@ -181,28 +197,22 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             }
             @Override
             public ClassLoader getClassLoader() {
-                try {
-                    return VdbCodeGeneratorMojo.this.getClassLoader();
-                } catch (MojoExecutionException e) {
-                    return Thread.currentThread().getContextClassLoader();
-                }
+                return loader;
             }
         });
         scanner.addIncludeFilter(new AnnotationTypeFilter(ConnectionFactoryConfiguration.class));
 
-        Set<BeanDefinition> components = scanner.findCandidateComponents("org.teiid.spring.data");
+        Set<BeanDefinition> components = scanner.findCandidateComponents(packageName);
         for (BeanDefinition c : components) {
             try {
-                Class<?> clazz = Class.forName(c.getBeanClassName());
+                Class<?> clazz = Class.forName(c.getBeanClassName(), false, loader);
                 ConnectionFactoryConfiguration annotation = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
 
                 String dialect = annotation.dialect();
                 ExternalSource source = new ExternalSource(annotation.alias(), new String[] { clazz.getName() },
                         new String[] {}, annotation.translatorName(), dialect.isEmpty() ? null : dialect,
                                 annotation.dependencies(), annotation.sourceType(), annotation.propertyPrefix());
-                if (source.getSourceType() == SourceType.Custom) {
-                }
-                getLog().info("Found connection factory for : " + annotation.alias() + " Mustache :");
+                getLog().info("Found connection factory for : " + annotation.alias());
 
                 ExternalSource.addSource(source);
 
@@ -311,7 +321,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     }
 
     private void createDataSources(MustacheFactory mf, File javaSrcDir, Database database,
-            HashMap<String, String> parentMap) throws Exception {
+            HashMap<String, String> parentMap, ClassLoader classLoader) throws Exception {
 
         TreeMap<String, ExternalSource> sources = new TreeMap<>();
         for (ExternalSource source : ExternalSource.SOURCES) {
@@ -337,10 +347,22 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
             ExternalSource source = sources.get(translator);
 
-            Mustache mustache = loadMustache(mf, source==null?SourceType.Jdbc:source.getSourceType());
-            Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-            mustache.execute(out, tempMap);
-            out.close();
+            if (source == null) {
+                throw new MojoExecutionException("No Source found with name :" + translator +
+                        " make sure it is supported source, if this a custom source, it is developed with "
+                        + "@ConnectionFactoryConfiguration annotation");
+            }
+
+            Mustache mustache = loadMustache(mf, source, classLoader);
+            if (mustache != null) {
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                mustache.execute(out, tempMap);
+                out.close();
+            } else {
+                throw new MojoExecutionException("Failed to generate source for name :" + translator +
+                        " make sure it is supported source, if this a custom source, it is developed with "
+                        + "@ConnectionFactoryConfiguration annotation and Mustache file is provided");
+            }
         }
     }
 
@@ -369,10 +391,18 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         return sb.toString();
     }
 
-    static Mustache loadMustache(MustacheFactory mf, SourceType source) {
-        Mustache mustache = mf.compile(
-                new InputStreamReader(VdbCodeGeneratorMojo.class.getResourceAsStream("/templates/"+ source.name() + ".mustache")),
-                source.name().toLowerCase());
+    static Mustache loadMustache(MustacheFactory mf, ExternalSource source, ClassLoader classLoader) {
+        Mustache mustache = null;
+        if (source.getSourceType() == SourceType.Custom) {
+            mustache = mf.compile(
+                    new InputStreamReader(classLoader.getResourceAsStream(source.getName() + ".mustache")),
+                    source.getName().toLowerCase());
+        } else {
+            mustache = mf.compile(
+                    new InputStreamReader(VdbCodeGeneratorMojo.class
+                            .getResourceAsStream("/templates/" + source.getSourceType().name() + ".mustache")),
+                    source.getSourceType().name().toLowerCase());
+        }
         return mustache;
     }
 
