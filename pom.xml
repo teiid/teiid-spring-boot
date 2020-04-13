@@ -145,6 +145,7 @@
     <version.jackson-databind-nullable>0.1.0</version.jackson-databind-nullable>
     <version.jackson-core>2.11.0.rc1</version.jackson-core>
     <version.jackson-databind>2.11.0.rc1</version.jackson-databind>
+    <version.org.mongodb>3.9.1</version.org.mongodb>
   </properties>
 
   <build>
@@ -472,10 +473,6 @@
         <version>${teiid.version}</version>
         <exclusions>
           <exclusion>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-          </exclusion>
-          <exclusion>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>translator-jdbc</artifactId>
           </exclusion>
@@ -486,10 +483,6 @@
         <artifactId>mongodb-api</artifactId>
         <version>${teiid.version}</version>
         <exclusions>
-          <exclusion>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -784,6 +777,14 @@
       <version>42.2.5</version>
     </dependency>           
 
+    <!-- Mongodb override -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>${version.org.mongodb}</version>
+    </dependency>
+    <!-- mongodb Override -->
+    
       <!-- this is to override the infinispan version from spring-bom above, when matches with version remove -->
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
@@ -1055,20 +1056,7 @@
         <module>common</module>       
         <module>starter</module>
         <module>starter-test</module>
-        <module>data/file</module>
-        <module>data/rest</module>
-        <module>data/excel</module>
-        <module>data/mongodb</module>
-        <module>data/salesforce</module>
-        <module>data/google</module>
-        <module>data/infinispan</module>
-        <module>data/amazon-s3</module>
-        <module>data/openapi</module>
-        <module>data/soap</module>
-        <module>data/ftp</module>
-        <module>data/odata</module>
-        <module>data/odata4</module>
-        <module>data/sap-gateway</module>
+        <module>data</module>
         <module>tools</module>
         <module>odata</module>
         <module>openapi</module>
@@ -1084,20 +1072,7 @@
       <modules>
         <module>common</module>        
         <module>starter</module>
-        <module>data/file</module>
-        <module>data/rest</module>
-        <module>data/excel</module>
-        <module>data/mongodb</module>
-        <module>data/salesforce</module>
-        <module>data/google</module>
-        <module>data/infinispan</module>
-        <module>data/amazon-s3</module>
-        <module>data/openapi</module>
-        <module>data/soap</module>
-        <module>data/ftp</module>
-        <module>data/odata</module>
-        <module>data/odata4</module>
-        <module>data/sap-gateway</module>
+        <module>data</module>
         <module>tools</module>
         <module>odata</module>
         <module>openapi</module>

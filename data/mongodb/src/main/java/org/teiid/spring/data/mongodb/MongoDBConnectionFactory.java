@@ -18,7 +18,6 @@ package org.teiid.spring.data.mongodb;
 
 import java.io.IOException;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
@@ -35,31 +34,28 @@ import com.mongodb.MongoClientURI;
         )
 public class MongoDBConnectionFactory extends BaseConnectionFactory<MongoDBConnection> {
 
-    private MongoTemplate mongoTemplate;
     private MongoClient mongoClient;
-
-    public MongoDBConnectionFactory(MongoTemplate template) {
-        this.mongoTemplate = template;
-    }
+    private MongoDBConfiguration config;
 
     public MongoDBConnectionFactory(MongoDBConfiguration mongoDBConfiguration) {
-        String database = mongoDBConfiguration.getDatabase();
-        if (mongoDBConfiguration.getUri() != null) {
-            MongoClientURI uri = new MongoClientURI(mongoDBConfiguration.getUri());
-            mongoClient = new MongoClient(uri);
-            database = uri.getDatabase();
-        }
-        if (mongoDBConfiguration.getCredential() == null) {
-            mongoClient = new MongoClient(mongoDBConfiguration.getServers(), mongoDBConfiguration.getOptions());
-        } else {
-            mongoClient = new MongoClient(mongoDBConfiguration.getServers(), mongoDBConfiguration.getCredential(), mongoDBConfiguration.getOptions());
-        }
-        this.mongoTemplate = new MongoTemplate(mongoClient, database);
+        this.config = mongoDBConfiguration;
     }
 
     @Override
     public MongoDBConnection getConnection() throws Exception {
-        return new MongoDBConnection(mongoTemplate);
+        if (this.mongoClient == null) {
+            if (this.config.getUri() != null) {
+                MongoClientURI uri = new MongoClientURI(this.config.getUri());
+                mongoClient = new MongoClient(uri);
+            }
+            if (this.config.getCredential() == null) {
+                mongoClient = new MongoClient(this.config.getServers(), this.config.getOptions());
+            } else {
+                mongoClient = new MongoClient(this.config.getServers(), this.config.getCredential(),this.config.getOptions());
+            }
+
+        }
+        return new MongoDBConnection(this.mongoClient, this.config.getDatabase());
     }
 
     @Override
