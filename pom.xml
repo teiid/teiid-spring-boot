@@ -214,6 +214,11 @@
             <artifactId>spring-webmvc</artifactId>
             <version>5.1.13.RELEASE</version>
       </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.26</version>
+        </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -843,7 +848,7 @@
       <dependency>
         <groupId>com.fasterxml.woodstox</groupId>
         <artifactId>woodstox-core</artifactId>
-        <version>6.0.1</version>
+        <version>6.1.1</version>
       </dependency>
       <dependency>
           <groupId>org.codehaus.woodstox</groupId>
