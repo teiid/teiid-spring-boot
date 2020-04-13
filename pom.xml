@@ -211,6 +211,11 @@
 
   <dependencyManagement>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>5.1.13.RELEASE</version>
+        </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -299,6 +304,10 @@
             <exclusion>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
             </exclusion>
         </exclusions>
       </dependency>
