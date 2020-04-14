@@ -23,7 +23,7 @@ import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(alias="fake2", translatorName="fake2", propertyPrefix="fake2")
-public class Fake2ConnectionFactory extends BaseConnectionFactory<BaseConnection>{
+public class Fake2ConnectionFactory implements BaseConnectionFactory<BaseConnection>{
 
     @Override
     public BaseConnection getConnection() throws Exception {

@@ -23,7 +23,7 @@ import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(alias="athena", translatorName="jdbc-ansi", propertyPrefix="athena")
-public class AthenaConnectionFactory extends BaseConnectionFactory<BaseConnection>{
+public class AthenaConnectionFactory implements BaseConnectionFactory<BaseConnection>{
 
     @Override
     public BaseConnection getConnection() throws Exception {

@@ -23,7 +23,7 @@ import org.teiid.file.VirtualFileConnection;
 import org.teiid.spring.data.BaseConnection;
 import org.teiid.translator.TranslatorException;
 
-public class FtpConnection extends BaseConnection implements VirtualFileConnection {
+public class FtpConnection implements BaseConnection, VirtualFileConnection {
     private org.teiid.file.ftp.FtpFileConnection delegate;
 
     public FtpConnection(org.teiid.file.ftp.FtpFileConnection conn) {

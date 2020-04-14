@@ -13,24 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /*
  * GENERATED CODE - DO NOT EDIT
  */
+
 package {{packageName}};
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.odata.ODataConnectionFactory;
+import org.teiid.spring.data.soap.SoapConfiguration;
+import org.teiid.spring.data.soap.SoapConnectionFactory;
 
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.odata.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
-    public ODataConnectionFactory {{dsName}}() {
-        return new ODataConnectionFactory();
+    @Autowired
+    public SoapConnectionFactory {{dsName}}(@Qualifier("{{dsName}}-config") SoapConfiguration config) {
+        return new SoapConnectionFactory(config);
+    }
+
+    @Bean(name="{{dsName}}-config")
+    @ConfigurationProperties("spring.teiid.data.soap.{{sanitized-dsName}}")
+    public SoapConfiguration {{dsName}}Config() {
+        return new SoapConfiguration();
     }
 }
-

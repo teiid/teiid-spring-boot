@@ -20,7 +20,7 @@ import org.teiid.spring.data.BaseConnection;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 
-public class MongoDBConnection extends BaseConnection implements org.teiid.mongodb.MongoDBConnection {
+public class MongoDBConnection implements BaseConnection, org.teiid.mongodb.MongoDBConnection {
     private MongoClient client;
     private String database;
 

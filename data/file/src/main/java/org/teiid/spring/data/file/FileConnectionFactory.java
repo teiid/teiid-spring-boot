@@ -20,17 +20,15 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.teiid.core.util.StringUtil;
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(
         alias = "file",
         translatorName = "file",
-        propertyPrefix= "spring.teiid.data.file",
-        sourceType=SourceType.File
+        propertyPrefix= "spring.teiid.data.file"
         )
-public class FileConnectionFactory extends BaseConnectionFactory<FileConnection> {
+public class FileConnectionFactory implements BaseConnectionFactory<FileConnection> {
     private String parentDirectory;
     private String fileMapping;
     private boolean allowParentPaths = true;

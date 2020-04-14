@@ -61,7 +61,7 @@ import org.teiid.translator.ws.WSConnection;
 import org.teiid.translator.ws.WSExecutionFactory;
 import org.teiid.util.WSUtil;
 
-public class RestConnection extends BaseConnection implements WSConnection {
+public class RestConnection implements BaseConnection, WSConnection {
 
     private static final class HttpDataSource implements DataSource {
         private final URL url;

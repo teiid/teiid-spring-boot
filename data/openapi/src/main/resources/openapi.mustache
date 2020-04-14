@@ -27,7 +27,7 @@ import org.teiid.spring.data.openapi.OpenApiConnectionFactory;
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.rest.{{sanitized-dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.openapi.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
     public OpenApiConnectionFactory {{dsName}}() {
         return new OpenApiConnectionFactory();

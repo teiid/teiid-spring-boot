@@ -41,7 +41,7 @@ import org.teiid.translator.google.api.result.UpdateResult;
  *
  * Uses a mixture of Sheets v4 api, visualization, and Sheets v3
  */
-public class SpreadsheetConnectionImpl4 extends BaseConnection implements GoogleSpreadsheetConnection {
+public class SpreadsheetConnectionImpl4 implements BaseConnection, GoogleSpreadsheetConnection {
     private static final Log logger = LogFactory.getLog(SpreadsheetConnectionImpl4.class);
     private SpreadSheetConfiguration config;
     private SheetsAPI sheetsAPI = null; // v4 specific

@@ -16,7 +16,6 @@
 
 package org.teiid.spring.data.odata4;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.data.rest.RestConnectionFactory;
 
@@ -24,8 +23,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
         alias = "odata4",
         translatorName = "odata4",
         dependencies = {"org.teiid:spring-data-odata4"},
-        propertyPrefix= "spring.teiid.data.rest",
-        sourceType=SourceType.Custom
+        propertyPrefix= "spring.teiid.data.odata4"
         )
 public class OData4ConnectionFactory extends RestConnectionFactory {
 }

@@ -77,6 +77,7 @@ import org.teiid.query.metadata.VirtualFile;
 import org.teiid.runtime.EmbeddedConfiguration;
 import org.teiid.runtime.EmbeddedServer;
 import org.teiid.spring.autoconfigure.TeiidPostProcessor.Registrar;
+import org.teiid.spring.common.ExternalSources;
 import org.teiid.spring.data.file.FileConnectionFactory;
 import org.teiid.spring.identity.SpringSecurityHelper;
 import org.teiid.translator.ExecutionFactory;
@@ -250,7 +251,8 @@ public class TeiidAutoConfiguration {
     @Bean(name = "teiid")
     @ConditionalOnMissingBean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public TeiidServer teiidServer(SpringSecurityHelper securityHelper, TransactionManager transactionManager) {
+    public TeiidServer teiidServer(SpringSecurityHelper securityHelper, TransactionManager transactionManager,
+            ExternalSources sources) {
         logger.info("Starting Teiid Server.");
 
         // turning off PostgreSQL support
@@ -258,7 +260,7 @@ public class TeiidAutoConfiguration {
         System.setProperty("org.teiid.hiddenMetadataResolvable", "false");
         System.setProperty("org.teiid.allowAlter", Boolean.toString(this.properties.isAllowAlter()));
 
-        final TeiidServer server = new TeiidServer();
+        final TeiidServer server = new TeiidServer(sources);
 
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
@@ -401,5 +403,11 @@ public class TeiidAutoConfiguration {
         }
         // if there are no trust managers configured then trust-all?
         return SocketUtil.getTrustAllManagers()[0];
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ExternalSources externalSources() {
+        return new ExternalSources();
     }
 }

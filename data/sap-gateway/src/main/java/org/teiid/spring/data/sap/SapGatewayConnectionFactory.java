@@ -16,7 +16,6 @@
 
 package org.teiid.spring.data.sap;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.data.rest.RestConnectionFactory;
 
@@ -24,8 +23,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
         alias = "sap-gateway",
         translatorName = "sap-gateway",
         dependencies = {"org.teiid:spring-data-sap-gateway"},
-        propertyPrefix= "spring.teiid.data.rest",
-        sourceType=SourceType.Custom
+        propertyPrefix= "spring.teiid.data.sap"
         )
 public class SapGatewayConnectionFactory extends RestConnectionFactory {
 }

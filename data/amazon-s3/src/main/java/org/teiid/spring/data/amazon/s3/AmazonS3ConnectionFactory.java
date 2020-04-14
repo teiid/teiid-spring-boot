@@ -15,7 +15,6 @@
  */
 package org.teiid.spring.data.amazon.s3;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.data.rest.RestConnectionFactory;
 
@@ -23,8 +22,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
         alias = "amazon-s3",
         translatorName = "amazon-s3",
         dependencies = {"org.teiid:spring-data-amazon-s3"},
-        propertyPrefix= "spring.teiid.data.amazon-s3",
-        sourceType=SourceType.AmazonS3
+        propertyPrefix= "spring.teiid.data.amazon-s3"
         )
 public class AmazonS3ConnectionFactory extends RestConnectionFactory {
 

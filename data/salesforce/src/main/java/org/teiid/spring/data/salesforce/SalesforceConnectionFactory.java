@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
@@ -32,10 +31,9 @@ import com.sforce.soap.partner.Connector;
         alias = "salesforce",
         translatorName = "salesforce",
         dependencies = {"org.teiid:spring-data-salesforce"},
-        propertyPrefix= "spring.teiid.data.salesforce",
-        sourceType=SourceType.Salesforce
+        propertyPrefix= "spring.teiid.data.salesforce"
         )
-public class SalesforceConnectionFactory extends BaseConnectionFactory<SalesforceConnectionImpl> {
+public class SalesforceConnectionFactory implements BaseConnectionFactory<SalesforceConnectionImpl> {
     private static final Log logger = LogFactory.getLog(SalesforceConnectionFactory.class);
 
     private SalesforceConfiguration config;

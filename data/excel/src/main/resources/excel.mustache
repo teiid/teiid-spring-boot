@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /*
  * GENERATED CODE - DO NOT EDIT
  */
@@ -22,15 +22,14 @@ package {{packageName}};
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.odata.ODataConnectionFactory;
+import org.teiid.spring.data.excel.ExcelConnectionFactory;
 
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.odata.{{sanitized-dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.file.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
-    public ODataConnectionFactory {{dsName}}() {
-        return new ODataConnectionFactory();
+    public ExcelConnectionFactory {{dsName}}() {
+        return new ExcelConnectionFactory();
     }
 }
-

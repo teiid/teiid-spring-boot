@@ -16,7 +16,6 @@
 
 package org.teiid.spring.data.excel;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.data.file.FileConnectionFactory;
 
@@ -24,8 +23,7 @@ import org.teiid.spring.data.file.FileConnectionFactory;
         alias = "excel",
         translatorName = "excel",
         dependencies = {"org.teiid:spring-data-excel"},
-        propertyPrefix= "spring.teiid.data.file",
-        sourceType=SourceType.File
+        propertyPrefix= "spring.teiid.data.excel"
         )
 public class ExcelConnectionFactory extends FileConnectionFactory {
 }

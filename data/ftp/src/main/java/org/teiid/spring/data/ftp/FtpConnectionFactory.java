@@ -20,7 +20,6 @@ package org.teiid.spring.data.ftp;
 import java.io.IOException;
 
 import org.teiid.file.ftp.FtpFileConnection;
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
@@ -28,10 +27,9 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "ftp",
         translatorName = "ftp",
         dependencies = {"org.teiid:spring-data-ftp"},
-        propertyPrefix= "spring.teiid.data.ftp",
-        sourceType=SourceType.Ftp
+        propertyPrefix= "spring.teiid.data.ftp"
         )
-public class FtpConnectionFactory extends BaseConnectionFactory<FtpConnection> {
+public class FtpConnectionFactory implements BaseConnectionFactory<FtpConnection> {
     private FtpConfiguration config;
 
     public FtpConnectionFactory(FtpConfiguration config) {

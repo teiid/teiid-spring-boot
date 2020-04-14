@@ -15,15 +15,13 @@
  */
 package org.teiid.spring.data.soap;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(
         alias = "ws",
         translatorName = "ws",
         dependencies = {"org.teiid:spring-data-soap"},
-        propertyPrefix= "spring.teiid.data.soap",
-        sourceType=SourceType.Soap
+        propertyPrefix= "spring.teiid.data.soap"
         )
 public class WsConnectionFactory extends SoapConnectionFactory {
     public WsConnectionFactory(SoapConfiguration config) {

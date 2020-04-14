@@ -35,7 +35,7 @@ public class DataSourceGenerationTest {
         testGeneration("datasource", "sampledb", outputDirectory);
         testGeneration("mongo", "samplemango", outputDirectory);
         testGeneration("salesforce", "samplesf", outputDirectory);
-        testGeneration("rest", "sampleodata", outputDirectory);
+        testGeneration("odata4", "sampleodata", outputDirectory);
         testGeneration("file", "samplefile", outputDirectory);
         testGeneration("google", "samplegoogle", outputDirectory);
         testGeneration("infinispan", "ispn", outputDirectory);

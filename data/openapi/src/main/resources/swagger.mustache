@@ -27,7 +27,7 @@ import org.teiid.spring.data.swagger.SwaggerConnectionFactory;
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.rest.{{sanitized-dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.swagger.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
     public SwaggerConnectionFactory {{dsName}}() {
         return new SwaggerConnectionFactory();

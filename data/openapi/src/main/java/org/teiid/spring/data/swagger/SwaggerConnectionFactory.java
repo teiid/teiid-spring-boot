@@ -16,7 +16,6 @@
 
 package org.teiid.spring.data.swagger;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.data.rest.RestConnectionFactory;
 
@@ -24,8 +23,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
         alias = "swagger",
         translatorName = "swagger",
         dependencies = {"org.teiid:spring-data-swagger"},
-        propertyPrefix= "spring.teiid.data.rest",
-        sourceType=SourceType.Custom
+        propertyPrefix= "spring.teiid.data.swagger"
         )
 public class SwaggerConnectionFactory extends RestConnectionFactory {
 }

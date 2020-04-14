@@ -96,9 +96,9 @@ import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.TextTable;
 import org.teiid.spring.annotations.UserDefinedFunctions;
 import org.teiid.spring.common.ExternalSource;
+import org.teiid.spring.common.ExternalSources;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
-import org.teiid.spring.data.excel.ExcelConnectionFactory;
 import org.teiid.spring.views.EntityBaseView;
 import org.teiid.spring.views.ExcelTableView;
 import org.teiid.spring.views.JsonTableView;
@@ -120,9 +120,11 @@ public class TeiidServer extends EmbeddedServer {
     private MetadataSources metadataSources = new MetadataSources();
     private PlatformTransactionManagerAdapter platformTransactionManagerAdapter;
     private ConcurrentHashMap<String, ConnectionFactoryProvider<?>> connectionFactoryProviders = new ConcurrentHashMap<String, ConnectionFactoryProvider<?>>();
+    private ExternalSources externalSources;
 
-    public TeiidServer() {
+    public TeiidServer(ExternalSources es) {
         this.cmr = new SBConnectorManagerRepository();
+        this.externalSources = es;
     }
 
     @SuppressWarnings("rawtypes")
@@ -204,7 +206,7 @@ public class TeiidServer extends EmbeddedServer {
     void addOverrideTranslator(VDBTranslatorMetaData translator, ApplicationContext context) {
         try {
             String type = translator.getType();
-            ExternalSource es = ExternalSource.find(type);
+            ExternalSource es = this.externalSources.find(type);
             addTranslator(es, context);
             addTranslator(translator.getName(), type, translator.getPropertiesMap());
         } catch (TranslatorException e) {
@@ -308,7 +310,7 @@ public class TeiidServer extends EmbeddedServer {
                     if (translator != null) {
                         addOverrideTranslator(translator, context);
                     } else {
-                        ExternalSource es = ExternalSource.find(smm.getTranslatorName());
+                        ExternalSource es = this.externalSources.find(smm.getTranslatorName());
                         addTranslator(es, context);
                     }
 
@@ -363,7 +365,7 @@ public class TeiidServer extends EmbeddedServer {
         source.setName(dsBeanName);
         source.setConnectionJndiName(dsBeanName);
 
-        ExternalSource es = ExternalSource.findByDriverName(driverName);
+        ExternalSource es = this.externalSources.findByDriverName(driverName);
         source.setTranslatorName(es.getTranslatorName());
 
         String dialect = es.getDialect();
@@ -432,7 +434,7 @@ public class TeiidServer extends EmbeddedServer {
         source.setName(sourceBeanName);
         source.setConnectionJndiName(sourceBeanName);
 
-        ExternalSource es = ExternalSource.find(factory.getAlias());
+        ExternalSource es = this.externalSources.find(factory.getAlias());
         source.setTranslatorName(es.getTranslatorName());
         try {
             if (this.getExecutionFactory(es.getTranslatorName()) == null) {
@@ -484,7 +486,7 @@ public class TeiidServer extends EmbeddedServer {
                 Class<?> clazz = Class.forName(c.getBeanClassName());
                 ConnectionFactoryConfiguration cfc = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
                 if(cfc != null) {
-                    ExternalSource.addSource(ExternalSource.build(cfc, c.getBeanClassName()));
+                    this.externalSources.addSource(cfc, c.getBeanClassName());
                 }
             } catch (ClassNotFoundException e) {
                 logger.warn("Error loading entity classes");
@@ -706,8 +708,7 @@ public class TeiidServer extends EmbeddedServer {
         source.setTranslatorName("excel");
         try {
             if (this.getExecutionFactory("excel") == null) {
-                ConnectionFactoryConfiguration cfc = ExcelConnectionFactory.class.getAnnotation(ConnectionFactoryConfiguration.class);
-                addTranslator(ExternalSource.build(cfc, ExcelConnectionFactory.class.getName()), context);
+                addTranslator(this.externalSources.find("excel"), context);
             }
         } catch (ConnectorManagerException e) {
             throw new IllegalStateException("Failed to load translator " + "excel", e);
@@ -802,9 +803,9 @@ public class TeiidServer extends EmbeddedServer {
 
     public void registerSource(Object bean, ApplicationContext context) {
         if (bean.getClass().isAnnotationPresent(ConnectionFactoryConfiguration.class)) {
-            ConnectionFactoryConfiguration annotation = bean.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
-            ExternalSource source = ExternalSource.build(annotation, bean.getClass().getName());
-            ExternalSource.addSource(source);
+            ConnectionFactoryConfiguration annotation = bean.getClass()
+                    .getAnnotation(ConnectionFactoryConfiguration.class);
+            this.externalSources.addSource(annotation, bean.getClass().getName());
         }
     }
 }

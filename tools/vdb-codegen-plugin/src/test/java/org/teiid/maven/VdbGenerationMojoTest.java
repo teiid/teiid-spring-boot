@@ -27,7 +27,6 @@ import org.apache.maven.plugin.testing.MojoRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.teiid.spring.common.ExternalSource;
-import org.teiid.spring.common.SourceType;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.MustacheFactory;
@@ -73,16 +72,12 @@ public class VdbGenerationMojoTest {
     @Test
     public void testSourceTypes() throws Exception {
         MustacheFactory mf = new DefaultMustacheFactory();
-        for (SourceType source : SourceType.values()) {
-            ExternalSource es = new ExternalSource("test", null, null, "test", null,  null,source, "prefix");
-            if (source != SourceType.Custom) {
-                try {
-                    assertNotNull(source.name(),
-                            VdbCodeGeneratorMojo.loadMustache(mf, es, VdbCodeGeneratorMojo.class.getClassLoader()));
-                } catch (Exception e) {
-                    fail("problem with " + source + " mustache " + e.getMessage());
-                }
-            }
+        ExternalSource es = new ExternalSource("Jdbc", null, null, "test", null,  null, "prefix");
+        try {
+            assertNotNull(es.getName(),
+                    VdbCodeGeneratorMojo.loadMustache(mf, es, VdbCodeGeneratorMojo.class.getClassLoader()));
+        } catch (Exception e) {
+            fail("problem with " + es.getName() + " mustache " + e.getMessage());
         }
     }
 

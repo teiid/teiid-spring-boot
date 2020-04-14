@@ -18,7 +18,6 @@ package org.teiid.spring.data.mongodb;
 
 import java.io.IOException;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
@@ -29,10 +28,9 @@ import com.mongodb.MongoClientURI;
         alias = "mongodb",
         translatorName = "mongodb",
         dependencies = {"org.teiid:spring-data-mongodb"},
-        propertyPrefix= "spring.teiid.data.mongodb",
-        sourceType=SourceType.MongoDB
+        propertyPrefix= "spring.teiid.data.mongodb"
         )
-public class MongoDBConnectionFactory extends BaseConnectionFactory<MongoDBConnection> {
+public class MongoDBConnectionFactory implements BaseConnectionFactory<MongoDBConnection> {
 
     private MongoClient mongoClient;
     private MongoDBConfiguration config;

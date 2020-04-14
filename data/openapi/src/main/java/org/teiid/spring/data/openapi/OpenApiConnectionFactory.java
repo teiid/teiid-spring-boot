@@ -16,7 +16,6 @@
 
 package org.teiid.spring.data.openapi;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.spring.data.rest.RestConnectionFactory;
 
@@ -24,8 +23,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
         alias = "openapi",
         translatorName = "openapi",
         dependencies = {"org.teiid:spring-data-openapi"},
-        propertyPrefix= "spring.teiid.data.rest",
-        sourceType=SourceType.Custom
+        propertyPrefix= "spring.teiid.data.openapi"
         )
 public class OpenApiConnectionFactory extends RestConnectionFactory {
 }

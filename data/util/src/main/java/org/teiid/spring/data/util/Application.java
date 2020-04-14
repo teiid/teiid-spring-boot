@@ -16,18 +16,12 @@
 
 package org.teiid.spring.data.util;
 
-import java.util.Set;
-
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.teiid.spring.common.ExternalSource;
-import org.teiid.spring.data.ConnectionFactoryConfiguration;
+import org.teiid.spring.common.ExternalSources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,22 +35,8 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        provider.addIncludeFilter(new AnnotationTypeFilter(ConnectionFactoryConfiguration.class));
-        Set<BeanDefinition> components = provider.findCandidateComponents("org.teiid.spring.data");
-        for (BeanDefinition c : components) {
-            try {
-                Class<?> clazz = Class.forName(c.getBeanClassName());
-                ConnectionFactoryConfiguration cfc = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
-                if(cfc != null) {
-                    ExternalSource.addSource(ExternalSource.build(cfc, c.getBeanClassName()));
-                }
-            } catch (ClassNotFoundException e) {
-                // ignore
-            }
-        }
-
+        ExternalSources sources = new ExternalSources();
         ObjectMapper mapper = new ObjectMapper();
-        System.out.println(mapper.writeValueAsString(ExternalSource.SOURCES));
+        System.out.println(mapper.writeValueAsString(sources));
     }
 }

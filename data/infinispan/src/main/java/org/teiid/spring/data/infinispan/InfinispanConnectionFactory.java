@@ -23,7 +23,6 @@ import javax.transaction.TransactionManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.teiid.infinispan.api.BaseInfinispanConnection;
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.translator.TranslatorException;
@@ -32,10 +31,9 @@ import org.teiid.translator.TranslatorException;
         alias = "infinispan-hotrod",
         translatorName = "infinispan-hotrod",
         dependencies = {"org.teiid:spring-data-infinispan"},
-        propertyPrefix= "spring.teiid.data.infinispan",
-        sourceType=SourceType.Infinispan
+        propertyPrefix= "spring.teiid.data.infinispan"
         )
-public class InfinispanConnectionFactory extends BaseConnectionFactory<BaseInfinispanConnection> {
+public class InfinispanConnectionFactory implements BaseConnectionFactory<BaseInfinispanConnection> {
 
     private org.teiid.infinispan.api.InfinispanConnectionFactory icf;
     private InfinispanConfiguration config;

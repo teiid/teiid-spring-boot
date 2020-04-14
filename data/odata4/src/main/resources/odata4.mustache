@@ -22,15 +22,15 @@ package {{packageName}};
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.odata.ODataConnectionFactory;
+import org.teiid.spring.data.odata4.OData4ConnectionFactory;
 
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.rest.{{sanitized-dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.odata4.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
-    public ODataConnectionFactory {{dsName}}() {
-        return new ODataConnectionFactory();
+    public OData4ConnectionFactory {{dsName}}() {
+        return new OData4ConnectionFactory();
     }
 }
 

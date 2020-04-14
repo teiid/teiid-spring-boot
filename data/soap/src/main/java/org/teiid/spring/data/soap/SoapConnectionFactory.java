@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import javax.security.auth.Subject;
 
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.translator.TranslatorException;
@@ -32,10 +31,9 @@ import org.teiid.ws.cxf.WSConnectionFactory;
         alias = "soap",
         translatorName = "ws",
         dependencies = {"org.teiid:spring-data-soap"},
-        propertyPrefix= "spring.teiid.data.soap",
-        sourceType=SourceType.Soap
+        propertyPrefix= "spring.teiid.data.soap"
         )
-public class SoapConnectionFactory extends BaseConnectionFactory<WSConnection> {
+public class SoapConnectionFactory implements BaseConnectionFactory<WSConnection> {
 
     private WSConnectionFactory wsConnectionFactory;
 

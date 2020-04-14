@@ -32,7 +32,7 @@ import org.teiid.file.VirtualFileConnection;
 import org.teiid.spring.data.BaseConnection;
 import org.teiid.translator.TranslatorException;
 
-public class FileConnection extends BaseConnection implements VirtualFileConnection {
+public class FileConnection implements BaseConnection, VirtualFileConnection {
 
     private File parentDirectory;
     private Map<String, String> fileMapping;

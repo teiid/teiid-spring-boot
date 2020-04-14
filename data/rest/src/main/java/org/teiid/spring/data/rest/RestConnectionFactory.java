@@ -42,7 +42,6 @@ import org.springframework.social.support.FormMapHttpMessageConverter;
 import org.springframework.social.support.LoggingErrorHandler;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.teiid.spring.common.SourceType;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
@@ -50,10 +49,9 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "rest",
         translatorName = "rest",
         dependencies = {"org.teiid:spring-data-rest"},
-        propertyPrefix= "spring.teiid.data.rest",
-        sourceType=SourceType.Rest
+        propertyPrefix= "spring.teiid.data.rest"
         )
-public class RestConnectionFactory extends BaseConnectionFactory<RestConnection> {
+public class RestConnectionFactory implements BaseConnectionFactory<RestConnection> {
     private static final String AUTHORIZATION = "Authorization"; //$NON-NLS-1$
 
     private String securityType;

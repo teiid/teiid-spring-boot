@@ -21,8 +21,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.teiid.spring.common.SourceType;
-
 /**
  * The Bean that has this annotation represents a Custom Source in Teiid Spring
  * Boot framework. <br>
@@ -70,10 +68,4 @@ public @interface ConnectionFactoryConfiguration {
      * @return
      */
     String propertyPrefix();
-
-    /**
-     * Source Type of the source
-     * @return
-     */
-    SourceType sourceType() default SourceType.Custom;
 }
