@@ -68,6 +68,11 @@ public class SoapConnectionFactory implements BaseConnectionFactory<WSConnection
             protected String getPassword(Subject s, String userName, String defaultPassword) {
                 throw new UnsupportedOperationException();
             }
+
+            @Override
+            public String getEndPoint() {
+                return wsConnectionFactory.getConfig().getEndPoint();
+            }
         };
     }
 

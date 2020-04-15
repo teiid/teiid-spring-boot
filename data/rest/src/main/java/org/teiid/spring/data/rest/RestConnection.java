@@ -308,4 +308,9 @@ public class RestConnection implements BaseConnection, WSConnection {
     public BeanFactory getBeanFactory() {
         return beanFactory;
     }
+
+    @Override
+    public String getEndPoint() {
+        return this.endpoint;
+    }
 }
