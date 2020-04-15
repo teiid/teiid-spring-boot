@@ -62,10 +62,4 @@ public @interface ConnectionFactoryConfiguration {
      * @return
      */
     String dialect() default "";
-
-    /**
-     * Property prefix for the data source properties
-     * @return
-     */
-    String propertyPrefix();
 }

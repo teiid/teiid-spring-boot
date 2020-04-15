@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.teiid</groupId>
-			<artifactId>spring-data-infinispan</artifactId>
+			<artifactId>spring-data-infinispan-hotrod</artifactId>
 		</dependency>
 	</dependencies>
 

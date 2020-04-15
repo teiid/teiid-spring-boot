@@ -22,8 +22,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
 @ConnectionFactoryConfiguration(
         alias = "swagger",
         translatorName = "swagger",
-        dependencies = {"org.teiid:spring-data-swagger"},
-        propertyPrefix= "spring.teiid.data.swagger"
+        dependencies = {"org.teiid:spring-data-openapi"}
         )
 public class SwaggerConnectionFactory extends RestConnectionFactory {
 }

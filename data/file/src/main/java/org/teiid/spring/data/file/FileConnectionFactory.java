@@ -25,8 +25,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(
         alias = "file",
-        translatorName = "file",
-        propertyPrefix= "spring.teiid.data.file"
+        translatorName = "file"
         )
 public class FileConnectionFactory implements BaseConnectionFactory<FileConnection> {
     private String parentDirectory;

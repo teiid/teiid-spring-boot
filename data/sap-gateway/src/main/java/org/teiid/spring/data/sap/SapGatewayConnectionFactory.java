@@ -21,9 +21,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
 
 @ConnectionFactoryConfiguration(
         alias = "sap-gateway",
-        translatorName = "sap-gateway",
-        dependencies = {"org.teiid:spring-data-sap-gateway"},
-        propertyPrefix= "spring.teiid.data.sap"
+        translatorName = "sap-gateway"
         )
 public class SapGatewayConnectionFactory extends RestConnectionFactory {
 }

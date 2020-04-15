@@ -26,9 +26,7 @@ import org.teiid.translator.google.api.metadata.SpreadsheetInfo;
 
 @ConnectionFactoryConfiguration(
         alias = "google-spreadsheet",
-        translatorName = "google-spreadsheet",
-        dependencies = {"org.teiid:spring-data-google"},
-        propertyPrefix= "spring.teiid.data.google.sheets"
+        translatorName = "google-spreadsheet"
         )
 public class SpreadsheetConnectionFactory implements BaseConnectionFactory<SpreadsheetConnectionImpl4> {
     private SpreadSheetConfiguration config;

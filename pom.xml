@@ -737,12 +737,12 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>spring-data-google</artifactId>
+        <artifactId>spring-data-google-spreadsheet</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>spring-data-infinispan</artifactId>
+        <artifactId>spring-data-infinispan-hotrod</artifactId>
         <version>${project.version}</version>
       </dependency>   
       <dependency>

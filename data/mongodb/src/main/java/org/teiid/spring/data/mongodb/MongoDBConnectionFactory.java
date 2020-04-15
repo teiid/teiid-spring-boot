@@ -26,9 +26,7 @@ import com.mongodb.MongoClientURI;
 
 @ConnectionFactoryConfiguration(
         alias = "mongodb",
-        translatorName = "mongodb",
-        dependencies = {"org.teiid:spring-data-mongodb"},
-        propertyPrefix= "spring.teiid.data.mongodb"
+        translatorName = "mongodb"
         )
 public class MongoDBConnectionFactory implements BaseConnectionFactory<MongoDBConnection> {
 

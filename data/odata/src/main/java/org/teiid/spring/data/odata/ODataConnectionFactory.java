@@ -21,9 +21,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
 
 @ConnectionFactoryConfiguration(
         alias = "odata",
-        translatorName = "odata",
-        dependencies = {"org.teiid:spring-data-odata"},
-        propertyPrefix= "spring.teiid.data.odata"
+        translatorName = "odata"
         )
 public class ODataConnectionFactory extends RestConnectionFactory {
 }

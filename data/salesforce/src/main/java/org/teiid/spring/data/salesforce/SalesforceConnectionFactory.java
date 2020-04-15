@@ -29,9 +29,7 @@ import com.sforce.soap.partner.Connector;
 
 @ConnectionFactoryConfiguration(
         alias = "salesforce",
-        translatorName = "salesforce",
-        dependencies = {"org.teiid:spring-data-salesforce"},
-        propertyPrefix= "spring.teiid.data.salesforce"
+        translatorName = "salesforce"
         )
 public class SalesforceConnectionFactory implements BaseConnectionFactory<SalesforceConnectionImpl> {
     private static final Log logger = LogFactory.getLog(SalesforceConnectionFactory.class);

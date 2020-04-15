@@ -196,9 +196,10 @@ public class ExternalSources implements Serializable{
 
     private static ExternalSource build(ConnectionFactoryConfiguration annotation, String className) {
         String dialect = annotation.dialect();
-        ExternalSource source = new ExternalSource(annotation.alias(), new String[] { className },
-                new String[] {}, annotation.translatorName(), dialect.isEmpty() ? null : dialect,
-                        annotation.dependencies(), annotation.propertyPrefix());
+        String[] dependencies = new String[] {"org.teiid:spring-data-"+annotation.alias()};
+        ExternalSource source = new ExternalSource(annotation.alias(), new String[] { className }, new String[] {},
+                annotation.translatorName(), dialect.isEmpty() ? null : dialect,
+                        annotation.dependencies().length == 0 ? dependencies : annotation.dependencies(), null);
         return source;
     }
 

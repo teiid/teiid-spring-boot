@@ -34,15 +34,6 @@ public interface BaseConnectionFactory<T extends Connection> extends ConnectionF
                 + this.getClass().getName());
     }
 
-    default String getConfigurationPrefix() {
-        ConnectionFactoryConfiguration cfc = this.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
-        if (cfc != null) {
-            return cfc.propertyPrefix();
-        }
-        throw new IllegalStateException("@ConnectionFactoryAnnotation is not defined on class "
-                + this.getClass().getName());
-    }
-
     default String getAlias() {
         ConnectionFactoryConfiguration cfc = this.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
         if (cfc != null) {

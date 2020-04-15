@@ -26,6 +26,7 @@ import org.teiid.translator.Translator;
 
 public class ExternalSource implements Serializable{
     private static final long serialVersionUID = -5069489555166011459L;
+    private static final String DEFAULT_PREFIX = "spring.teiid.data.";
 
     private String name;
     private String[] driverNames;
@@ -67,6 +68,9 @@ public class ExternalSource implements Serializable{
     }
 
     public String getSpringBootPropertyPrefix() {
+        if (springBootPropertyPrefix == null) {
+            return DEFAULT_PREFIX + getName();
+        }
         return springBootPropertyPrefix;
     }
 

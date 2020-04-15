@@ -23,8 +23,8 @@
     <version>1.5.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>spring-data-infinispan</artifactId>
-  <name>spring-data-infinispan</name>
+  <artifactId>spring-data-infinispan-hotrod</artifactId>
+  <name>spring-data-infinispan-hotrod</name>
   <description>Teiid connector for Infinispan Data Grid</description>
   <packaging>jar</packaging>
 
