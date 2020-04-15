@@ -881,7 +881,7 @@
       <dependency>
         <groupId>com.fasterxml.woodstox</groupId>
         <artifactId>woodstox-core</artifactId>
-        <version>6.0.1</version>
+        <version>6.1.1</version>
       </dependency>
       <dependency>
           <groupId>org.codehaus.woodstox</groupId>
@@ -892,6 +892,11 @@
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging</artifactId>
         <version>3.4.1.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>org.yaml</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>1.26</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
