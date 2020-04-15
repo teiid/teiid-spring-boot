@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.teiid.spring.data.util;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import java.io.FileWriter;
+
 import org.teiid.spring.common.ExternalSources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootApplication(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
-public class Application implements CommandLineRunner {
-
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args).close();
-    }
-
-    @Override
-    public void run(String... args) throws Exception {
+public class Main {
+    public static void main(String[] args) throws Exception {
         ExternalSources sources = new ExternalSources();
         ObjectMapper mapper = new ObjectMapper();
-        System.out.println(mapper.writeValueAsString(sources));
+        String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(sources);
+        if (args.length >= 1) {
+            FileWriter fw = new FileWriter(args[0]);
+            fw.write(json);
+            fw.close();
+        } else {
+            System.out.println(json);
+        }
     }
 }
