@@ -118,6 +118,7 @@
 
     <!-- Project Dependencies -->
     <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
+    <spring.version>5.1.8.RELEASE</spring.version>
     <spring-social.version>1.1.6.RELEASE</spring-social.version>
     <teiid.version>14.0.0-SNAPSHOT</teiid.version>
     <version.xml-apis>1.4.01</version.xml-apis>
@@ -144,6 +145,7 @@
     <version.jackson-databind-nullable>0.1.0</version.jackson-databind-nullable>
     <version.jackson-core>2.11.0.rc1</version.jackson-core>
     <version.jackson-databind>2.11.0.rc1</version.jackson-databind>
+    <version.org.mongodb>3.9.1</version.org.mongodb>
   </properties>
 
   <build>
@@ -256,6 +258,11 @@
           </exclusions>
       </dependency>
       <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-context</artifactId>
+          <version>${spring.version}</version>
+      </dependency>      
+      <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>${javax.servlet.version}</version>
@@ -340,6 +347,28 @@
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-ws</artifactId>
         <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-odata</artifactId>
+        <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jboss.spec.javax.annotation</groupId>
+            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-odata4</artifactId>
+        <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>javax.jws</groupId>
@@ -444,10 +473,6 @@
         <version>${teiid.version}</version>
         <exclusions>
           <exclusion>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-          </exclusion>
-          <exclusion>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>translator-jdbc</artifactId>
           </exclusion>
@@ -458,10 +483,6 @@
         <artifactId>mongodb-api</artifactId>
         <version>${teiid.version}</version>
         <exclusions>
-          <exclusion>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -500,11 +521,6 @@
         <artifactId>google-api</artifactId>
         <version>${teiid.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.teiid.connectors</groupId>
-        <artifactId>translator-odata4</artifactId>
-        <version>${teiid.version}</version>
-      </dependency> 
       <dependency>
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-amazon-s3</artifactId>
@@ -671,9 +687,29 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>spring-data-file</artifactId>
+        <version>${project.version}</version>
+      </dependency>      
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>spring-data-rest</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-odata</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-odata4</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-sap-gateway</artifactId>
+        <version>${project.version}</version>
+      </dependency>      
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-soap</artifactId>
@@ -701,12 +737,12 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>spring-data-google</artifactId>
+        <artifactId>spring-data-google-spreadsheet</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>spring-data-infinispan</artifactId>
+        <artifactId>spring-data-infinispan-hotrod</artifactId>
         <version>${project.version}</version>
       </dependency>   
       <dependency>
@@ -718,14 +754,37 @@
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-openapi</artifactId>
         <version>${project.version}</version>
-      </dependency>                     
+      </dependency> 
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
         <version>${version.org.mockito}</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+          <groupId>net.sourceforge.jtds</groupId>
+          <artifactId>jtds</artifactId>
+          <version>1.3.1</version>
+      </dependency>
+      <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>mssql-jdbc</artifactId>
+          <version>8.2.2.jre11</version>
+      </dependency>   
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.2.5</version>
+    </dependency>           
 
+    <!-- Mongodb override -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>${version.org.mongodb}</version>
+    </dependency>
+    <!-- mongodb Override -->
+    
       <!-- this is to override the infinispan version from spring-bom above, when matches with version remove -->
       <dependency>
         <groupId>com.github.ben-manes.caffeine</groupId>
@@ -994,20 +1053,11 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-        <module>common</module>
-        <module>tools</module>
+        <module>common</module>       
         <module>starter</module>
         <module>starter-test</module>
-        <module>data/rest</module>
-        <module>data/excel</module>
-        <module>data/mongodb</module>
-        <module>data/salesforce</module>
-        <module>data/google</module>
-        <module>data/infinispan</module>
-        <module>data/amazon-s3</module>
-        <module>data/openapi</module>
-        <module>data/soap</module>
-        <module>data/ftp</module>
+        <module>data</module>
+        <module>tools</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>
@@ -1020,19 +1070,10 @@
         <basepom.check.skip-javadoc>false</basepom.check.skip-javadoc>
       </properties>
       <modules>
-        <module>common</module>
-        <module>tools</module>
+        <module>common</module>        
         <module>starter</module>
-        <module>data/rest</module>
-        <module>data/excel</module>
-        <module>data/mongodb</module>
-        <module>data/salesforce</module>
-        <module>data/google</module>
-        <module>data/infinispan</module>
-        <module>data/amazon-s3</module>
-        <module>data/openapi</module>
-        <module>data/soap</module>
-        <module>data/ftp</module>
+        <module>data</module>
+        <module>tools</module>
         <module>odata</module>
         <module>openapi</module>
         <module>keycloak</module>

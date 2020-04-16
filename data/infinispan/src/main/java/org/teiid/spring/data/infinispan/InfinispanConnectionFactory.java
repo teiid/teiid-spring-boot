@@ -24,9 +24,14 @@ import javax.transaction.TransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.teiid.infinispan.api.BaseInfinispanConnection;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.translator.TranslatorException;
 
-public class InfinispanConnectionFactory extends BaseConnectionFactory<BaseInfinispanConnection> {
+@ConnectionFactoryConfiguration(
+        alias = "infinispan-hotrod",
+        translatorName = "infinispan-hotrod"
+        )
+public class InfinispanConnectionFactory implements BaseConnectionFactory<BaseInfinispanConnection> {
 
     private org.teiid.infinispan.api.InfinispanConnectionFactory icf;
     private InfinispanConfiguration config;
@@ -35,7 +40,6 @@ public class InfinispanConnectionFactory extends BaseConnectionFactory<BaseInfin
     private TransactionManager transactionManager;
 
     public InfinispanConnectionFactory(InfinispanConfiguration config) {
-        super("infinispan-hotrod", "spring.teiid.data.infinispan");
         this.config = config;
         try {
             this.icf = new org.teiid.infinispan.api.InfinispanConnectionFactory(config, ()->{return transactionManager;});

@@ -20,20 +20,22 @@ import java.io.IOException;
 
 import javax.security.auth.Subject;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.translator.TranslatorException;
 import org.teiid.translator.ws.WSConnection;
 import org.teiid.ws.cxf.BaseWSConnection;
 import org.teiid.ws.cxf.WSConnectionFactory;
 
-@ConfigurationProperties(prefix="spring.teiid.data.soap")
-public class SoapConnectionFactory extends BaseConnectionFactory<WSConnection> {
+@ConnectionFactoryConfiguration(
+        alias = "soap",
+        translatorName = "ws"
+        )
+public class SoapConnectionFactory implements BaseConnectionFactory<WSConnection> {
 
     private WSConnectionFactory wsConnectionFactory;
 
     public SoapConnectionFactory(SoapConfiguration config) {
-        super("soap", "spring.teiid.data.soap");
         try {
             this.wsConnectionFactory = new WSConnectionFactory(config);
         } catch (TranslatorException e) {
@@ -65,6 +67,11 @@ public class SoapConnectionFactory extends BaseConnectionFactory<WSConnection> {
             @Override
             protected String getPassword(Subject s, String userName, String defaultPassword) {
                 throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getEndPoint() {
+                return wsConnectionFactory.getConfig().getEndPoint();
             }
         };
     }

@@ -16,16 +16,23 @@
 
 package org.teiid.spring.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.teiid.spring.data.mongodb.MongoDBConfiguration;
 import org.teiid.spring.data.mongodb.MongoDBConnectionFactory;
 
 @Configuration
 public class DataSources {
     @Bean
-    public MongoDBConnectionFactory accounts(@Autowired MongoTemplate template) {
-        return new MongoDBConnectionFactory(template);
+    public MongoDBConnectionFactory accounts(@Qualifier("samplemango-config") MongoDBConfiguration config) {
+        return new MongoDBConnectionFactory(config);
+    }
+
+    @ConfigurationProperties("spring.teiid.data.mongodb")
+    @Bean(name="samplemango-config")
+    public MongoDBConfiguration config() {
+        return new MongoDBConfiguration();
     }
 }

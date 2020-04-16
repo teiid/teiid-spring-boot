@@ -15,17 +15,18 @@
  */
 package org.teiid.spring.data.mongodb;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.teiid.spring.data.BaseConnection;
 
 import com.mongodb.DB;
+import com.mongodb.MongoClient;
 
-public class MongoDBConnection extends BaseConnection implements org.teiid.mongodb.MongoDBConnection {
+public class MongoDBConnection implements BaseConnection, org.teiid.mongodb.MongoDBConnection {
+    private MongoClient client;
+    private String database;
 
-    private MongoTemplate template;
-
-    public MongoDBConnection(MongoTemplate template) {
-        this.template = template;
+    public MongoDBConnection(MongoClient client, String database) {
+        this.client = client;
+        this.database = database;
     }
 
     @Override
@@ -34,6 +35,6 @@ public class MongoDBConnection extends BaseConnection implements org.teiid.mongo
 
     @Override
     public DB getDatabase() {
-        return this.template.getMongoDbFactory().getLegacyDb();
+        return this.client.getDB(this.database);
     }
 }

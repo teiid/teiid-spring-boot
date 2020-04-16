@@ -31,6 +31,7 @@
   <modules>
     <module>vdb-codegen-plugin</module>
     <module>vdb-plugin</module>
+    <module>it</module>
   </modules>
 
 </project>

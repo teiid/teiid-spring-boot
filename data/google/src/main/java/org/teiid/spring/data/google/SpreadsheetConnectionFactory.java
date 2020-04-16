@@ -17,16 +17,21 @@
  */
 package org.teiid.spring.data.google;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.teiid.spring.data.BaseConnectionFactory;
+import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.translator.google.api.metadata.SpreadsheetInfo;
 
-public class SpreadsheetConnectionFactory extends BaseConnectionFactory<SpreadsheetConnectionImpl4> {
+@ConnectionFactoryConfiguration(
+        alias = "google-spreadsheet",
+        translatorName = "google-spreadsheet"
+        )
+public class SpreadsheetConnectionFactory implements BaseConnectionFactory<SpreadsheetConnectionImpl4> {
     private SpreadSheetConfiguration config;
 
     public SpreadsheetConnectionFactory(SpreadSheetConfiguration config) {
-        super("google-spreadsheet", "spring.teiid.data.google.sheets");
         this.config = config;
     }
 
@@ -59,5 +64,10 @@ public class SpreadsheetConnectionFactory extends BaseConnectionFactory<Spreadsh
         if (config.getSpreadSheetId() == null) {
             throw new IllegalStateException("v4 requires the SpreadsheetId"); //$NON-NLS-1$
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        //close connections
     }
 }

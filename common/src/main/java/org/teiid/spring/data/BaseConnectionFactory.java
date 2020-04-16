@@ -19,31 +19,27 @@ package org.teiid.spring.data;
 
 
 import java.io.Closeable;
-import java.io.IOException;
 
 import org.teiid.resource.api.Connection;
 import org.teiid.resource.api.ConnectionFactory;
 
-public abstract class BaseConnectionFactory<T extends Connection> implements ConnectionFactory<T>, Closeable {
+public interface BaseConnectionFactory<T extends Connection> extends ConnectionFactory<T>, Closeable {
 
-    private String translatorName;
-    private String configurationPrefix;
-
-    public BaseConnectionFactory(String translatorName, String configurationPrefix) {
-        this.translatorName = translatorName;
-        this.configurationPrefix = configurationPrefix;
+    default String getTranslatorName() {
+        ConnectionFactoryConfiguration cfc = this.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
+        if (cfc != null) {
+            return cfc.translatorName();
+        }
+        throw new IllegalStateException("@ConnectionFactoryAnnotation is not defined on class "
+                + this.getClass().getName());
     }
 
-    public String getTranslatorName() {
-        return translatorName;
-    }
-
-    public String getConfigurationPrefix() {
-        return configurationPrefix;
-    }
-
-    @Override
-    public void close() throws IOException {
-
+    default String getAlias() {
+        ConnectionFactoryConfiguration cfc = this.getClass().getAnnotation(ConnectionFactoryConfiguration.class);
+        if (cfc != null) {
+            return cfc.alias();
+        }
+        throw new IllegalStateException("@ConnectionFactoryAnnotation is not defined on class "
+                + this.getClass().getName());
     }
 }

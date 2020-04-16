@@ -24,7 +24,6 @@ import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Table;
 import org.teiid.spring.annotations.JsonTable;
 import org.teiid.spring.annotations.RestConfiguration;
-import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.data.BaseConnectionFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,10 +42,10 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         String source = annotation.source();
         String endpoint = annotation.endpoint();
 
-        String translator = "file";
+        String alias = "file";
         BaseConnectionFactory<?> bean = (BaseConnectionFactory<?>)context.getBean(source);
         if (bean != null) {
-            translator = bean.getTranslatorName();
+            alias = bean.getAlias();
         }
 
         view.setSupportsUpdate(false);
@@ -55,13 +54,13 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (translator.equalsIgnoreCase(ExternalSource.FILE.getName())) {
+        if (alias.equalsIgnoreCase("file")) {
             sb.append("EXEC ").append(source).append(".getFiles('").append(endpoint).append("')");
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())) {
+        } else if (alias.equalsIgnoreCase("rest")) {
             generateRestProcedure(entityClazz, source, endpoint, sb);
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
+        } else if (alias.equalsIgnoreCase("amazon-s3")) {
             sb.append("EXEC ").append(source).append(".getTextFile('").append(endpoint).append("')");
-        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
+        } else if (alias.equalsIgnoreCase("ftp")) {
             sb.append("EXEC ").append(source).append(".getFiles('").append(endpoint).append("')");
         }else {
             throw new IllegalStateException("Source type '" + annotation.source() + " not supported on JsonTable "
@@ -78,13 +77,13 @@ public class JsonTableView extends ViewBuilder<JsonTable> {
             root = root.substring(0, root.lastIndexOf('/'));
         }
 
-        if (translator.equals(ExternalSource.FILE.getName())) {
+        if (alias.equals("file")) {
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
-        } else if (translator.equalsIgnoreCase(ExternalSource.REST.getName())){
+        } else if (alias.equalsIgnoreCase("rest")){
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.result) ");
-        } else if (translator.equalsIgnoreCase(ExternalSource.AMAZONS3.getName())) {
+        } else if (alias.equalsIgnoreCase("amazon-s3")) {
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
-        } else if (translator.equalsIgnoreCase(ExternalSource.FTP.getName())) {
+        } else if (alias.equalsIgnoreCase("ftp")) {
             sb.append("XMLTABLE('").append(root).append("' PASSING JSONTOXML('response', f.file) ");
         }
         sb.append("COLUMNS ").append(columndef.toString());

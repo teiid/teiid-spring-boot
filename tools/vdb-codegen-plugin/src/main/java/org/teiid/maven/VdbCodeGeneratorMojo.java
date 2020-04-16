@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -38,15 +39,19 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
 import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.metadata.Database;
 import org.teiid.metadata.Datatype;
@@ -57,20 +62,22 @@ import org.teiid.query.metadata.DatabaseStore.Mode;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.query.parser.QueryParser;
 import org.teiid.spring.common.ExternalSource;
-import org.teiid.spring.common.SourceType;
+import org.teiid.spring.common.ExternalSources;
 
+import com.github.jknack.handlebars.internal.text.StringTokenizer;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
-@Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
+
+@Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyCollection=ResolutionScope.COMPILE, requiresDependencyResolution = ResolutionScope.RUNTIME_PLUS_SYSTEM, requiresProject = true, threadSafe=true)
 public class VdbCodeGeneratorMojo extends AbstractMojo {
     public static final SystemFunctionManager SFM = SystemMetadata.getInstance().getSystemFunctionManager();
 
     @Parameter(defaultValue = "${basedir}/src/main/resources/teiid.ddl")
     private File vdbFile;
 
-    @Parameter(defaultValue = "${project}", readonly = true)
+    @Parameter( defaultValue = "${project}", readonly = true )
     private MavenProject project;
 
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/teiid-sb")
@@ -87,6 +94,18 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${basedir}/src/main/resources/openapi.json")
     private File openApiFile;
+
+    @Parameter( defaultValue = "${plugin}", readonly = true )
+    private PluginDescriptor pluginDescriptor;
+
+    @Component
+    private RepositorySystem repos;
+
+    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
+    private ArtifactRepository localRepo;
+
+    @Parameter
+    private String componentScanPackageNames = "org.teiid.spring.data";
 
     public File getOutputDirectory() {
         return outputDirectory;
@@ -117,6 +136,13 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 javaSrcDir.mkdirs();
             }
 
+            // find connection factories
+            ExternalSources sources = new ExternalSources();
+            StringTokenizer st = new StringTokenizer(componentScanPackageNames, ",");
+            while (st.hasNext()) {
+                sources.loadConnctionFactories(pluginClassloader, st.next());
+            }
+
             File vdbfile = this.getVDBFile();
             Database database = getDatabase(vdbfile);
 
@@ -131,9 +157,9 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 createApplication(mf, javaSrcDir, database, parentMap);
             }
             if (this.generateDataSourceClasses) {
-                createDataSources(mf, javaSrcDir, database, parentMap);
+                createDataSources(mf, javaSrcDir, database, parentMap, pluginClassloader, sources);
             }
-            verifyTranslatorDependencies(database);
+            verifyTranslatorDependencies(database, sources);
 
             // also look for .yml equivalent
             if (!this.openApiFile.exists()) {
@@ -197,23 +223,17 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         out.close();
     }
 
-    private void verifyTranslatorDependencies(Database database) throws Exception {
+    private void verifyTranslatorDependencies(Database database, ExternalSources sources) throws Exception {
         for(Server server : database.getServers()) {
             String translator = getBaseDataWrapper(database, server.getDataWrapper());
-            List<ExternalSource> sources = ExternalSource.findByTranslatorName(translator);
-            if (sources == null || sources.isEmpty()) {
-                sources = ExternalSource.find(server.getDataWrapper());
-                if (sources == null || sources.isEmpty()) {
-                    throw new MojoExecutionException("No Translator found with name:" + server.getDataWrapper());
-                }
+            ExternalSource es = sources.find(translator);
+            if (es == null) {
+                throw new MojoExecutionException("No supported source found with name:" + server.getDataWrapper());
             }
 
             boolean foundDependency = false;
-            for (ExternalSource source:sources) {
-                if(source.getGav() == null) {
-                    continue;
-                }
-                for (String g : source.getGav()) {
+            if(es.getGav() != null) {
+                for (String g : es.getGav()) {
                     foundDependency = false;
                     List<Dependency> dependencies = project.getDependencies();
                     for (Dependency d : dependencies) {
@@ -227,29 +247,24 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                         break;
                     }
                 }
-                if (foundDependency) {
-                    break;
-                }
             }
 
             if (!foundDependency) {
                 boolean throwError = false;
                 StringBuilder sb = new StringBuilder();
-                for (ExternalSource source : sources) {
-                    if (source.getGav() != null) {
-                        for (String g : source.getGav()) {
-                            sb.append("Drivers for translator \"" + server.getDataWrapper()
-                            + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
-                            + "    <groupId>" + g.substring(0, g.indexOf(':'))
-                            + "</groupId>\n" + "    <artifactId>"
-                            + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
-                            + "</dependency>\n\n");
-                            throwError = true;
-                        }
-                    } else {
-                        getLog().error("Drivers for translator \"" + server.getDataWrapper()
-                        + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
+                if (es.getGav() != null) {
+                    for (String g : es.getGav()) {
+                        sb.append("Drivers for translator \"" + server.getDataWrapper()
+                        + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
+                        + "    <groupId>" + g.substring(0, g.indexOf(':'))
+                        + "</groupId>\n" + "    <artifactId>"
+                        + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
+                        + "</dependency>\n\n");
+                        throwError = true;
                     }
+                } else {
+                    getLog().error("Drivers for translator \"" + server.getDataWrapper()
+                    + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
                 }
                 if (throwError) {
                     throw new MojoExecutionException(sb.toString());
@@ -269,10 +284,10 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     }
 
     private void createDataSources(MustacheFactory mf, File javaSrcDir, Database database,
-            HashMap<String, String> parentMap) throws Exception {
+            HashMap<String, String> parentMap, ClassLoader classLoader, ExternalSources externalSources) throws Exception {
 
         TreeMap<String, ExternalSource> sources = new TreeMap<>();
-        for (ExternalSource source : ExternalSource.values()) {
+        for (ExternalSource source : externalSources.getItems().values()) {
             //we're using translator and alias name interchangeably
             sources.put(source.getName(), source);
             //there is a utility method that returns a list of sources,
@@ -295,10 +310,22 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
             ExternalSource source = sources.get(translator);
 
-            Mustache mustache = loadMustache(mf, source==null?SourceType.Jdbc:source.getSourceType());
-            Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-            mustache.execute(out, tempMap);
-            out.close();
+            if (source == null) {
+                throw new MojoExecutionException("No Source found with name :" + translator +
+                        " make sure it is supported source, if this a custom source, it is developed with "
+                        + "@ConnectionFactoryConfiguration annotation");
+            }
+
+            Mustache mustache = loadMustache(mf, source, classLoader);
+            if (mustache != null) {
+                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
+                mustache.execute(out, tempMap);
+                out.close();
+            } else {
+                throw new MojoExecutionException("Failed to generate source for name :" + translator +
+                        " make sure it is supported source, if this a custom source, it is developed with "
+                        + "@ConnectionFactoryConfiguration annotation and Mustache file is provided");
+            }
         }
     }
 
@@ -327,10 +354,16 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         return sb.toString();
     }
 
-    static Mustache loadMustache(MustacheFactory mf, SourceType source) {
-        Mustache mustache = mf.compile(
-                new InputStreamReader(VdbCodeGeneratorMojo.class.getResourceAsStream("/templates/"+ source.name() + ".mustache")),
-                source.name().toLowerCase());
+    static Mustache loadMustache(MustacheFactory mf, ExternalSource source, ClassLoader classLoader) {
+        Mustache mustache = null;
+        InputStream is = classLoader.getResourceAsStream(source.getName() + ".mustache");
+        if (is != null) {
+            mustache = mf.compile(new InputStreamReader(is),source.getName().toLowerCase());
+        } else {
+            mustache = mf.compile(
+                    new InputStreamReader(VdbCodeGeneratorMojo.class.getResourceAsStream("/templates/Jdbc.mustache")),
+                    source.getName().toLowerCase());
+        }
         return mustache;
     }
 

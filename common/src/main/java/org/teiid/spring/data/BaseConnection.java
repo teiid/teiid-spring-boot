@@ -17,6 +17,6 @@ package org.teiid.spring.data;
 
 import org.teiid.resource.api.Connection;
 
-public abstract class BaseConnection implements Connection {
+public interface BaseConnection extends Connection {
 
 }

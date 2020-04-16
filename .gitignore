@@ -15,3 +15,5 @@ ObjectStore
 transaction-logs
 .vscode
 .factorypath
+**/hs_err_pid*.log
+
