@@ -90,11 +90,13 @@ public class TestExampleWithContext {
     public void testSwagger() throws Exception{
         ResponseEntity<String> response = web.getForEntity(url()+"/swagger.json", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        assertTrue(response.getBody().contains("\"basePath\":\"/foo/odata\""));
     }
 
     @Test
     public void testOpenApi() throws Exception{
         ResponseEntity<String> response = web.getForEntity(url()+"/openapi.json", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        assertTrue(response.getBody().contains("\"basePath\":\"/foo/odata\""));
     }
 }

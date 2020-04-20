@@ -126,7 +126,7 @@ public class SpringODataFilter implements HandlerInterceptor {
         HandlerInfo handlerInfo = context.getHandlers(httpRequest.getContextPath(), client, modelName);
         ODataHandler handler = handlerInfo.oDataHttpHandler;
 
-        if (openApiHandler.processOpenApiMetadata(httpRequest, key, uri, modelName,
+        if (openApiHandler.processOpenApiMetadata(httpRequest, key, httpRequest.getRequestURI(), modelName,
                 response, handlerInfo.serviceMetadata, null)) {
             return false;
         }
