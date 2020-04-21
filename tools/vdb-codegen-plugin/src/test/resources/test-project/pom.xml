@@ -34,7 +34,6 @@
         <artifactId>vdb-codegen-plugin</artifactId>
         <configuration>
           <vdbFile>src/main/resources/customer-vdb.ddl</vdbFile>
-          <localRepository>${localRepository}</localRepository>
         </configuration>
       </plugin>
     </plugins>
@@ -88,9 +87,9 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>spring-data-infinispan</artifactId>
+      <artifactId>spring-data-infinispan-hotrod</artifactId>
       <version>${teiid.version}</version>
-    </dependency>
+    </dependency> 
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-soap</artifactId>

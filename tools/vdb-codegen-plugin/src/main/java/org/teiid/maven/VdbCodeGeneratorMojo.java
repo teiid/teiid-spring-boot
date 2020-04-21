@@ -15,7 +15,6 @@
  */
 package org.teiid.maven;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -39,28 +37,21 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.repository.RepositorySystem;
-import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.metadata.Database;
 import org.teiid.metadata.Datatype;
 import org.teiid.metadata.Server;
 import org.teiid.query.function.SystemFunctionManager;
-import org.teiid.query.metadata.DatabaseStore;
-import org.teiid.query.metadata.DatabaseStore.Mode;
 import org.teiid.query.metadata.SystemMetadata;
-import org.teiid.query.parser.QueryParser;
 import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.common.ExternalSources;
 
@@ -73,6 +64,7 @@ import com.github.mustachejava.MustacheFactory;
 @Mojo(name = "vdb-codegen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyCollection=ResolutionScope.COMPILE, requiresDependencyResolution = ResolutionScope.RUNTIME_PLUS_SYSTEM, requiresProject = true, threadSafe=true)
 public class VdbCodeGeneratorMojo extends AbstractMojo {
     public static final SystemFunctionManager SFM = SystemMetadata.getInstance().getSystemFunctionManager();
+    public static final String ISPN = "infinispan-hotrod";
 
     @Parameter(defaultValue = "${basedir}/src/main/resources/teiid.ddl")
     private File vdbFile;
@@ -98,14 +90,15 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     @Parameter( defaultValue = "${plugin}", readonly = true )
     private PluginDescriptor pluginDescriptor;
 
-    @Component
-    private RepositorySystem repos;
-
-    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
-    private ArtifactRepository localRepo;
-
     @Parameter
     private String componentScanPackageNames = "org.teiid.spring.data";
+
+    @Parameter
+    private String materializationType = ISPN;
+
+    @Parameter
+    private Boolean materializationEnable = false;
+
 
     public File getOutputDirectory() {
         return outputDirectory;
@@ -135,6 +128,10 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (!javaSrcDir.exists()) {
                 javaSrcDir.mkdirs();
             }
+            File resourcesDir = new File(getOutputDirectory()+"/src/main/resources");
+            if (!resourcesDir.exists()) {
+                resourcesDir.mkdirs();
+            }
 
             // find connection factories
             ExternalSources sources = new ExternalSources();
@@ -143,8 +140,16 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 sources.loadConnctionFactories(pluginClassloader, st.next());
             }
 
+            // Load the DDL into data store
             File vdbfile = this.getVDBFile();
-            Database database = getDatabase(vdbfile);
+            PluginDatabaseStore databaseStore = getDatabaseStore(vdbfile);
+            Database database = databaseStore.db();
+
+            // Add materialization model, if any views with materialization detected
+            MaterializationEnhancer materialization = new MaterializationEnhancer(this.materializationType);
+            if (this.materializationEnable && materialization.isMaterializationRequired(databaseStore)) {
+                materialization.addSchema(databaseStore, resourcesDir);
+            }
 
             HashMap<String, String> parentMap = new HashMap<String, String>();
             parentMap.put("packageName", this.packageName);
@@ -177,7 +182,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 getLog().info("No OpenAPI document found, no classes for the OpenAPI will be generated ");
             }
             this.project.addCompileSourceRoot(javaSrcDir.getAbsolutePath());
-
+            this.project.addCompileSourceRoot(resourcesDir.getAbsolutePath());
         } catch (Exception e) {
             throw new MojoExecutionException("Error running the vdb-codegen-plugin.", e);
         } finally {
@@ -185,31 +190,11 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private Database getDatabase(File vdbfile) throws IOException {
-        DatabaseStore store = new DatabaseStore() {
-            @Override
-            public Map<String, Datatype> getRuntimeTypes() {
-                return SystemMetadata.getInstance().getRuntimeTypeMap();
-            }
-            @Override
-            public void importSchema(String schemaName, String serverType, String serverName, String foreignSchemaName,
-                    List<String> includeTables, List<String> excludeTables, Map<String, String> properties) {
-                // ignore
-            }
-        };
-        Database db = null;
-        String vdbStr = ObjectConverterUtil.convertToString(new FileInputStream(vdbfile));
-        StringReader reader = new StringReader(vdbStr);
-        try {
-            store.startEditing(false);
-            store.setMode(Mode.ANY);
-            QueryParser.getQueryParser().parseDDL(store, new BufferedReader(reader));
-            db = store.getDatabases().get(0);
-        } finally {
-            reader.close();
-            store.stopEditing();
-        }
-        return db;
+    private PluginDatabaseStore getDatabaseStore(File vdbfile) throws IOException {
+        Map<String, Datatype> typeMap = SystemMetadata.getInstance().getRuntimeTypeMap();
+        PluginDatabaseStore store = new PluginDatabaseStore(typeMap);
+        store.parse(vdbfile);
+        return store;
     }
 
     private void createApplication(MustacheFactory mf, File javaSrcDir, Database database, HashMap<String, String> props)

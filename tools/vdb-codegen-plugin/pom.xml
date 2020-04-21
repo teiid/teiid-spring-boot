@@ -70,6 +70,10 @@
       <artifactId>teiid-runtime</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>vdb-tools-common</artifactId>
+    </dependency>    
+    <dependency>
       <groupId>com.github.spullara.mustache.java</groupId>
       <artifactId>compiler</artifactId>
     </dependency>    
@@ -84,7 +88,7 @@
     <dependency>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator</artifactId>
-    </dependency>    
+    </dependency>   
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

@@ -76,4 +76,5 @@ public class VdbMojoTest {
                 FileUtils.readFileToString(dsFile, "utf-8").trim());
     }
 
+
 }

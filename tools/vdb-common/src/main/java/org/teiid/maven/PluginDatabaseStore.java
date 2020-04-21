@@ -99,7 +99,11 @@ public class PluginDatabaseStore extends DatabaseStore {
 
     public Database parse(File vdbfile) throws IOException {
         String vdbStr = ObjectConverterUtil.convertToString(new FileInputStream(vdbfile));
-        StringReader reader = new StringReader(vdbStr);
+        return parse(vdbStr);
+    }
+
+    public Database parse(String ddl) throws IOException {
+        StringReader reader = new StringReader(ddl);
         try {
             startEditing(false);
             setMode(Mode.ANY);
