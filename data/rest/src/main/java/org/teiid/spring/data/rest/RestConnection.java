@@ -53,8 +53,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.teiid.core.types.InputStreamFactory;
-import org.teiid.core.util.ObjectConverterUtil;
 import org.teiid.spring.data.BaseConnection;
 import org.teiid.translator.ws.WSConnection;
 import org.teiid.util.WSUtil;
@@ -140,9 +138,6 @@ public class RestConnection extends BaseConnection implements WSConnection {
                 InputStream payload = null;
                 if (msg != null) {
                     payload = msg.getInputStream();
-                    String bean = ObjectConverterUtil.convertToString(payload);
-                    InputStreamFactory isf = (InputStreamFactory)this.beanFactory.getBean(bean);
-                    payload = isf.getInputStream();
                 }
 
                 HttpEntity<InputStream> entity = new HttpEntity<InputStream>(payload, headers);
