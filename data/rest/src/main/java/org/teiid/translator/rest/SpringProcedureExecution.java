@@ -70,6 +70,8 @@ public class SpringProcedureExecution implements ProcedureExecution {
     public void execute() throws TranslatorException {
         List<Argument> arguments = this.procedure.getArguments();
         String beanName = (String)arguments.get(0).getArgumentValue().getValue();
+        // with this method we are completely by passing the Teiid semantics and delegating the rest call to
+        // the bean that is provided for execution. Teiid simply provides SQL abstraction to execute
         Function f = (Function)this.conn.getBeanFactory().getBean(beanName);
         Object result = f.apply(this.context);
         if (result instanceof byte[]) {
