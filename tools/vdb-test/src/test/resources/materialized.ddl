@@ -66,7 +66,7 @@ CREATE SCHEMA accounts SERVER sampledb;
 
 CREATE VIRTUAL SCHEMA portfolio;
 
-CREATE SCHEMA materialized SERVER cacheStore OPTIONS (VISIBLE 'false');
+CREATE SCHEMA materialized SERVER cacheStore;
 
 
 --############ Schema:accounts ############
@@ -90,7 +90,7 @@ CREATE VIEW CustomerZip (
 	ssn string,
 	zip string,
 	PRIMARY KEY(id)
-) OPTIONS (MATERIALIZED TRUE, MATERIALIZED_TABLE 'customer_CustomerZip', "teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true', "teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber', "teiid_rel:MATVIEW_STATUS_TABLE" 'materialized.customer_status', "teiid_rel:MATVIEW_TTL" '300000')
+) OPTIONS (MATERIALIZED TRUE, MATERIALIZED_TABLE 'materialized.customer_CustomerZip', "teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true', "teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber', "teiid_rel:MATVIEW_STATUS_TABLE" 'materialized.customer_status', "teiid_rel:MATVIEW_TTL" '300000')
 AS
 SELECT c.ID AS id, c.NAME AS name, c.SSN AS ssn, a.ZIP AS zip FROM accounts.CUSTOMER AS c LEFT OUTER JOIN accounts.ADDRESS AS a ON c.ID = a.CUSTOMER_ID;
 
@@ -118,28 +118,28 @@ END;
 SET SCHEMA materialized;
 
 CREATE FOREIGN TABLE customer_status (
-	VDBName string OPTIONS (UPDATABLE FALSE),
-	VDBVersion string OPTIONS (UPDATABLE FALSE),
-	SchemaName string OPTIONS (UPDATABLE FALSE),
-	Name string OPTIONS (UPDATABLE FALSE),
-	TargetSchemaName string OPTIONS (UPDATABLE FALSE),
-	TargetName string OPTIONS (UPDATABLE FALSE),
-	Valid boolean OPTIONS (UPDATABLE FALSE),
-	LoadState string OPTIONS (UPDATABLE FALSE),
-	Cardinality long OPTIONS (UPDATABLE FALSE),
-	Updated timestamp OPTIONS (UPDATABLE FALSE),
-	LoadNumber long OPTIONS (UPDATABLE FALSE),
-	NodeName string OPTIONS (UPDATABLE FALSE),
-	StaleCount long OPTIONS (UPDATABLE FALSE),
+	VDBName string(50) NOT NULL,
+	VDBVersion string(50) NOT NULL,
+	SchemaName string(50) NOT NULL,
+	Name string(256) NOT NULL,
+	TargetSchemaName string(50) NOT NULL,
+	TargetName string(256) NOT NULL,
+	Valid boolean NOT NULL,
+	LoadState string(25) NOT NULL,
+	Cardinality long,
+	Updated timestamp NOT NULL,
+	LoadNumber long NOT NULL,
+	NodeName string(25) NOT NULL,
+	StaleCount long,
 	PRIMARY KEY(VDBName, VDBVersion, SchemaName, Name)
-) OPTIONS (UPDATABLE TRUE);
+) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_status');
 
 CREATE FOREIGN TABLE customer_CustomerZip (
-	id long OPTIONS (UPDATABLE FALSE),
-	name string OPTIONS (UPDATABLE FALSE),
-	ssn string OPTIONS (UPDATABLE FALSE),
-	zip string OPTIONS (UPDATABLE FALSE),
-	LoadNumber long OPTIONS (UPDATABLE FALSE),
+	id long,
+	name string,
+	ssn string,
+	zip string,
+	LoadNumber long,
 	PRIMARY KEY(id)
 ) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_CustomerZip');IMPORT FROM SERVER cacheStore INTO materialized;
 

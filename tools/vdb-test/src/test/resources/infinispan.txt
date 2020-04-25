@@ -38,7 +38,7 @@ public class DataSourcesispn {
     }
 
     @Bean(name="ispn-config")
-    @ConfigurationProperties("spring.teiid.data.infinispan.ispn")
+    @ConfigurationProperties("spring.teiid.data.infinispan-hotrod.ispn")
     public InfinispanConfiguration ispnConfig() {
         return new InfinispanConfiguration();
     }

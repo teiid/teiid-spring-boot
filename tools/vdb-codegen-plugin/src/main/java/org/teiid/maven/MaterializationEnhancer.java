@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.maven.plugin.logging.Log;
+import org.teiid.metadata.BaseColumn.NullType;
+import org.teiid.metadata.Column;
 import org.teiid.metadata.Database;
 import org.teiid.metadata.Datatype;
 import org.teiid.metadata.MetadataFactory;
@@ -34,9 +37,11 @@ public class MaterializationEnhancer {
     static final String CACHE_STORE = "cacheStore";
 
     private String type;
+    private Log log;
 
-    public MaterializationEnhancer(String type) {
+    public MaterializationEnhancer(String type, Log log) {
         this.type = type;
+        this.log = log;
     }
 
     public boolean isMaterializationRequired(PluginDatabaseStore databaseStore) {
@@ -60,7 +65,6 @@ public class MaterializationEnhancer {
         String schemaName = "materialized";
         Schema matSchema = new Schema();
         matSchema.setName(schemaName);
-        matSchema.setVisible(false);
         matSchema.setPhysical(true);
         Server server = new Server(CACHE_STORE);
         server.setDataWrapper(this.type);
@@ -86,7 +90,7 @@ public class MaterializationEnhancer {
                     matSchema.addTable(matTable);
 
                     // set auto-management
-                    table.setMaterializedTable(matTable);
+                    table.setProperty("MATERIALIZED_TABLE", matTable.getFullName());
                     table.setProperty("teiid_rel:ALLOW_MATVIEW_MANAGEMENT", "true");
                     table.setProperty("teiid_rel:MATVIEW_LOADNUMBER_COLUMN","LoadNumber");
                     table.setProperty("teiid_rel:MATVIEW_STATUS_TABLE", statusTable.getFullName());
@@ -100,10 +104,11 @@ public class MaterializationEnhancer {
         ImportSchemaAwareDDLStringVisitor visitor = new ImportSchemaAwareDDLStringVisitor(databaseStore, null, null);
         visitor.visit(databaseStore.db());
         String vdbDDL = visitor.toString();
-
+        this.log.info("Materialization based VDB: " + vdbDDL);
 
         // write the materialized database file, this should be the one runtime should deploy
         File file = new File(resourcesDir, schemaName + ".ddl");
+        this.log.info("Materialization Written to : " + file.getAbsolutePath());
         FileWriter fw = new FileWriter(file);
         fw.write(vdbDDL);
         fw.close();
@@ -111,22 +116,63 @@ public class MaterializationEnhancer {
 
     private Table buildStatusTable(MetadataFactory factory) {
         Table tbl = factory.addTable(factory.getVdbName()+"_status");
-        factory.addColumn("VDBName","string", tbl);
-        factory.addColumn("VDBVersion", "string", tbl);
-        factory.addColumn("SchemaName", "string", tbl);
-        factory.addColumn("Name", "string", tbl);
-        factory.addColumn("TargetSchemaName", "string", tbl);
-        factory.addColumn("TargetName", "string", tbl);
-        factory.addColumn("Valid", "boolean", tbl);
-        factory.addColumn("LoadState", "string", tbl);
-        factory.addColumn("Cardinality", "long", tbl);
-        factory.addColumn("Updated", "timestamp", tbl);
-        factory.addColumn("LoadNumber", "long", tbl);
-        factory.addColumn("NodeName", "string", tbl);
-        factory.addColumn("StaleCount", "long", tbl);
+        Column c = factory.addColumn("VDBName","string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(50);
+
+        c = factory.addColumn("VDBVersion", "string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(50);
+
+        c = factory.addColumn("SchemaName", "string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(50);
+
+        c = factory.addColumn("Name", "string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(256);
+
+        c = factory.addColumn("TargetSchemaName", "string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(50);
+
+        c = factory.addColumn("TargetName", "string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(256);
+
+        c = factory.addColumn("Valid", "boolean", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(50);
+
+        c = factory.addColumn("LoadState", "string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(25);
+
+        c = factory.addColumn("Cardinality", "long", tbl);
+
+        c = factory.addColumn("Updated", "timestamp", tbl);
+        c.setNullType(NullType.No_Nulls);
+
+        c = factory.addColumn("LoadNumber", "long", tbl);
+        c.setNullType(NullType.No_Nulls);
+
+        c = factory.addColumn("NodeName", "string", tbl);
+        c.setNullType(NullType.No_Nulls);
+        c.setLength(25);
+
+        c = factory.addColumn("StaleCount", "long", tbl);
 
         factory.addPrimaryKey("PK", Arrays.asList(new String[] {"VDBName", "VDBVersion", "SchemaName", "Name"}), tbl);
         tbl.setSupportsUpdate(true);
+
+        for (Column col : tbl.getColumns()) {
+            col.setUpdatable(true);
+        }
+
+        // if this is going to Infinispan assign the cache name
+        if (this.type.equalsIgnoreCase(VdbCodeGeneratorMojo.ISPN)) {
+            tbl.setProperty("teiid_ispn:cache", tbl.getName());
+        }
         return tbl;
     }
 
@@ -150,6 +196,10 @@ public class MaterializationEnhancer {
         matTable.setName(factory.getVdbName()+"_"+table.getName());
         factory.addColumn("LoadNumber", "long", matTable);
         //matTable.setUUID(UUID.randomUUID().toString());
+
+        for (Column c : matTable.getColumns()) {
+            c.setUpdatable(true);
+        }
 
         // remove any matview specific properties that carried over from the original table
         for (String key : matTable.getProperties().keySet()) {

@@ -38,6 +38,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -146,9 +147,15 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             Database database = databaseStore.db();
 
             // Add materialization model, if any views with materialization detected
-            MaterializationEnhancer materialization = new MaterializationEnhancer(this.materializationType);
+            getLog().info("Materialization enabled: " + this.materializationEnable);
+            getLog().info("Materialization type: " + this.materializationType);
+            MaterializationEnhancer materialization = new MaterializationEnhancer(this.materializationType, getLog());
             if (this.materializationEnable && materialization.isMaterializationRequired(databaseStore)) {
+                getLog().info("VDB requires Materialization Intrumentation: " + databaseStore.db().getName());
                 materialization.addSchema(databaseStore, resourcesDir);
+                Resource resource = new Resource();
+                resource.setDirectory(getOutputDirectory().getPath()+"/src/main/resources");
+                this.project.addResource(resource);
             }
 
             HashMap<String, String> parentMap = new HashMap<String, String>();
@@ -182,7 +189,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 getLog().info("No OpenAPI document found, no classes for the OpenAPI will be generated ");
             }
             this.project.addCompileSourceRoot(javaSrcDir.getAbsolutePath());
-            this.project.addCompileSourceRoot(resourcesDir.getAbsolutePath());
         } catch (Exception e) {
             throw new MojoExecutionException("Error running the vdb-codegen-plugin.", e);
         } finally {
