@@ -40,7 +40,7 @@ $ mvn clean install
 The directory structure is defined as follows:
 ----
 /teiid-spring-boot
-    /starter -> Main Bootstaping application
+    /starter -> Main Bootstrapping application
     /data -> Contains all the different data sources that Teiid supports (RDBMS is implicitly supported)
     /odata -> starter app for providing the odata support
     /samples -> various examples show casing different data sources
