@@ -42,11 +42,19 @@
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-rest</artifactId>
     </dependency>
-    <dependency>    
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-odata</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>me.snowdrop</groupId>
+      <artifactId>narayana-spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-    </dependency>   
+    </dependency>
   </dependencies>
 
   <build>

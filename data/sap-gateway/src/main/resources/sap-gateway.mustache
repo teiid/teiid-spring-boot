@@ -27,7 +27,7 @@ import org.teiid.spring.data.sap.SapGatewayConnectionFactory;
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.sap.{{sanitized-dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.sap-gateway.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
     public SapGatewayConnectionFactory {{dsName}}() {
         return new SapGatewayConnectionFactory();

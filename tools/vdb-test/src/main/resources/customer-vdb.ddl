@@ -71,7 +71,9 @@ CREATE FOREIGN TABLE G2 (e1 string, e2 integer);
 
 SET SCHEMA portfolio;
 
-CREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) AS 
+CREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) 
+  OPTIONS(MATERIALIZED 'TRUE', "teiid_rel:MATVIEW_TTL" 300000) 
+  AS 
     SELECT c.ID as id, c.NAME as name, c.SSN as ssn, a.ZIP as zip 
     FROM accounts.CUSTOMER c LEFT OUTER JOIN accounts.ADDRESS a 
     ON c.ID = a.CUSTOMER_ID;

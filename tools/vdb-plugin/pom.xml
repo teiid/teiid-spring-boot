@@ -73,7 +73,11 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>teiid-runtime</artifactId>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>vdb-tools-common</artifactId>
+    </dependency>         
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

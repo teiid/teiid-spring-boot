@@ -34,7 +34,7 @@ public class DataSourcessamplegoogle {
     }
 
     @Bean(name="samplegoogle-config")
-    @ConfigurationProperties("spring.teiid.data.google.sheets.samplegoogle")
+    @ConfigurationProperties("spring.teiid.data.google-spreadsheet.samplegoogle")
     public SpreadSheetConfiguration samplegoogleConfig() {
         return new SpreadSheetConfiguration();
     }
