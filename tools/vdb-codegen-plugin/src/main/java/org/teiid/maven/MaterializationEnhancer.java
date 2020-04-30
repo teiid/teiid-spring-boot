@@ -19,19 +19,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.teiid.metadata.BaseColumn.NullType;
 import org.teiid.metadata.Column;
 import org.teiid.metadata.Database;
-import org.teiid.metadata.Datatype;
 import org.teiid.metadata.MetadataFactory;
 import org.teiid.metadata.Schema;
 import org.teiid.metadata.Server;
 import org.teiid.metadata.Table;
-import org.teiid.query.metadata.DDLStringVisitor;
-import org.teiid.query.metadata.SystemMetadata;
 
 public class MaterializationEnhancer {
     static final String CACHE_STORE = "cacheStore";
@@ -63,21 +60,22 @@ public class MaterializationEnhancer {
     public void addSchema(PluginDatabaseStore databaseStore, File resourcesDir) throws Exception {
         Database database = databaseStore.db();
         String schemaName = "materialized";
-        Schema matSchema = new Schema();
-        matSchema.setName(schemaName);
-        matSchema.setPhysical(true);
         Server server = new Server(CACHE_STORE);
         server.setDataWrapper(this.type);
-        matSchema.addServer(server);
-        database.addSchema(matSchema);
+
         database.addServer(server);
 
         MetadataFactory factory = new MetadataFactory(database.getName(), database.getVersion(), schemaName,
                 database.getMetadataStore().getDatatypes(), null, null);
 
+        Schema matSchema = factory.getSchema();
+        matSchema.setVisible(false);
+        matSchema.setPhysical(true);
+        matSchema.addServer(server);
+        database.addSchema(matSchema);
+
         // if not infinispan based materialization add table directly
         Table statusTable = buildStatusTable(factory);
-        matSchema.addTable(statusTable);
 
         for (Schema schema : database.getSchemas()) {
             if (schema.isPhysical()) {
@@ -177,23 +175,11 @@ public class MaterializationEnhancer {
     }
 
     private Table cloneTable(MetadataFactory factory, Table table) throws Exception {
-        Schema tempSchema = new Schema();
-        tempSchema.setName("temp");
-        tempSchema.addTable(table);
-
-        Database db = new Database("temp");
-        db.addSchema(tempSchema);
-        String ddl = DDLStringVisitor.getDDLString(db);
-        Map<String, Datatype> typeMap = SystemMetadata.getInstance().getRuntimeTypeMap();
-        PluginDatabaseStore store = new PluginDatabaseStore(typeMap);
-        store.parse(ddl);
-        db = store.db();
-
-        Table matTable = db.getSchema("temp").getTable(table.getName());
+        Table matTable = SerializationUtils.clone(table);
         matTable.setVirtual(false);
         matTable.setMaterialized(false);
         matTable.setSupportsUpdate(true);
-        matTable.setName(factory.getVdbName()+"_"+table.getName());
+        matTable.setName(factory.getVdbName()+"_"+table.getFullName());
         factory.addColumn("LoadNumber", "long", matTable);
         //matTable.setUUID(UUID.randomUUID().toString());
 

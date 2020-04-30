@@ -1,4 +1,3 @@
-
 /*
 ###########################################
 # START DATABASE customer
@@ -66,7 +65,7 @@ CREATE SCHEMA accounts SERVER sampledb;
 
 CREATE VIRTUAL SCHEMA portfolio;
 
-CREATE SCHEMA materialized SERVER cacheStore;
+CREATE SCHEMA materialized SERVER cacheStore OPTIONS (VISIBLE 'false');
 
 
 --############ Schema:accounts ############
@@ -90,7 +89,7 @@ CREATE VIEW CustomerZip (
 	ssn string,
 	zip string,
 	PRIMARY KEY(id)
-) OPTIONS (MATERIALIZED TRUE, MATERIALIZED_TABLE 'materialized.customer_CustomerZip', "teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true', "teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber', "teiid_rel:MATVIEW_STATUS_TABLE" 'materialized.customer_status', "teiid_rel:MATVIEW_TTL" '300000')
+) OPTIONS (MATERIALIZED TRUE, MATERIALIZED_TABLE 'materialized.customer_portfolio.CustomerZip', "teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true', "teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber', "teiid_rel:MATVIEW_STATUS_TABLE" 'materialized.customer_status', "teiid_rel:MATVIEW_TTL" '300000')
 AS
 SELECT c.ID AS id, c.NAME AS name, c.SSN AS ssn, a.ZIP AS zip FROM accounts.CUSTOMER AS c LEFT OUTER JOIN accounts.ADDRESS AS a ON c.ID = a.CUSTOMER_ID;
 
@@ -134,18 +133,17 @@ CREATE FOREIGN TABLE customer_status (
 	PRIMARY KEY(VDBName, VDBVersion, SchemaName, Name)
 ) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_status');
 
-CREATE FOREIGN TABLE customer_CustomerZip (
+CREATE FOREIGN TABLE "customer_portfolio.CustomerZip" (
 	id long,
 	name string,
 	ssn string,
 	zip string,
 	LoadNumber long,
 	PRIMARY KEY(id)
-) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_CustomerZip');IMPORT FROM SERVER cacheStore INTO materialized;
+) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_portfolio.CustomerZip');IMPORT FROM SERVER cacheStore INTO materialized;
 
 /*
 ###########################################
 # END DATABASE customer
 ###########################################
 */
-
