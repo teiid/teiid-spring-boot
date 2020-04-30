@@ -27,7 +27,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
 @Configuration
 public class DataSources{{dsName}} {
 
-    @ConfigurationProperties(prefix = "spring.teiid.rest.{{sanitized-dsName}}")
+    @ConfigurationProperties(prefix = "spring.teiid.data.rest.{{sanitized-dsName}}")
     @Bean(name="{{dsName}}")
     public RestConnectionFactory {{dsName}}() {
         return new RestConnectionFactory();
