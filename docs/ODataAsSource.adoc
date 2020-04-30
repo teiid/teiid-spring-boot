@@ -28,7 +28,7 @@ package org.example;
 
 @Configuration
 public class DataSources {
-    @ConfigurationProperties(prefix = "spring.teiid.rest.oservice")
+    @ConfigurationProperties(prefix = "spring.teiid.data.rest.oservice")
     @Bean
     public RestConnectionFactory oservice() {
         return new RestConnectionFactory();
@@ -38,39 +38,39 @@ public class DataSources {
 
 Note: Please note that the name `oservice` in the annotation and as method name match exactly to that of the `SERVER` defined in the VDB file. See example below.
 
-In above code `spring.teiid.rest` defines the prefix of properties that can be used to configure the connection. Each property is postfixed with unique name like `oservice` as in below example to identify the name of the connection then followed by the property name.
+In above code `spring.teiid.data.rest` defines the prefix of properties that can be used to configure the connection. Each property is postfixed with unique name like `oservice` as in below example to identify the name of the connection then followed by the property name.
 
 To configure a REST service with different security profiles use the following properties
 
 [source, text]
 .*No Security*
 ----
-spring.teiid.rest.oservice.endpoint=<endpoint>
+spring.teiid.data.rest.oservice.endpoint=<endpoint>
 ----
 
 
 [source, text]
 .*Http Basic Authentication*
 ----
-spring.teiid.rest.oservice.securityType=http-basic
-spring.teiid.rest.oservice.userName = <user>
-spring.teiid.rest.oservice.password = <password>
-spring.teiid.rest.oservice.endpoint=<endpoint>
+spring.teiid.data.rest.oservice.securityType=http-basic
+spring.teiid.data.rest.oservice.userName = <user>
+spring.teiid.data.rest.oservice.password = <password>
+spring.teiid.data.rest.oservice.endpoint=<endpoint>
 ----
 
 
 [source, text]
 .*OAuth2/Openid-Connect Authentication*
 ----
-spring.teiid.rest.oservice.securityType=openid-connect
-spring.teiid.rest.oservice.clientId=<client-id>
-spring.teiid.rest.oservice.clientSecret=<client-secret>
-spring.teiid.rest.oservice.userName = <user>
-spring.teiid.rest.oservice.password = <password>
-spring.teiid.rest.oservice.refreshToken=<token>
-spring.teiid.rest.oservice.authorizeUrl=<authurl>
-spring.teiid.rest.oservice.accessTokenUrl=<access-tken-utl>
-spring.teiid.rest.oservice.endpoint=<endpoint>
+spring.teiid.data.rest.oservice.securityType=openid-connect
+spring.teiid.data.rest.oservice.clientId=<client-id>
+spring.teiid.data.rest.oservice.clientSecret=<client-secret>
+spring.teiid.data.rest.oservice.userName = <user>
+spring.teiid.data.rest.oservice.password = <password>
+spring.teiid.data.rest.oservice.refreshToken=<token>
+spring.teiid.data.rest.oservice.authorizeUrl=<authurl>
+spring.teiid.data.rest.oservice.accessTokenUrl=<access-tken-utl>
+spring.teiid.data.rest.oservice.endpoint=<endpoint>
 ----
 
 Note: in above either `userName` and `password` are required or you can supply the `refreshToken`. If both are supplied, `refreshToken` is given preference.

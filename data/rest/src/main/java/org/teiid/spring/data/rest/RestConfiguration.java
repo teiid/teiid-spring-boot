@@ -17,6 +17,7 @@ package org.teiid.spring.data.rest;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,7 @@ public class RestConfiguration {
 
     @Bean(name="rest")
     @ConditionalOnMissingBean(value= {RestConnectionFactory.class})
+    @ConfigurationProperties("spring.teiid.data.rest")
     public RestConnectionFactory restConnectionFactory() {
         return new RestConnectionFactory();
     }

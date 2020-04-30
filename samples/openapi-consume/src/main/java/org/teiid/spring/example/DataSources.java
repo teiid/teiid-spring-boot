@@ -23,7 +23,7 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
 
 @Configuration
 public class DataSources {
-    @ConfigurationProperties(prefix = "spring.teiid.rest.myapi")
+    @ConfigurationProperties(prefix = "spring.teiid.data.rest.myapi")
     @Bean
     public RestConnectionFactory myapi() {
         return new RestConnectionFactory();

@@ -1,1 +1,1 @@
-provides: teiid-spring-boot-starter, translator-ws, spring-web
+provides: teiid-spring-boot-starter, translator-ws, spring-web, jackson-databind, teiid-api, spring-social-core, httpclient
