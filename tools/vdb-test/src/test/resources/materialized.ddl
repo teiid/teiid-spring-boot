@@ -65,7 +65,7 @@ CREATE SCHEMA accounts SERVER sampledb;
 
 CREATE VIRTUAL SCHEMA portfolio;
 
-CREATE SCHEMA materialized SERVER cacheStore OPTIONS (VISIBLE 'false');
+CREATE SCHEMA materialized_1 SERVER cacheStore OPTIONS (VISIBLE 'false');
 
 
 --############ Schema:accounts ############
@@ -89,7 +89,7 @@ CREATE VIEW CustomerZip (
 	ssn string,
 	zip string,
 	PRIMARY KEY(id)
-) OPTIONS (MATERIALIZED TRUE, MATERIALIZED_TABLE 'materialized.customer_portfolio.CustomerZip', "teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true', "teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber', "teiid_rel:MATVIEW_STATUS_TABLE" 'materialized.customer_status', "teiid_rel:MATVIEW_TTL" '300000')
+) OPTIONS (MATERIALIZED TRUE, MATERIALIZED_TABLE 'materialized_1.customer_portfolio_CustomerZip', "teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true', "teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber', "teiid_rel:MATVIEW_STATUS_TABLE" 'materialized_1.customer_materialized_1_status', "teiid_rel:MATVIEW_TTL" '300000')
 AS
 SELECT c.ID AS id, c.NAME AS name, c.SSN AS ssn, a.ZIP AS zip FROM accounts.CUSTOMER AS c LEFT OUTER JOIN accounts.ADDRESS AS a ON c.ID = a.CUSTOMER_ID;
 
@@ -113,10 +113,10 @@ AS
 BEGIN
 SELECT '{ "age":100, "name":test,messages:["msg1","msg2","msg3"]}' AS xml_out;
 END;
---############ Schema:materialized ############
-SET SCHEMA materialized;
+--############ Schema:materialized_1 ############
+SET SCHEMA materialized_1;
 
-CREATE FOREIGN TABLE customer_status (
+CREATE FOREIGN TABLE customer_materialized_1_status (
 	VDBName string(50) NOT NULL,
 	VDBVersion string(50) NOT NULL,
 	SchemaName string(50) NOT NULL,
@@ -131,16 +131,16 @@ CREATE FOREIGN TABLE customer_status (
 	NodeName string(25) NOT NULL,
 	StaleCount long,
 	PRIMARY KEY(VDBName, VDBVersion, SchemaName, Name)
-) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_status');
+) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_materialized_1_status');
 
-CREATE FOREIGN TABLE "customer_portfolio.CustomerZip" (
+CREATE FOREIGN TABLE customer_portfolio_CustomerZip (
 	id long,
 	name string,
 	ssn string,
 	zip string,
 	LoadNumber long,
 	PRIMARY KEY(id)
-) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_portfolio.CustomerZip');IMPORT FROM SERVER cacheStore INTO materialized;
+) OPTIONS (UPDATABLE TRUE, "teiid_ispn:cache" 'customer_portfolio_CustomerZip');IMPORT FROM SERVER cacheStore INTO materialized_1;
 
 /*
 ###########################################
