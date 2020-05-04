@@ -34,6 +34,9 @@ public class TeiidProperties {
     private int pgSecurePort = 35443;
     private boolean allowAlter = false;
     private String hostName = "0.0.0.0";
+    private String nodeName;
+    private String podName;
+    private String labels;
 
     private SSLConfiguration ssl = new SSLConfiguration();
 
@@ -143,5 +146,29 @@ public class TeiidProperties {
 
     public void setHostName(String hostName) {
         this.hostName = hostName;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public String getPodName() {
+        return podName;
+    }
+
+    public void setPodName(String podName) {
+        this.podName = podName;
+    }
+
+    public String getLabels() {
+        return labels;
+    }
+
+    public void setLabels(String labels) {
+        this.labels = labels;
     }
 }

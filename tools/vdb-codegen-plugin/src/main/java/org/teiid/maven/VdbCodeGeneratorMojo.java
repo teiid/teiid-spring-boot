@@ -100,6 +100,10 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     @Parameter
     private Boolean materializationEnable = false;
 
+    @Parameter
+    private String vdbVersion = "";
+
+
 
     public File getOutputDirectory() {
         return outputDirectory;
@@ -149,10 +153,11 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             // Add materialization model, if any views with materialization detected
             getLog().info("Materialization enabled: " + this.materializationEnable);
             getLog().info("Materialization type: " + this.materializationType);
-            MaterializationEnhancer materialization = new MaterializationEnhancer(this.materializationType, getLog());
+            MaterializationEnhancer materialization = new MaterializationEnhancer(this.materializationType, getLog(),
+                    this.vdbVersion);
             if (this.materializationEnable && materialization.isMaterializationRequired(databaseStore)) {
                 getLog().info("VDB requires Materialization Intrumentation: " + databaseStore.db().getName());
-                materialization.addSchema(databaseStore, resourcesDir);
+                materialization.instrumentForMaterialization(databaseStore, resourcesDir);
                 Resource resource = new Resource();
                 resource.setDirectory(getOutputDirectory().getPath()+"/src/main/resources");
                 this.project.addResource(resource);

@@ -35,10 +35,12 @@ public class MaterializationEnhancer {
 
     private String type;
     private Log log;
+    private String version;
 
-    public MaterializationEnhancer(String type, Log log) {
+    public MaterializationEnhancer(String type, Log log, String version) {
         this.type = type;
         this.log = log;
+        this.version = version;
     }
 
     public boolean isMaterializationRequired(PluginDatabaseStore databaseStore) {
@@ -57,9 +59,9 @@ public class MaterializationEnhancer {
         return false;
     }
 
-    public void addSchema(PluginDatabaseStore databaseStore, File resourcesDir) throws Exception {
+    public void instrumentForMaterialization(PluginDatabaseStore databaseStore, File resourcesDir) throws Exception {
         Database database = databaseStore.db();
-        String schemaName = "materialized";
+        String schemaName = "materialized"+"_"+this.version;
         Server server = new Server(CACHE_STORE);
         server.setDataWrapper(this.type);
 
@@ -105,7 +107,7 @@ public class MaterializationEnhancer {
         this.log.info("Materialization based VDB: " + vdbDDL);
 
         // write the materialized database file, this should be the one runtime should deploy
-        File file = new File(resourcesDir, schemaName + ".ddl");
+        File file = new File(resourcesDir, "materialized.ddl");
         this.log.info("Materialization Written to : " + file.getAbsolutePath());
         FileWriter fw = new FileWriter(file);
         fw.write(vdbDDL);
@@ -113,7 +115,8 @@ public class MaterializationEnhancer {
     }
 
     private Table buildStatusTable(MetadataFactory factory) {
-        Table tbl = factory.addTable(factory.getVdbName()+"_status");
+        Table tbl = factory.addTable("status");
+        tbl.setName(sanitize(factory.getVdbName() + "_" + tbl.getFullName()));
         Column c = factory.addColumn("VDBName","string", tbl);
         c.setNullType(NullType.No_Nulls);
         c.setLength(50);
@@ -174,12 +177,16 @@ public class MaterializationEnhancer {
         return tbl;
     }
 
+    private String sanitize(String str) {
+        return str.replace('.', '_').replace('-', '_');
+    }
+
     private Table cloneTable(MetadataFactory factory, Table table) throws Exception {
         Table matTable = SerializationUtils.clone(table);
         matTable.setVirtual(false);
         matTable.setMaterialized(false);
         matTable.setSupportsUpdate(true);
-        matTable.setName(factory.getVdbName()+"_"+table.getFullName());
+        matTable.setName(sanitize(factory.getVdbName() + "_" + table.getFullName()));
         factory.addColumn("LoadNumber", "long", matTable);
         //matTable.setUUID(UUID.randomUUID().toString());
 

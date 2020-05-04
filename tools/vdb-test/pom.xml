@@ -44,6 +44,7 @@
           <packageName>org.teiid.spring.example</packageName>
           <vdbFile>src/main/resources/customer-vdb.ddl</vdbFile>
           <materializationEnable>true</materializationEnable>
+          <vdbVersion>1</vdbVersion>
         </configuration>
         <executions>
           <execution>

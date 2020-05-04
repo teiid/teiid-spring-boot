@@ -265,6 +265,15 @@ public class TeiidAutoConfiguration {
         if(embeddedConfiguration == null) {
             embeddedConfiguration = new EmbeddedConfiguration();
             embeddedConfiguration.setCacheFactory(new CaffeineCacheFactory());
+
+            if (this.properties.getNodeName() != null) {
+                String nodeName = this.properties.getNodeName();
+                if (this.properties.getPodName() != null) {
+                    nodeName = this.properties.getPodName();
+                }
+                embeddedConfiguration.setNodeName(nodeName);
+            }
+
             // add ability for remote jdbc connections
             if (this.properties.isJdbcEnable()) {
                 SocketConfiguration sc = new SocketConfiguration();
