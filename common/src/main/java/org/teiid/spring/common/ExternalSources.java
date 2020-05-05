@@ -35,7 +35,12 @@ public class ExternalSources implements Serializable{
         items.put("amazon-athena", new ExternalSource("amazon-athena", new String[] { "com.simba.athena.jdbc.Driver" },
                 new String[] {}, "jdbc-ansi", null, null, "spring.datasource", true));
 
+        //deprecated
         items.put("actian", new ExternalSource("actian", new String[] { "com.ingres.jdbc.IngresDriver" },
+                new String[] {}, "actian-vector", "org.hibernate.dialect.Ingres10Dialect",
+                new String[] { "com.ingres.jdbc:iijdbc" },  "spring.datasource", true));
+
+        items.put("actian-vector", new ExternalSource("actian-vector", new String[] { "com.ingres.jdbc.IngresDriver" },
                 new String[] {}, "actian-vector", "org.hibernate.dialect.Ingres10Dialect",
                 new String[] { "com.ingres.jdbc:iijdbc" },  "spring.datasource", true));
 
@@ -91,12 +96,17 @@ public class ExternalSources implements Serializable{
         items.put("jdbc-ansi", new ExternalSource("jdbc-ansi", new String[] { "java.sql.Driver" },
                 new String[] {}, "jdbc-ansi", null, null,  "spring.datasource", true));
 
+        //deprecated
         items.put("jtds", new ExternalSource("jtds", new String[] { "net.sourceforge.jtds.jdbc.Driver" },
                 new String[] {}, "sqlserver", "org.hibernate.dialect.SQLServer2012Dialect",
                 new String[] { "net.sourceforge.jtds:jtds" },  "spring.datasource", true));
 
+        items.put("jtds-sqlserver", new ExternalSource("jtds-sqlserver", new String[] { "net.sourceforge.jtds.jdbc.Driver" },
+                new String[] {}, "sqlserver", "org.hibernate.dialect.SQLServer2012Dialect",
+                new String[] { "net.sourceforge.jtds:jtds" },  "spring.datasource", true));
+
         items.put("mysql", new ExternalSource("mysql", new String[] { "com.mysql.jdbc.Driver" },
-                new String[] { "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" }, "mysql5",
+                new String[] { "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" }, "mysql",
                 "org.hibernate.dialect.MySQL5InnoDBDialect", new String[] { "mysql:mysql-connector-java" },
                 "spring.datasource", true));
 
@@ -128,10 +138,17 @@ public class ExternalSources implements Serializable{
                 new String[] { "com.amazon.redshift.jdbc42.Driver" }, new String[] {}, "redshift", null,
                 new String[] { "com.amazon.redshift:redshift-jdbc42" },  "spring.datasource", true));
 
-        items.put("spaiq",  new ExternalSource("spaiq", new String[] { "com.sybase.jdbc4.jdbc.SybDriver" },
+        items.put("sap-iq",  new ExternalSource("sap-iq", new String[] { "com.sybase.jdbc4.jdbc.SybDriver" },
                 new String[] {}, "sap-iq", null, null,  "spring.datasource", true));
 
+        //deprecated
         items.put("mssql-server",  new ExternalSource("mssql-server",
+                new String[] { "com.microsoft.sqlserver.jdbc.SQLServerDriver" },
+                new String[] { "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" }, "sqlserver",
+                "org.hibernate.dialect.SQLServer2012Dialect", new String[] { "com.microsoft.sqlserver:mssql-jdbc" },
+                "spring.datasource", true));
+
+        items.put("ms-sqlserver",  new ExternalSource("ms-sqlserver",
                 new String[] { "com.microsoft.sqlserver.jdbc.SQLServerDriver" },
                 new String[] { "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" }, "sqlserver",
                 "org.hibernate.dialect.SQLServer2012Dialect", new String[] { "com.microsoft.sqlserver:mssql-jdbc" },
@@ -238,5 +255,14 @@ public class ExternalSources implements Serializable{
 
     public Map<String, ExternalSource> getItems() {
         return items;
+    }
+
+    public static void main(String[] args) {
+        ExternalSources sources = new ExternalSources();
+        for (ExternalSource source : sources.items.values()) {
+            if (!source.getTranslatorName().equals(source.getName())) {
+                System.out.println(source.getTranslatorName() + " " + source.getName());
+            }
+        }
     }
 }
