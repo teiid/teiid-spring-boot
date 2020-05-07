@@ -203,6 +203,9 @@ public class ExternalSources implements Serializable{
                 ConnectionFactoryConfiguration cfc = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
                 if(cfc != null) {
                     ExternalSource source = build(cfc, c.getBeanClassName());
+                    for (String name : cfc.otherAliases()) {
+                        items.put(name, source);
+                    }
                     items.put(source.getName(), source);
                 }
             } catch (ClassNotFoundException e) {
