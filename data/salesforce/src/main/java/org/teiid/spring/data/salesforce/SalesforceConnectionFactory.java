@@ -29,7 +29,8 @@ import com.sforce.soap.partner.Connector;
 
 @ConnectionFactoryConfiguration(
         alias = "salesforce",
-        translatorName = "salesforce"
+        translatorName = "salesforce-41",
+        otherAliases = {"salesforce-34", "salesforce-41"}
         )
 public class SalesforceConnectionFactory implements BaseConnectionFactory<SalesforceConnectionImpl> {
     private static final Log logger = LogFactory.getLog(SalesforceConnectionFactory.class);
