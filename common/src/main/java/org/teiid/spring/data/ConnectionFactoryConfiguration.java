@@ -62,4 +62,10 @@ public @interface ConnectionFactoryConfiguration {
      * @return
      */
     String dialect() default "";
+
+    /**
+     * Other names for this ConnectionFactory
+     * @return
+     */
+    String[] otherAliases() default {};
 }
