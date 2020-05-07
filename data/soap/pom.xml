@@ -63,9 +63,5 @@
       <groupId>javax.jws</groupId>
       <artifactId>javax.jws-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.sun.activation</groupId>
-      <artifactId>javax.activation</artifactId>
-    </dependency>
   </dependencies>
 </project>
