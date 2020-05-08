@@ -30,7 +30,8 @@ import com.mongodb.MongoClientURI;
         )
 public class MongoDBConnectionFactory implements BaseConnectionFactory<MongoDBConnection> {
 
-    private MongoClient mongoClient;
+    private volatile MongoClient mongoClient;
+    private volatile boolean closed;
     private MongoDBConfiguration config;
 
     public MongoDBConnectionFactory(MongoDBConfiguration mongoDBConfiguration) {
@@ -40,22 +41,28 @@ public class MongoDBConnectionFactory implements BaseConnectionFactory<MongoDBCo
     @Override
     public MongoDBConnection getConnection() throws Exception {
         if (this.mongoClient == null) {
-            if (this.config.getUri() != null) {
-                MongoClientURI uri = new MongoClientURI(this.config.getUri());
-                mongoClient = new MongoClient(uri);
+            synchronized (this) {
+                if (this.mongoClient == null) {
+                    if (closed) {
+                        throw new IllegalStateException("Connection factory is closed");
+                    }
+                    if (this.config.getUri() != null) {
+                        MongoClientURI uri = new MongoClientURI(this.config.getUri());
+                        mongoClient = new MongoClient(uri);
+                    }
+                    if (this.config.getCredential() == null) {
+                        mongoClient = new MongoClient(this.config.getServers(), this.config.getOptions());
+                    } else {
+                        mongoClient = new MongoClient(this.config.getServers(), this.config.getCredential(),this.config.getOptions());
+                    }
+                }
             }
-            if (this.config.getCredential() == null) {
-                mongoClient = new MongoClient(this.config.getServers(), this.config.getOptions());
-            } else {
-                mongoClient = new MongoClient(this.config.getServers(), this.config.getCredential(),this.config.getOptions());
-            }
-
         }
         return new MongoDBConnection(this.mongoClient, this.config.getDatabase());
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         if (mongoClient != null) {
             mongoClient.close();
         }
