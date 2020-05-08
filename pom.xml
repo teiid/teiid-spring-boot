@@ -146,6 +146,15 @@
   </properties>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>  
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
@@ -158,7 +167,6 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${spring-boot.version}</version>
       </plugin>
       <plugin>
         <!-- this is avoid some simple duplicate finds, only use as exception -->
@@ -995,6 +1003,11 @@
         <groupId>wsdl4j</groupId>
         <artifactId>wsdl4j</artifactId>
         <version>1.6.3</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
+        <version>1.0.1</version>
       </dependency>
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
 
