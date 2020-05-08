@@ -535,7 +535,12 @@
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-amazon-s3</artifactId>
         <version>${teiid.version}</version>
-      </dependency>           
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-cassandra</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>
       <dependency>
         <groupId>com.google.apis</groupId>
         <artifactId>google-api-services-sheets</artifactId>
