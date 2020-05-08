@@ -94,7 +94,7 @@
 	<project.build.targetJdk>1.8</project.build.targetJdk>
     <basepom.check.skip-dependency>false</basepom.check.skip-dependency>
     <basepom.check.fail-dependency>false</basepom.check.fail-dependency>
-    <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>
+    <basepom.check.skip-duplicate-finder>false</basepom.check.skip-duplicate-finder>
     <basepom.check.skip-spotbugs>true</basepom.check.skip-spotbugs>
     <basepom.release.push-changes>true</basepom.release.push-changes>
 
@@ -124,11 +124,9 @@
     <version.xml-apis>1.4.01</version.xml-apis>
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
     <hibernate.version>5.4.10.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
-    <hibernate.tools.version>5.3.7.Final</hibernate.tools.version>
     <version.commons-codec>1.13</version.commons-codec>
     <version.commons-lang3>3.9</version.commons-lang3>
     <version.javax.annotation>1.3.2</version.javax.annotation>
-    <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
     <version.javax.jws-api>1.1</version.javax.jws-api>
     <version.org.mockito>1.10.19</version.org.mockito>
     <version.org.keycloak>4.8.3.Final</version.org.keycloak>
@@ -540,12 +538,24 @@
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>javax.activation</groupId>
+            <artifactId>javax.activation-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-tools</artifactId>
-        <version>${hibernate.tools.version}</version>
+        <version>${hibernate.version}</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.ant</groupId>
@@ -567,6 +577,10 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -578,11 +592,6 @@
         <groupId>javax.annotation</groupId>
         <artifactId>javax.annotation-api</artifactId>
         <version>${version.javax.annotation}</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.xml.bind</groupId>
-        <artifactId>jaxb-api</artifactId>
-        <version>${version.javax.xml.bind}</version>
       </dependency>
       <dependency>
         <groupId>org.keycloak.bom</groupId>
