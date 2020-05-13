@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
@@ -38,8 +39,10 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
 @Configuration
+@ComponentScan(
+        basePackageClasses = KeycloakSecurityComponents.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org.keycloak.adapters.springsecurity.management.HttpSessionManager"))
 @EnableWebSecurity
-@ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
 @PropertySource("classpath:keycloak.properties")
 @Order(99)
 public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
