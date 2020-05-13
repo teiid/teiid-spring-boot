@@ -2,4 +2,7 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 org.teiid.spring.autoconfigure.TeiidAutoConfiguration, org.teiid.spring.autoconfigure.TeiidBeanDefinitionPostProcessor
 
+org.springframework.boot.env.EnvironmentPostProcessor=\
+org.teiid.spring.autoconfigure.EnvironmentPropertiesPostProcessor
+
 # Listeners
