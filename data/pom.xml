@@ -29,6 +29,7 @@
   <description>Teiid Spring Boot Data Package</description>
 
   <modules>
+      <module>cassandra</module>
         <module>file</module>
         <module>rest</module>
         <module>excel</module>
@@ -44,7 +45,6 @@
         <module>odata4</module>
         <module>sap-gateway</module>
         <module>util</module>
-      <module>cassandra</module>
   </modules>
 
 </project>

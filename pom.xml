@@ -783,6 +783,11 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>spring-data-cassandra</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>vdb-tools-common</artifactId>
         <version>${project.version}</version>
       </dependency>       
