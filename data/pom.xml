@@ -29,6 +29,7 @@
   <description>Teiid Spring Boot Data Package</description>
 
   <modules>
+      <module>cassandra</module>
         <module>file</module>
         <module>rest</module>
         <module>excel</module>
