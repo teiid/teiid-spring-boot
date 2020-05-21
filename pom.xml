@@ -694,6 +694,11 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>vdb-plugin</artifactId>
+        <version>${project.version}</version>
+      </dependency>      
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>spring-keycloak</artifactId>
         <version>${project.version}</version>
       </dependency>

@@ -60,6 +60,7 @@
     <module>odata</module>
     <module>redirection</module>
     <module>vdb</module>
+    <module>vdb-maven</module>
     <module>mongodb</module>
     <module>salesforce</module>
     <module>google</module>

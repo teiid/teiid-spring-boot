@@ -33,7 +33,6 @@
       <plugin>
         <groupId>org.teiid</groupId>
         <artifactId>vdb-plugin</artifactId>
-        <version>${project.version}</version>
         <extensions>true</extensions>
         <executions>
           <execution>

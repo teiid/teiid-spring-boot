@@ -19,6 +19,7 @@ package org.teiid.spring.autoconfigure;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBNAME;
 import static org.teiid.spring.autoconfigure.TeiidConstants.VDBVERSION;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -211,7 +212,11 @@ public class TeiidAutoConfiguration {
     private VDBMetaData loadVDB(Resource resource) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
     IOException, URISyntaxException {
 
-        VirtualFile root = NioZipFileSystem.mount(resource.getURL());
+        File f = File.createTempFile("temp", null);
+        ObjectConverterUtil.write(resource.getInputStream(), f);
+        f.deleteOnExit();
+
+        VirtualFile root = NioZipFileSystem.mount(f.toURI().toURL());
         VDBMetaData metadata;
 
         VirtualFile vdbMetadata = root.getChild("/vdb.xml"); //$NON-NLS-1$
