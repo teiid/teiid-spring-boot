@@ -130,7 +130,11 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-ftp</artifactId>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-data-cassandra</artifactId>
+    </dependency>         
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-amazon-s3</artifactId>

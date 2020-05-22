@@ -14,49 +14,53 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.teiid</groupId>
-        <artifactId>data</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
-    </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.teiid</groupId>
+    <artifactId>data</artifactId>
+    <version>1.5.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>spring-data-cassandra</artifactId>
-    <name>spring-data-cassandra</name>
-    <description>Teiid connector for Cassandra data consumption</description>
-    <packaging>jar</packaging>
+  <artifactId>spring-data-cassandra</artifactId>
+  <name>spring-data-cassandra</name>
+  <description>Teiid connector for Cassandra data consumption</description>
+  <packaging>jar</packaging>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-spring-boot-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid.connectors</groupId>
+      <artifactId>translator-cassandra</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>teiid-api</artifactId>
+    </dependency>
+    <!-- Guava is excluded from translator in parent pom but being added here to have correct dependency version -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>org.teiid</groupId>
-            <artifactId>teiid-spring-boot-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.teiid.connectors</groupId>
-            <artifactId>translator-cassandra</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.teiid</groupId>
-            <artifactId>teiid-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>5.0.4</version>
+      </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>5.0.4</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+  </dependencyManagement>
 
 </project>

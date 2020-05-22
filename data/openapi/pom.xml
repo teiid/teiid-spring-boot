@@ -41,5 +41,10 @@
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-rest</artifactId>
     </dependency>
+    <!-- Guava is excluded from translator in parent pom but being added here to have correct dependency version -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>     
   </dependencies>
 </project>
