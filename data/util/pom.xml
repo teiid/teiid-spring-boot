@@ -103,5 +103,9 @@
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-soap</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-data-cassandra</artifactId>
+    </dependency>    
   </dependencies>
 </project>

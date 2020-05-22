@@ -9,6 +9,8 @@ USE DATABASE customer VERSION '1';
 --############ Translators ############
 CREATE FOREIGN DATA WRAPPER "amazon-s3";
 
+CREATE FOREIGN DATA WRAPPER cassandra;
+
 CREATE FOREIGN DATA WRAPPER file;
 
 CREATE FOREIGN DATA WRAPPER ftp;
@@ -40,6 +42,8 @@ CREATE SERVER s3 FOREIGN DATA WRAPPER "amazon-s3";
 CREATE SERVER sampleansi FOREIGN DATA WRAPPER "jdbc-ansi";
 
 CREATE SERVER sampleathena FOREIGN DATA WRAPPER "amazon-athena";
+
+CREATE SERVER samplecassandra FOREIGN DATA WRAPPER cassandra;
 
 CREATE SERVER sampledb FOREIGN DATA WRAPPER sqlserver;
 

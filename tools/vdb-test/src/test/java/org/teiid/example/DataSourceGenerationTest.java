@@ -42,6 +42,7 @@ public class DataSourceGenerationTest {
         testGeneration("s3", "s3", outputDirectory);
         testGeneration("soap", "soapyCountry", outputDirectory);
         testGeneration("ftp", "sampleftp", outputDirectory);
+        testGeneration("cassandra", "samplecassandra", outputDirectory);
     }
 
     public void testGeneration(String expected, String name, File outputDirectory)throws Exception {

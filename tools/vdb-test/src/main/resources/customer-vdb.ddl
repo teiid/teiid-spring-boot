@@ -61,6 +61,9 @@ CREATE SERVER samplegoogle FOREIGN DATA WRAPPER "google-spreadsheet";
 CREATE FOREIGN DATA WRAPPER "amazon-s3";
 CREATE SERVER s3 FOREIGN DATA WRAPPER "amazon-s3";
 
+CREATE FOREIGN DATA WRAPPER "cassandra";
+CREATE SERVER samplecassandra FOREIGN DATA WRAPPER "cassandra";
+
 -- create schema, then import the metadata from the PostgreSQL database
 CREATE SCHEMA accounts SERVER sampledb;
 CREATE VIRTUAL SCHEMA portfolio;

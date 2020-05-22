@@ -414,6 +414,10 @@
             <groupId>javax.mail</groupId>
             <artifactId>mailapi</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
         </exclusions>        
       </dependency>
       <dependency>
@@ -531,6 +535,12 @@
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-cassandra</artifactId>
         <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.google.apis</groupId>
@@ -990,6 +1000,11 @@
         <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
         <version>1.0.1</version>
       </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>20.0</version>
+      </dependency>      
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
 
     </dependencies>

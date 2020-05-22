@@ -62,4 +62,18 @@ This creates a bean with name `accounts` in the application, which can be refere
 CREATE SERVER accounts FOREIGN DATA WRAPPER customTranslator;
 ----
 
-see link:CustomTranslator.adoc[Custom Translator] on how write and deploy a custom translator. 
+see link:CustomTranslator.adoc[Custom Translator] on how write and deploy a custom translator.
+
+
+=== House Keeping Tasks
+
+When a new data source is added, please follow below tasks to make it functional across other projects
+
+* Add example project under "samples" directory show casing how the data source is configured, if possible make it as executable test
+* Write a Readme document with example 
+* Add a .mustache file in the data source project to auto-generate the Datasource file when using `vdb-codegen-plugin` by other projects.
+* Add a test to test .mustache generation in the `vdb-codegen-test` project under `DataSourceGenerationTest.java` class.
+* Add pom dependency in the `spring-data-util` project so that the configuration about data source is shared with Operator and VSCode plugin automatically
+* if possible add an example in the Teiid Operator code in the form of a YAML
+* Test using it on the OpenShift using the YAML created
+ 
