@@ -26,7 +26,7 @@ public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceC
     private Integer pollingInterval = 500;
     private String clientId;
     private String clientSecret;
-    private String userName;
+    private String username;
     private String password;
     private String refreshToken;
     private RestTemplate restTemplate = new RestTemplate();
@@ -54,9 +54,14 @@ public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceC
 
     @Override
     public String getUsername() {
-        return userName;
+        return username;
     }
 
+    public void setUsername(String name) {
+        this.username = name;
+    }
+
+    @Override
     public Long getRequestTimeout() {
         return requestTimeout;
     }
@@ -65,6 +70,7 @@ public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceC
         this.requestTimeout = requestTimeout;
     }
 
+    @Override
     public Long getConnectTimeout() {
         return connectTimeout;
     }
@@ -97,14 +103,7 @@ public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceC
         this.clientSecret = clientSecret;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
+    @Override
     public String getPassword() {
         return password;
     }
