@@ -122,10 +122,10 @@
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-infinispan-hotrod</artifactId>
     </dependency>
-    <dependency>
+    <!--dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-soap</artifactId>
-    </dependency>
+    </dependency-->
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-ftp</artifactId>

@@ -40,7 +40,7 @@ public class DataSourceGenerationTest {
         testGeneration("google", "samplegoogle", outputDirectory);
         testGeneration("infinispan", "ispn", outputDirectory);
         testGeneration("s3", "s3", outputDirectory);
-        testGeneration("soap", "soapyCountry", outputDirectory);
+ //       testGeneration("soap", "soapyCountry", outputDirectory);
         testGeneration("ftp", "sampleftp", outputDirectory);
         testGeneration("cassandra", "samplecassandra", outputDirectory);
     }
