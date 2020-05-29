@@ -39,7 +39,7 @@ public class SalesforceConnectionImpl extends BaseSalesforceConnection<Salesforc
         config = new SalesforceConnectorConfig();
         config.setCompression(true);
         config.setTraceMessage(false);
-        config.setUsername(sfc.getUserName());
+        config.setUsername(sfc.getUsername());
         config.setPassword(sfc.getPassword());
         config.setAuthEndpoint(sfc.getUrl());
         config.setRestTemplate(sfc.getRestTemplate());

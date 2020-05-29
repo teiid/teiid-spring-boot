@@ -208,7 +208,7 @@ public class TeiidServer extends EmbeddedServer {
             String type = translator.getType();
             ExternalSource es = this.externalSources.find(type);
             addTranslator(es, context);
-            addTranslator(translator.getName(), type, translator.getPropertiesMap());
+            addTranslator(translator.getName(), es.getTranslatorName(), translator.getPropertiesMap());
         } catch (TranslatorException e) {
             throw new IllegalStateException("Failed to load translator " + translator.getName(), e);
         }
@@ -311,6 +311,7 @@ public class TeiidServer extends EmbeddedServer {
                         addOverrideTranslator(translator, context);
                     } else {
                         ExternalSource es = this.externalSources.find(smm.getTranslatorName());
+                        smm.setTranslatorName(es.getTranslatorName());
                         addTranslator(es, context);
                     }
 

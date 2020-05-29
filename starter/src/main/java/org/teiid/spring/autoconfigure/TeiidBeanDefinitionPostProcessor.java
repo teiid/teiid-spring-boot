@@ -26,7 +26,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.core.type.classreading.MethodMetadataReadingVisitor;
+import org.springframework.core.type.MethodMetadata;
 import org.springframework.stereotype.Component;
 import org.teiid.spring.data.BaseConnectionFactory;
 
@@ -63,8 +63,8 @@ public class TeiidBeanDefinitionPostProcessor implements BeanDefinitionRegistryP
             if (beanDefinition.getFactoryMethodName() != null &&
                     beanDefinition.getFactoryMethodName().contentEquals(beanName)) {
                 Object source = beanDefinition.getSource();
-                if (source instanceof MethodMetadataReadingVisitor) {
-                    String returnType = ((MethodMetadataReadingVisitor) source).getReturnTypeName();
+                if (source instanceof MethodMetadata) {
+                    String returnType = ((MethodMetadata) source).getReturnTypeName();
                     if (returnType.contentEquals("javax.sql.DataSource")) {
                         return true;
                     }
