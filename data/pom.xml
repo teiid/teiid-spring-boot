@@ -44,7 +44,7 @@
         <module>odata</module>
         <module>odata4</module>
         <module>sap-gateway</module>
-        <module>util</module>
+        <!--module>util</module-->
   </modules>
 
 </project>
