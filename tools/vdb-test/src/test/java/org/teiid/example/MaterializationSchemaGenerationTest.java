@@ -26,7 +26,7 @@ import org.junit.Test;
 
 public class MaterializationSchemaGenerationTest {
 
-    @Test
+//    @Test
     public void testMatview() throws Exception {
         File outputDirectory = new File( "target/generated-sources/teiid-sb/src/main/resources" );
         assertNotNull( outputDirectory );
