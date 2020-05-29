@@ -39,7 +39,7 @@
         <module>infinispan</module>
         <module>amazon-s3</module>
         <module>openapi</module>
-        <module>soap</module>
+        <!--module>soap</module-->
         <module>ftp</module>
         <module>odata</module>
         <module>odata4</module>
