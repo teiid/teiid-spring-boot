@@ -58,7 +58,7 @@ public class FakeTranslator extends ExecutionFactory<Object, Object> {
     public ResultSetExecution createResultSetExecution(QueryExpression command, ExecutionContext executionContext,
             RuntimeMetadata metadata, Object connection) throws TranslatorException {
         ResultSetExecution rse = new ResultSetExecution() {
-            boolean first = true;
+            int counter = 0;
 
             @Override
             public void execute() throws TranslatorException {
@@ -74,12 +74,19 @@ public class FakeTranslator extends ExecutionFactory<Object, Object> {
 
             @Override
             public List<?> next() throws TranslatorException, DataNotAvailableException {
-                if (!first) {
-                    return null;
+                String[] r1 = { myProperty == null?"one":myProperty };
+                String[] r2 = { myOverrideProperty};
+
+                counter++;
+
+                if (counter == 2 && myOverrideProperty != null) {
+                    return Arrays.asList(r2);
                 }
-                first = false;
-                String[] results = { myProperty == null?"one":myProperty };
-                return Arrays.asList(results);
+
+                if (counter == 1) {
+                    return Arrays.asList(r1);
+                }
+                return null;
             }
         };
         return rse;
@@ -99,5 +106,16 @@ public class FakeTranslator extends ExecutionFactory<Object, Object> {
 
     public void setMyProperty(String prop) {
         myProperty = prop;
+    }
+
+    private String myOverrideProperty;
+
+    @TranslatorProperty
+    public String getMyOverrideProperty() {
+        return myOverrideProperty;
+    }
+
+    public void setMyOverrideProperty(String prop) {
+        myOverrideProperty = prop;
     }
 }
