@@ -72,6 +72,7 @@
     <module>openapi-consume</module>
     <module>soap</module>
     <module>ftp</module>
+    <module>cassandra</module>
   </modules>
 
 </project>
