@@ -1,0 +1,8 @@
+CREATE DATABASE customer;
+USE DATABASE customer;
+
+CREATE FOREIGN DATA WRAPPER fake;
+CREATE SERVER fakeSource FOREIGN DATA WRAPPER fake;
+
+CREATE SCHEMA accounts SERVER fakeSource;
+IMPORT FROM SERVER fakeSource INTO accounts;
