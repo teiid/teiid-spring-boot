@@ -203,18 +203,17 @@ public class TeiidServer extends EmbeddedServer {
         }
     }
 
-    void addOverrideTranslator(VDBTranslatorMetaData translator, ApplicationContext context) {
+    String addOverrideTranslator(VDBTranslatorMetaData translator, ExternalSource es, ApplicationContext context) {
         try {
-            String type = translator.getType();
-            ExternalSource es = this.externalSources.find(type);
             addTranslator(es, context);
-            addTranslator(translator.getName(), type, translator.getPropertiesMap());
+            addTranslator(translator.getName(), es.getTranslatorName(), translator.getPropertiesMap());
+            return translator.getName();
         } catch (TranslatorException e) {
             throw new IllegalStateException("Failed to load translator " + translator.getName(), e);
         }
     }
 
-    void addTranslator(ExternalSource source, ApplicationContext context) {
+    String addTranslator(ExternalSource source, ApplicationContext context) {
         try {
             if (this.getExecutionFactory(source.getTranslatorName()) == null) {
                 String basePackage = getBasePackage(context, true);
@@ -234,6 +233,7 @@ public class TeiidServer extends EmbeddedServer {
         } catch (ConnectorManagerException | TranslatorException e) {
             throw new IllegalStateException("Failed to load translator " + source.getName(), e);
         }
+        return source.getTranslatorName();
     }
 
     static class SBConnectionFactoryProvider implements ConnectionFactoryProvider<Object> {
@@ -307,11 +307,35 @@ public class TeiidServer extends EmbeddedServer {
             for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
                 for (SourceMappingMetadata smm : model.getSourceMappings()) {
                     VDBTranslatorMetaData translator = vdb.getTranslator(smm.getTranslatorName());
+                    String addedTraslatorName = null;
+                    ExternalSource originSource = null;
                     if (translator != null) {
-                        addOverrideTranslator(translator, context);
+                        String type = translator.getType();
+                        originSource = this.externalSources.find(type);
+                        addedTraslatorName = addOverrideTranslator(translator, originSource, context);
                     } else {
-                        ExternalSource es = this.externalSources.find(smm.getTranslatorName());
-                        addTranslator(es, context);
+                        originSource = this.externalSources.find(smm.getTranslatorName());
+                        smm.setTranslatorName(originSource.getTranslatorName());
+                        addedTraslatorName = addTranslator(originSource, context);
+                    }
+
+                    // set override properties
+                    Properties overrideProperties = getTranslatorProperties(context, originSource.getTranslatorName(),
+                            smm.getName(), TranlatorPropertyType.OVERRIDE,
+                            new String[] { originSource.getSpringBootPropertyPrefix() });
+
+                    VDBTranslatorMetaData translatorMetadata = getTranslatorRepository()
+                            .getTranslatorMetaData(addedTraslatorName);
+                    if (!overrideProperties.isEmpty() && translatorMetadata != null) {
+                        translatorMetadata.setProperties(overrideProperties);
+                    }
+
+                    // set model import properties
+                    Properties importProperties = getTranslatorProperties(context, originSource.getTranslatorName(),
+                            smm.getName(), TranlatorPropertyType.IMPORT,
+                            new String[] { originSource.getSpringBootPropertyPrefix() });
+                    for (String k : importProperties.stringPropertyNames()) {
+                        model.addProperty(k, importProperties.getProperty(k));
                     }
 
                     if (smm.getConnectionJndiName() != null) {
@@ -326,7 +350,7 @@ public class TeiidServer extends EmbeddedServer {
             }
             deployVDB(vdb, vdb.getAttachment(VDBResources.class));
         } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
-                | IOException e) {
+                |AdminException | IOException e) {
             throw new IllegalStateException("Failed to deploy the VDB file", e);
         }
     }
