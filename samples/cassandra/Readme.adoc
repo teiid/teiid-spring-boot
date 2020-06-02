@@ -1,0 +1,161 @@
+= Reading/Writing Data from Cassandra Based Source
+
+This article shows an example to read/write data from Cassandra using Teiid. There may be many examples doing the similar task of reading data from Cassandra, however, this example is a little different as here the Cassandra's data is queried as if it is a SQL Database, i.e. you can issue queries against it or join the entities with other entities to integrate data using Teiid.
+
+=== What you’ll need
+
+* About 15 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and generate a simple project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies Spring Boot
+
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter,spring-data-cassandra*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid.spring</groupId>
+    <artifactId>spring-data-cassandra</artifactId>
+</dependency>
+----
+
+These are the dependencies that you'd need to add to avoid dependency conflicts in the following fashion within the dependencyManagement tag.
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>5.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+== Local Cassandra Instance
+If you already have Cassandra installed in your environment, you can skip the first few steps which would help you in creating a local Cassandra instance. Further, this would also guide you in creating keyspaces and inserting data in tables.
+
+----
+# Add the Apache repository of Cassandra to /etc/apt/sources.list.d/cassandra.sources.list, for example for the latest 3.11 version:
+$ echo "deb https://downloads.apache.org/cassandra/debian 311x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+
+# Add the Apache Cassandra repository keys:
+$ curl https://downloads.apache.org/cassandra/KEYS | sudo apt-key add -
+
+# Update the repositories:
+$ sudo apt-get update
+
+# Install Cassandra:
+$ sudo apt-get install cassandra
+
+# Verify that Cassandra is running by invoking nodetool status from the command line.
+$ nodetool status
+
+# Invoke cassandra query languaga
+$ cqlsh
+
+# Create a keyspace
+cqlsh> CREATE KEYSPACE test WITH replication = {'class': ‘Strategy name’, 'replication_factor' : '1'};
+
+# Use the keyspace
+cqlsh> USE test;
+
+# Create table
+cqlsh:test> CREATE TABLE employee_by_id (id int PRIMARY KEY , name text , position text ) ;
+
+# Insert two rows into the table
+cqlsh:test> INSERT INTO employee_by_id(id , name , position ) VALUES ( 1, 'A', 'Manager') ;
+cqlsh:test> INSERT INTO employee_by_id(id , name , position ) VALUES ( 1, 'B', 'Officer') ;
+----
+
+
+
+At application boot time, Teiid Spring Boot scans the application's packages for these annotations and builds the respective metadata required to create a virtual database internally and deploys to server. To do this scan, define the application package name in this property to the `application.properties` file. 
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.model.package=org.example
+----
+
+Now lets define the properties to connect to Cassandra in `application.properties`
+
+----
+spring.teiid.data.cassandra.address = 127.0.0.1
+spring.teiid.data.cassandra.port=9042
+spring.teiid.data.cassandra.keyspace=test
+spring.teiid.data.cassandra.username=cassandra
+spring.teiid.data.cassandra.password=cassandra
+----
+
+=== Create a class that Teiid can recognize as Data Source
+This class akin to the resource-adapter, which provides the access to data source
+
+----
+@Configuration
+public class DataSources {
+
+    @Bean(name = "accounts")
+    public CassandraConnectionFactory accounts(@Qualifier("samplecassandra-config") CassandraConfiguration config) {
+        return new CassandraConnectionFactory(config);
+    }
+}
+----
+
+The above class defines a "accounts" bean which Teiid recognizes as data source and reads the metadata upon creation and makes internal model out of it. Now using this model, Teiid can read/write to it. All collections inside Cassandra will be available as Tables now.
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT *  FROM employee_by_id");
+        System.out.println(list);
+    }
+}
+----
+
+Now when you execute this application, you should see results of your query in jdbc template
+
+----
+[{id=1, name=A, position=Manager}, {id=2, name=B, position=Officer}]
+----
+
+Note: You can always integrate data from multiple different types of data sources using Teiid.
