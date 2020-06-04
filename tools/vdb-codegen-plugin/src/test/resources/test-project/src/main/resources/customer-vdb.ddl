@@ -26,7 +26,7 @@ USE DATABASE customer;
 CREATE FOREIGN DATA WRAPPER sqlserver;
 CREATE SERVER sampledb FOREIGN DATA WRAPPER sqlserver;
 
-CREATE FOREIGN DATA WRAPPER myorcale handler oracle OPTIONS (supportsOrderBy true);
+CREATE FOREIGN DATA WRAPPER myorcale type oracle OPTIONS (supportsOrderBy true);
 CREATE SERVER sampleoracle FOREIGN DATA WRAPPER myorcale;
 
 CREATE FOREIGN DATA WRAPPER mongodb;
