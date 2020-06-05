@@ -139,7 +139,7 @@
     <version.jackson-core>2.11.0.rc1</version.jackson-core>
     <version.jackson-databind>2.11.0.rc1</version.jackson-databind>
     <version.org.mongodb>3.9.1</version.org.mongodb>
-    
+
     <version.net.sf.ucanaccess>5.0.0</version.net.sf.ucanaccess>
     <version.com.facebook.presto>0.236</version.com.facebook.presto>
     <version.com.ibm.informix>4.50.3</version.com.ibm.informix>
@@ -357,6 +357,11 @@
       <dependency>
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-file</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>file-api</artifactId>
         <version>${teiid.version}</version>
       </dependency>
       <dependency>
@@ -816,6 +821,11 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>spring-data-hdfs</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>spring-data-actian</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -968,7 +978,7 @@
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-vertica</artifactId>
         <version>${project.version}</version>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>vdb-tools-common</artifactId>
@@ -1203,7 +1213,7 @@
           <groupId>com.syncron.amazonaws</groupId>
           <artifactId>simba-athena-jdbc-driver</artifactId>
           <version>${version.com.syncron.amazonaws}</version>
-      </dependency>      
+      </dependency>
       <dependency>
           <groupId>org.apache.derby</groupId>
           <artifactId>derbyclient</artifactId>
@@ -1213,7 +1223,7 @@
           <groupId>com.exasol</groupId>
           <artifactId>exasol-jdbc</artifactId>
           <version>${version.com.exasol}</version>
-      </dependency>    
+      </dependency>
       <dependency>
           <groupId>com.sap.cloud.db.jdbc</groupId>
           <artifactId>ngdbc</artifactId>
@@ -1233,7 +1243,7 @@
       <groupId>com.facebook.presto</groupId>
       <artifactId>presto-jdbc</artifactId>
       <version>${version.com.facebook.presto}</version>
-    </dependency>  
+    </dependency>
     <dependency>
         <groupId>net.sf.ucanaccess</groupId>
         <artifactId>ucanaccess</artifactId>
@@ -1292,7 +1302,7 @@
         <exclusion>
           <groupId>org.eclipse.jetty.aggregate</groupId>
           <artifactId>*</artifactId>
-        </exclusion>        
+        </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
@@ -1300,7 +1310,7 @@
       </exclusions>
     </dependency>
     </dependencies>
-    
+
   </dependencyManagement>
 
   <repositories>
