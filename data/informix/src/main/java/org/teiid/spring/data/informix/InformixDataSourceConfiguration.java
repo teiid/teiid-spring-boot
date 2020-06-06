@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "informix",
         translatorName = "informix",
         driverNames={"com.informix.jdbc.IfxDriver"},
-        prefix="spring.datasource",
+        url="jdbc:informix-sqli://{host}:{port}/{db-name>}:INFORMIXSERVER=<server-name>",
         dialect="org.hibernate.dialect.InformixDialect",
         jdbc=true
         )

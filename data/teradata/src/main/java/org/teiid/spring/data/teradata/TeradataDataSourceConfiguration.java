@@ -21,8 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "teradata",
         translatorName = "teradata",
         driverNames={"com.teradata.jdbc.TeraDriver"},
-
-        prefix="spring.datasource",
+        url="jdbc:teradata://{host}:{port}/{db-name}",
         dialect="org.hibernate.dialect.Teradata14Dialect",
         jdbc=true
         )

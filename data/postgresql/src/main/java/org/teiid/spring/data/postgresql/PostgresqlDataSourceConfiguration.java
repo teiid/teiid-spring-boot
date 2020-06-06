@@ -22,7 +22,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "postgresql",
         driverNames={"org.postgresql.Driver"},
         datasourceNames={"org.postgresql.xa.PGXADataSource"},
-        prefix="spring.datasource",
+        url="jdbc:postgresql://{host}:5432/{db-name}",
         dialect="org.hibernate.dialect.PostgreSQL9Dialect",
         jdbc=true
         )

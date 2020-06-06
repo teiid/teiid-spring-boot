@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "ucanaccess",
         translatorName = "ucanaccess",
         driverNames={"net.ucanaccess.jdbc.UcanaccessDriver"},
-        prefix="spring.datasource",
+        url="jdbc:ucanaccess://c:/data/pippo.mdb;memory=false",
         jdbc=true
         )
 public class UcanaccessDataSourceConfiguration {

@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "exasol",
         translatorName = "exasol",
         driverNames={"com.exasol.jdbc.EXADriver"},
-        prefix="spring.datasource",
+        url="jdbc:exa:<host>:<port>[;<prop_1>=<value_1>]...[;<prop_n>=<value_n>]",
         jdbc=true
         )
 public class ExasolDataSourceConfiguration {

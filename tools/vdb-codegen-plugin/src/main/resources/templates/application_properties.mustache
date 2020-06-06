@@ -1,0 +1,15 @@
+logging.level.io.jaegertracing.internal.reporters=WARN
+logging.level.i.j.internal.reporters.LoggingReporter=WARN
+logging.level.org.teiid.SECURITY=WARN
+spring.main.allow-bean-definition-overriding=true
+teiid.jdbc-secure-enable=false
+teiid.pg-secure-enable=false
+teiid.jdbc-enable=true
+teiid.pg-enable=true
+springfox.documentation.swagger.v2.path=/openapi.json
+spring.teiid.model.package=io.integration
+spring.application.name= {{vdbName}}
+management.health.mongo.enabled=false
+management.health.db.enabled=false
+
+{{{dsProperties}}}

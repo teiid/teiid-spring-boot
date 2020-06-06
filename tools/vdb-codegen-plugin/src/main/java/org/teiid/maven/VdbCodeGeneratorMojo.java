@@ -18,10 +18,8 @@ package org.teiid.maven;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.URL;
@@ -33,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -55,6 +51,7 @@ import org.teiid.query.function.SystemFunctionManager;
 import org.teiid.query.metadata.SystemMetadata;
 import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.common.ExternalSources;
+import org.yaml.snakeyaml.Yaml;
 
 import com.github.jknack.handlebars.internal.text.StringTokenizer;
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -85,6 +82,12 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     @Parameter
     private Boolean generateDataSourceClasses = true;
 
+    @Parameter
+    private Boolean generatePomXml = false;
+
+    @Parameter
+    private Boolean generateApplicationProperties = false;
+
     @Parameter(defaultValue = "${basedir}/src/main/resources/openapi.json")
     private File openApiFile;
 
@@ -103,46 +106,64 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
     @Parameter
     private String vdbVersion = "";
 
-
+    @Parameter
+    private File yamlFile;
 
     public File getOutputDirectory() {
+        if (!outputDirectory.exists()) {
+            outputDirectory.mkdirs();
+        }
         return outputDirectory;
+    }
+
+    public File getJavaSrcDirectory() {
+        String codeDirectory = this.packageName.replace('.', '/');
+        File javaSrcDir = new File(getOutputDirectory()+"/src/main/java", codeDirectory);
+        if (!javaSrcDir.exists()) {
+            javaSrcDir.mkdirs();
+        }
+        return javaSrcDir;
+    }
+
+    public File getResourceDirectory() {
+        File resourcesDir = new File(getOutputDirectory()+"/src/main/resources");
+        if (!resourcesDir.exists()) {
+            resourcesDir.mkdirs();
+        }
+        return resourcesDir;
     }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
         try {
+            if (this.packageName == null) {
+                this.packageName = project.getGroupId();
+            }
+
             MustacheFactory mf = new DefaultMustacheFactory();
 
             ClassLoader pluginClassloader = getClassLoader();
             Thread.currentThread().setContextClassLoader(pluginClassloader);
-
-            File outputDir = getOutputDirectory();
-            if (!outputDir.exists()) {
-                outputDir.mkdirs();
-            }
-
-            if (this.packageName == null) {
-                this.packageName = project.getGroupId();
-            }
-            String codeDirectory = this.packageName.replace('.', '/');
-
-            // where to keep source files
-            File javaSrcDir = new File(getOutputDirectory()+"/src/main/java", codeDirectory);
-            if (!javaSrcDir.exists()) {
-                javaSrcDir.mkdirs();
-            }
-            File resourcesDir = new File(getOutputDirectory()+"/src/main/resources");
-            if (!resourcesDir.exists()) {
-                resourcesDir.mkdirs();
-            }
 
             // find connection factories
             ExternalSources sources = new ExternalSources();
             StringTokenizer st = new StringTokenizer(componentScanPackageNames, ",");
             while (st.hasNext()) {
                 sources.loadConnctionFactories(pluginClassloader, st.next());
+            }
+
+            // check if YAML file exists, then build VDB from it
+            boolean validateDependencies = true;
+            Map<?,?> yamlContents = null;
+            if (this.yamlFile!= null && this.yamlFile.exists()) {
+                yamlContents = processYamlVdb();
+                this.vdbFile = grabVdbFromYaml(yamlContents);
+                this.generatePomXml = true;
+                this.generateApplicationProperties = true;
+                this.generateApplicationClass = false;
+                this.generateDataSourceClasses = false;
+                validateDependencies = false;
             }
 
             // Load the DDL into data store
@@ -157,7 +178,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                     this.vdbVersion);
             if (this.materializationEnable && materialization.isMaterializationRequired(databaseStore)) {
                 getLog().info("VDB requires Materialization Intrumentation: " + databaseStore.db().getName());
-                materialization.instrumentForMaterialization(databaseStore, resourcesDir);
+                materialization.instrumentForMaterialization(databaseStore, getResourceDirectory());
                 Resource resource = new Resource();
                 resource.setDirectory(getOutputDirectory().getPath()+"/src/main/resources");
                 this.project.addResource(resource);
@@ -171,12 +192,26 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                 parentMap.put("openapi", generateOpenApiScoffolding()?"true":"false");
             }
             if (this.generateApplicationClass) {
-                createApplication(mf, javaSrcDir, database, parentMap);
+                createApplication(mf, database, parentMap);
             }
             if (this.generateDataSourceClasses) {
-                createDataSources(mf, javaSrcDir, database, parentMap, pluginClassloader, sources);
+                walkDataSources(database, parentMap, sources,
+                        new DataSourceCodeGenerator(mf, getJavaSrcDirectory(), pluginClassloader));
             }
-            verifyTranslatorDependencies(database, sources, pluginClassloader);
+
+            // only validate dependencies if we are working off the final pom file
+            // sometimes we are also generating the final pom file, where we are gathering these dependencies
+            if (validateDependencies) {
+                verifyTranslatorDependencies(database, sources, pluginClassloader);
+            }
+
+            if (this.generatePomXml) {
+                createPomXml(database, yamlContents, mf, parentMap);
+            }
+
+            if (this.generateApplicationProperties) {
+                createApplicationProperties(database, yamlContents, mf, parentMap, sources);
+            }
 
             // also look for .yml equivalent
             if (!this.openApiFile.exists()) {
@@ -189,16 +224,41 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (generateOpenApiScoffolding() && this.openApiFile.exists()) {
                 getLog().info("Found the OpenAPI document at " + this.openApiFile.getAbsolutePath());
                 ApiGenerator generator = new ApiGenerator(openApiFile, outputDirectory, getLog());
-                generator.generate(mf, javaSrcDir, database, parentMap);
+                generator.generate(mf, getJavaSrcDirectory(), database, parentMap);
             } else {
                 getLog().info("No OpenAPI document found, no classes for the OpenAPI will be generated ");
             }
-            this.project.addCompileSourceRoot(javaSrcDir.getAbsolutePath());
+            this.project.addCompileSourceRoot(getJavaSrcDirectory().getAbsolutePath());
         } catch (Exception e) {
             throw new MojoExecutionException("Error running the vdb-codegen-plugin.", e);
         } finally {
             Thread.currentThread().setContextClassLoader(oldCL);
         }
+    }
+
+    private Map<?, ?> processYamlVdb() throws FileNotFoundException, IOException {
+        Map<?, ?> yamlContents;
+        Yaml yaml = new Yaml();
+        FileInputStream fis = new FileInputStream(this.yamlFile);
+        yamlContents = yaml.loadAs(fis, Map.class);
+        fis.close();
+
+        return (Map<?,?>)yamlContents.get("spec");
+
+    }
+
+    private File grabVdbFromYaml(Map<?,?> spec) throws IOException {
+        Map<?,?> build = (Map<?,?>)spec.get("build");
+        Map<?,?> source = (Map<?,?>)build.get("source");
+        String ddl = (String)source.get("ddl");
+        if (ddl != null) {
+            File f = new File(getResourceDirectory()+"/teiid.ddl");
+            FileWriter fw = new FileWriter(f);
+            fw.write(ddl);
+            fw.close();
+            return f;
+        }
+        return null;
     }
 
     private PluginDatabaseStore getDatabaseStore(File vdbfile) throws IOException {
@@ -208,13 +268,13 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         return store;
     }
 
-    private void createApplication(MustacheFactory mf, File javaSrcDir, Database database, HashMap<String, String> props)
+    private void createApplication(MustacheFactory mf, Database database, HashMap<String, String> props)
             throws Exception {
         getLog().info("Creating the Application.java class");
         Mustache mustache = mf.compile(
                 new InputStreamReader(this.getClass().getResourceAsStream("/templates/Application.mustache")),
                 "application");
-        Writer out = new FileWriter(new File(javaSrcDir, "Application.java"));
+        Writer out = new FileWriter(new File(getJavaSrcDirectory(), "Application.java"));
         mustache.execute(out, props);
         out.close();
     }
@@ -249,6 +309,84 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         }
     }
 
+    private void createPomXml(Database database, Map<?, ?> spec, MustacheFactory mf, HashMap<String, String> props)
+            throws Exception {
+        StringBuilder sb = new StringBuilder();
+
+        for(Server server : database.getServers()) {
+            String translator = getBaseDataWrapper(database, server.getDataWrapper());
+            sb.append("    <dependency>\n");
+            sb.append("      <groupId>org.teiid</groupId>\n");
+            sb.append("      <artifactId>spring-data-").append(translator).append("</artifactId>\n");
+            sb.append("      <version>${teiid.springboot.version}</version>\n");
+            sb.append("    </dependency>\n");
+        }
+
+        Map<?,?> build = (Map<?,?>)spec.get("build");
+        Map<?,?> source = (Map<?,?>)build.get("source");
+        List<String> dependencies = (List<String>)source.get("dependencies");
+        if (dependencies != null) {
+            for (String gav : dependencies) {
+                int idx = gav.indexOf(':');
+                int versionIdx = -1;
+                if (idx != -1) {
+                    versionIdx = gav.indexOf(idx, ':');
+                }
+                if (idx == -1 || versionIdx == -1) {
+                    throw new MojoExecutionException("dependencies defined are not in correct GAV format. Must be in"
+                            + "\"groupId:artifactId:version\" format.");
+                }
+                String groupId = gav.substring(0, idx);
+                String artifactId = gav.substring(idx+1, versionIdx);
+                String version = gav.substring(versionIdx+1);
+
+                sb.append("    <dependency>\n");
+                sb.append("      <groupId>").append(groupId).append("</groupId>\n");
+                sb.append("      <artifactId>").append(artifactId).append("</artifactId>\n");
+                sb.append("      <version>").append(version).append("</version>\n");
+                sb.append("    </dependency>\n");
+            }
+        }
+
+        props.put("vdbDependencies", sb.toString());
+
+        getLog().info("Creating the pom.xml");
+        Mustache mustache = mf.compile(
+                new InputStreamReader(this.getClass().getResourceAsStream("/templates/pom.mustache")),
+                "application");
+        Writer out = new FileWriter(new File(getOutputDirectory(), "pom.xml"));
+        mustache.execute(out, props);
+        out.close();
+    }
+
+    private void createApplicationProperties(Database database, Map<?, ?> spec, MustacheFactory mf,
+            HashMap<String, String> props, ExternalSources externalSources) throws Exception {
+        StringBuilder sb = new StringBuilder();
+
+        List<?> dataSources = (List<?>)spec.get("datasources");
+        for (Object ds : dataSources) {
+            Map<?,?> datasource = (Map<?,?>)ds;
+            String name = (String) datasource.get("name");
+            String type = (String) datasource.get("type");
+            List<?> properties = (List<?>)datasource.get("properties");
+            for (Object p : properties) {
+                Map<?,?> prop = (Map<?,?>)p;
+                sb.append("spring.teiid.data.").append(type).append(".")
+                .append(name).append(".").append((String) prop.get("name")).append("=")
+                .append((String) prop.get("value")).append("\n");
+            }
+        }
+
+        props.put("dsProperties", sb.toString());
+        getLog().info("Creating the application.properties");
+        Mustache mustache = mf.compile(
+                new InputStreamReader(this.getClass().getResourceAsStream("/templates/application_properties.mustache")),
+                "application");
+        Writer out = new FileWriter(new File(getResourceDirectory(), "application.properties"));
+        mustache.execute(out, props);
+        out.close();
+    }
+
     private String getBaseDataWrapper(Database db, String name) {
         if (db.getDataWrapper(name) != null) {
             if (db.getDataWrapper(name).getType() == null) {
@@ -259,8 +397,8 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         return name;
     }
 
-    private void createDataSources(MustacheFactory mf, File javaSrcDir, Database database,
-            HashMap<String, String> parentMap, ClassLoader classLoader, ExternalSources externalSources) throws Exception {
+    private void walkDataSources(Database database,
+            HashMap<String, String> parentMap, ExternalSources externalSources, CodeGenerator c) throws Exception {
 
         TreeMap<String, ExternalSource> sources = new TreeMap<>();
         for (ExternalSource source : externalSources.getItems().values()) {
@@ -278,6 +416,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             tempMap.put("dsName", server.getName());
             tempMap.put("sanitized-dsName", removeCamelCase(server.getName()));
 
+
             getLog().info("Building DataSource.java for source :" + server.getName());
 
             // Custom data sources are expected to provide their own DataSource classes
@@ -291,17 +430,8 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
                         " make sure it is supported source, if this a custom source, it is developed with "
                         + "@ConnectionFactoryConfiguration annotation");
             }
-
-            Mustache mustache = loadMustache(mf, source, classLoader);
-            if (mustache != null) {
-                Writer out = new FileWriter(new File(javaSrcDir, "DataSources" + server.getName() + ".java"));
-                mustache.execute(out, tempMap);
-                out.close();
-            } else {
-                throw new MojoExecutionException("Failed to generate source for name :" + translator +
-                        " make sure it is supported source, if this a custom source, it is developed with "
-                        + "@ConnectionFactoryConfiguration annotation and Mustache file is provided");
-            }
+            tempMap.put("dsPropertyPrefix", "spring.teiid.data." + source.getName());
+            c.generate(source, server, tempMap);
         }
     }
 
@@ -330,18 +460,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         return sb.toString();
     }
 
-    static Mustache loadMustache(MustacheFactory mf, ExternalSource source, ClassLoader classLoader) {
-        Mustache mustache = null;
-        InputStream is = classLoader.getResourceAsStream(source.getName() + ".mustache");
-        if (is != null) {
-            mustache = mf.compile(new InputStreamReader(is),source.getName().toLowerCase());
-        } else {
-            mustache = mf.compile(
-                    new InputStreamReader(VdbCodeGeneratorMojo.class.getResourceAsStream("/templates/Jdbc.mustache")),
-                    source.getName().toLowerCase());
-        }
-        return mustache;
-    }
+
 
     private File getVDBFile() throws MojoExecutionException, IOException {
         // this is custom defined path, or default teiid.ddl
@@ -430,39 +549,14 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         f.mkdirs();
         getLog().info("unzipping " + d.getArtifactId() + " to directory " + f.getCanonicalPath());
 
-        return unzipContents(d.getFile(), f);
+        return ZipUtils.unzipContents(d.getFile(), f);
     }
 
-    private File unzipContents(File d) throws IOException {
+    public File unzipContents(File d) throws IOException {
         File f = new File(this.outputDirectory.getPath(), d.getName());
         f.mkdirs();
         getLog().info("unzipping " + d.getName() + " to directory " + f.getCanonicalPath());
 
-        return unzipContents(d, f);
-    }
-
-    public static File unzipContents(File in, File out) throws FileNotFoundException, IOException {
-        byte[] buffer = new byte[1024];
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(in));
-        ZipEntry ze = zis.getNextEntry();
-        while (ze != null) {
-            String fileName = ze.getName();
-            File newFile = new File(out, fileName);
-            if (ze.isDirectory()) {
-                newFile.mkdirs();
-            } else {
-                new File(newFile.getParent()).mkdirs();
-                FileOutputStream fos = new FileOutputStream(newFile);
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
-                }
-                fos.close();
-            }
-            zis.closeEntry();
-            ze = zis.getNextEntry();
-        }
-        zis.close();
-        return out;
+        return ZipUtils.unzipContents(d, f);
     }
 }

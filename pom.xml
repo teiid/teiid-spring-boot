@@ -218,7 +218,9 @@
             <excludes>
               <exclude>**/*.mustache</exclude>
               <exclude>**/*.ddl</exclude>
+              <exclude>**/*.sql</exclude>
               <exclude>**/*.yml</exclude>
+              <exclude>**/*.yaml</exclude>
               <exclude>**/*.txt</exclude>
               <exclude>**/src/test/resources/**</exclude>
             </excludes>
