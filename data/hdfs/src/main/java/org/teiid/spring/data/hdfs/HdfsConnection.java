@@ -18,8 +18,7 @@
 package org.teiid.spring.data.hdfs;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.IOUtils;
 import org.teiid.file.VirtualFile;
 import org.teiid.file.VirtualFileConnection;
@@ -31,30 +30,61 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Vector;
 
 public class HdfsConnection implements VirtualFileConnection {
 
     private final FileSystem fileSystem;
 
-    public HdfsConnection(HdfsConfiguration config) {
-        this.fileSystem = createFileSystem(config);
+    public HdfsConnection(HdfsConfiguration config) throws TranslatorException {
+        this.fileSystem = createFileSystem(config.getFsUri());
     }
 
-    private FileSystem createFileSystem(HdfsConfiguration config) {
+    private FileSystem createFileSystem(String fsUri) throws TranslatorException {
         Configuration configuration = new Configuration();
         try {
-            return FileSystem.get(new URI(config.getFsUri()), configuration);
+            return FileSystem.get(new URI(fsUri), configuration);
         } catch (IOException e) {
-
+            throw new TranslatorException(e);
         } catch (URISyntaxException e) {
+            throw new TranslatorException(e);
+        }
+    }
 
+    @Override
+    public VirtualFile[] getFiles(String location) throws TranslatorException {
+        Path path = new Path(location);
+        try {
+            FileStatus fileStatus = fileSystem.getFileStatus(path);
+            if(fileStatus.isDirectory()){
+               return convert(path);
+            }
+            if(fileStatus.isFile()) return new VirtualFile[] {new HdfsVirtualFIle(fileSystem, fileStatus)};
+        } catch (IOException e) {
+            throw new TranslatorException(e);
+        }
+        if(location.contains("*")){
+            try {
+                FileStatus[] fileStatuses = fileSystem.globStatus(new Path(location));
+                VirtualFile[] virtualFiles = new VirtualFile[fileStatuses.length];
+                for(int i = 0; i < fileStatuses.length; i++){
+                    virtualFiles[i] = new HdfsVirtualFIle(fileSystem, fileStatuses[i]);
+                }
+                return virtualFiles;
+            } catch (IOException e) {
+                throw new TranslatorException(e);
+            }
         }
         return null;
     }
 
-    @Override
-    public VirtualFile[] getFiles(String s) throws TranslatorException {
-        return new VirtualFile[0];
+    private VirtualFile[] convert(Path path) throws IOException {
+        RemoteIterator<LocatedFileStatus> fileStatusRemoteIterator = fileSystem.listFiles(path,false);
+        Vector<VirtualFile> virtualFiles = new Vector<>();
+        while(fileStatusRemoteIterator.hasNext()){
+            virtualFiles.add(new HdfsVirtualFIle(fileSystem, fileStatusRemoteIterator.next()));
+        }
+        return (VirtualFile[]) virtualFiles.toArray();
     }
 
     @Override
@@ -63,7 +93,7 @@ public class HdfsConnection implements VirtualFileConnection {
             OutputStream out = fileSystem.create(new Path(s));
             IOUtils.copyBytes(inputStream, out, 131072);
         } catch (IOException e) {
-            throw new TranslatorException();
+            throw new TranslatorException(e);
         }
     }
 
@@ -72,7 +102,7 @@ public class HdfsConnection implements VirtualFileConnection {
         try {
             return fileSystem.delete(new Path(s), true);
         } catch (IOException e) {
-            throw new TranslatorException();
+            throw new TranslatorException(e);
         }
     }
 
