@@ -47,7 +47,7 @@
       <artifactId>translator-ws</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.teiid.wildfly.connectors</groupId>
+      <groupId>org.teiid.connectors</groupId>
       <artifactId>ws-cxf</artifactId>
     </dependency>
     <dependency>
