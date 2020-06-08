@@ -520,11 +520,23 @@
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-google</artifactId>
         <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.teiid.connectors</groupId>
         <artifactId>google-api</artifactId>
         <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.teiid.connectors</groupId>

@@ -20,6 +20,7 @@ package org.teiid.spring.data.google;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.teiid.google.SpreadsheetConnectionImpl4;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 import org.teiid.translator.google.api.metadata.SpreadsheetInfo;
@@ -30,6 +31,8 @@ import org.teiid.translator.google.api.metadata.SpreadsheetInfo;
         )
 public class SpreadsheetConnectionFactory implements BaseConnectionFactory<SpreadsheetConnectionImpl4> {
     private SpreadSheetConfiguration config;
+    // share the spreadsheet info among all connections
+    private AtomicReference<SpreadsheetInfo> spreadsheetInfo = new AtomicReference<SpreadsheetInfo>();
 
     public SpreadsheetConnectionFactory(SpreadSheetConfiguration config) {
         this.config = config;
@@ -38,16 +41,13 @@ public class SpreadsheetConnectionFactory implements BaseConnectionFactory<Sprea
     @Override
     public SpreadsheetConnectionImpl4 getConnection() throws Exception {
         checkConfig();
-        // share the spreadsheet info among all connections
-        AtomicReference<SpreadsheetInfo> spreadsheetInfo = new AtomicReference<SpreadsheetInfo>();
         return new SpreadsheetConnectionImpl4(this.config, spreadsheetInfo);
     }
 
     private void checkConfig() {
         // SpreadsheetName should be set
-        if ((config.getSpreadSheetName() == null || config.getSpreadSheetName().trim().equals("")) //$NON-NLS-1$
-                && config.getSpreadSheetId() == null) {
-            throw new IllegalStateException("SpreadsheetName or SpreadsheetId are required.");
+        if (config.getSpreadsheetId() == null && config.getSpreadsheets() == null) {
+            throw new IllegalStateException("SpreadsheetId or Spreadsheets are required.");
         }
 
         if (config.getRefreshToken() == null || config.getRefreshToken().trim().equals("")) { //$NON-NLS-1$
@@ -60,9 +60,6 @@ public class SpreadsheetConnectionFactory implements BaseConnectionFactory<Sprea
             throw new IllegalStateException(
                     "OAuth2 requires refreshToken, clientId, and clientSecret. Check the Google "
                             + "Connector documentation on how to retrieve the RefreshToken."); //$NON-NLS-1$
-        }
-        if (config.getSpreadSheetId() == null) {
-            throw new IllegalStateException("v4 requires the SpreadsheetId"); //$NON-NLS-1$
         }
     }
 
