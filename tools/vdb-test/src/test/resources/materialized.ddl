@@ -7,27 +7,7 @@ CREATE DATABASE customer VERSION '1' OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer VERSION '1';
 
 --############ Translators ############
-CREATE FOREIGN DATA WRAPPER "amazon-s3";
-
-CREATE FOREIGN DATA WRAPPER cassandra;
-
-CREATE FOREIGN DATA WRAPPER file;
-
-CREATE FOREIGN DATA WRAPPER ftp;
-
-CREATE FOREIGN DATA WRAPPER "google-spreadsheet";
-
-CREATE FOREIGN DATA WRAPPER "infinispan-hotrod";
-
-CREATE FOREIGN DATA WRAPPER mongodb;
-
 CREATE FOREIGN DATA WRAPPER myorcale TYPE oracle OPTIONS (supportsOrderBy 'true');
-
-CREATE FOREIGN DATA WRAPPER odata4;
-
-CREATE FOREIGN DATA WRAPPER salesforce;
-
-CREATE FOREIGN DATA WRAPPER sqlserver;
 
 
 --############ Servers ############
