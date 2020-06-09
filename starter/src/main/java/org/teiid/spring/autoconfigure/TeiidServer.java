@@ -226,7 +226,7 @@ public class TeiidServer extends EmbeddedServer {
                     + ". Check to make sure @Translator annotation is added on your custom translator "
                     + "and also set the 'spring.teiid.model.package' set to package where the translator "
                     + "is defined. Otherwise, the following Dependencies are missing,\n"
-                    + source.getGav()
+                    + "org.teiid:spring-data-"+source.getName()
                     + "\n\n in your pom.xml. Please add these dependencies. ");
                 }
             }
@@ -466,7 +466,7 @@ public class TeiidServer extends EmbeddedServer {
             }
         } catch (ConnectorManagerException e) {
             throw new IllegalStateException("Failed to load translator " + es.getTranslatorName()
-            + ", make sure maven dependency \n" + es.getGav() + "\n\n is available in your pom.xml file", e);
+            + ", make sure maven dependency \n" + "org.teiid:spring-data-"+es.getName() + "\n\n is available in your pom.xml file", e);
         }
 
         Properties overrideProperties = getTranslatorProperties(context, source.getTranslatorName(), sourceBeanName,

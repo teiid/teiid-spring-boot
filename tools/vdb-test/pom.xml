@@ -142,7 +142,19 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-file</artifactId>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-data-jdbc-ansi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-data-mssql-server</artifactId>
+    </dependency> 
+    <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-data-postgresql</artifactId>
+    </dependency> 
     <dependency>
         <groupId>net.sourceforge.jtds</groupId>
         <artifactId>jtds</artifactId>
@@ -155,6 +167,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-    </dependency>     
+    </dependency>        
   </dependencies>
 </project>

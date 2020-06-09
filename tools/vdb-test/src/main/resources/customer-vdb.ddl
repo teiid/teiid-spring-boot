@@ -26,13 +26,11 @@ USE DATABASE customer;
 CREATE FOREIGN DATA WRAPPER sqlserver;
 CREATE SERVER sampledb FOREIGN DATA WRAPPER sqlserver;
 
-CREATE FOREIGN DATA WRAPPER myorcale type oracle OPTIONS (supportsOrderBy true);
-CREATE SERVER sampleoracle FOREIGN DATA WRAPPER myorcale;
+CREATE FOREIGN DATA WRAPPER mypostgresql type postgresql OPTIONS (supportsOrderBy true);
+CREATE SERVER sampleoracle FOREIGN DATA WRAPPER mypostgresql;
 
 CREATE FOREIGN DATA WRAPPER mongodb;
 CREATE SERVER samplemango FOREIGN DATA WRAPPER mongodb;
-
-CREATE SERVER sampleathena FOREIGN DATA WRAPPER "amazon-athena";
 
 CREATE SERVER sampleansi FOREIGN DATA WRAPPER "jdbc-ansi";
 

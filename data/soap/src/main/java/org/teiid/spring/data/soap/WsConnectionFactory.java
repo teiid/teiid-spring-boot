@@ -19,8 +19,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(
         alias = "ws",
-        translatorName = "ws",
-        dependencies = {"org.teiid:spring-data-soap"}
+        translatorName = "ws"
         )
 public class WsConnectionFactory extends SoapConnectionFactory {
     public WsConnectionFactory(SoapConfiguration config) {
