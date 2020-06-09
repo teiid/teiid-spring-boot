@@ -396,7 +396,7 @@
         <version>${version.javax.jws-api}</version>
       </dependency>
       <dependency>
-        <groupId>org.teiid.wildfly.connectors</groupId>
+        <groupId>org.teiid.connectors</groupId>
         <artifactId>ws-cxf</artifactId>
         <version>${teiid.version}</version>
         <exclusions>
