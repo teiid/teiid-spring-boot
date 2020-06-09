@@ -46,10 +46,10 @@
       <groupId>org.teiid.connectors</groupId>
       <artifactId>translator-ws</artifactId>
     </dependency>
-    <dependency>
+    <!--dependency>
       <groupId>org.teiid.wildfly.connectors</groupId>
       <artifactId>ws-cxf</artifactId>
-    </dependency>
+    </dependency-->
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-xjc</artifactId>
