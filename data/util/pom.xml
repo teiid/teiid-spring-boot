@@ -98,10 +98,10 @@
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-sap-gateway</artifactId>
     </dependency>
-    <!--dependency>
+    <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-soap</artifactId>
-    </dependency-->
+    </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-cassandra</artifactId>
