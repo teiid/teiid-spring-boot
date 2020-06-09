@@ -17,20 +17,23 @@
  */
 package org.teiid.spring.data.hdfs;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
-import org.apache.hadoop.io.IOUtils;
-import org.teiid.file.VirtualFile;
-import org.teiid.file.VirtualFileConnection;
-import org.teiid.translator.TranslatorException;
-import sun.nio.ch.IOUtil;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Vector;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.io.IOUtils;
+import org.teiid.file.VirtualFile;
+import org.teiid.file.VirtualFileConnection;
+import org.teiid.translator.TranslatorException;
 
 public class HdfsConnection implements VirtualFileConnection {
 
@@ -57,9 +60,11 @@ public class HdfsConnection implements VirtualFileConnection {
         try {
             FileStatus fileStatus = fileSystem.getFileStatus(path);
             if(fileStatus.isDirectory()){
-               return convert(path);
+                return convert(path);
             }
-            if(fileStatus.isFile()) return new VirtualFile[] {new HdfsVirtualFIle(fileSystem, fileStatus)};
+            if(fileStatus.isFile()) {
+                return new VirtualFile[] {new HdfsVirtualFIle(fileSystem, fileStatus)};
+            }
         } catch (IOException e) {
             throw new TranslatorException(e);
         }

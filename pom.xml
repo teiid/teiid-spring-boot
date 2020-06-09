@@ -1202,6 +1202,33 @@
         <artifactId>guava</artifactId>
         <version>20.0</version>
       </dependency>      
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>3.2.1</version>
+          <exclusions>
+            <exclusion>
+              <groupId>jdk.tools</groupId>
+              <artifactId>jdk.tools</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>javax.activation</groupId>
+              <artifactId>javax.activation-api</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>commons-logging</groupId>
+              <artifactId>commons-logging</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>jdk.tools</groupId>
+              <artifactId>jdk.tools</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
 
       <dependency>
