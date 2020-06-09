@@ -1,3 +1,5 @@
+-- noinspection SqlDialectInspectionForFile
+
 /*
 ###########################################
 # START DATABASE customer
