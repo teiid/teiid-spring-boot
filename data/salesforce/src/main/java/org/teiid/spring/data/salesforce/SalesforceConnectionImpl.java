@@ -28,7 +28,6 @@ import com.sforce.ws.ConnectionException;
 public class SalesforceConnectionImpl extends BaseSalesforceConnection<SalesforceConfiguration> implements SalesforceConnection {
     private static final Log logger = LogFactory.getLog(SalesforceConnectionImpl.class);
     private PartnerConnection partnerConnection;
-    private SalesforceConnectorConfig config;
 
     public SalesforceConnectionImpl(SalesforceConfiguration sfc) throws Exception {
         super(sfc);
@@ -36,7 +35,8 @@ public class SalesforceConnectionImpl extends BaseSalesforceConnection<Salesforc
 
     @Override
     protected void login(SalesforceConfiguration sfc) throws ConnectionException {
-        config = new SalesforceConnectorConfig();
+        SalesforceConnectorConfig config = new SalesforceConnectorConfig();
+        this.config = config;
         config.setCompression(true);
         config.setTraceMessage(false);
         config.setUsername(sfc.getUsername());
