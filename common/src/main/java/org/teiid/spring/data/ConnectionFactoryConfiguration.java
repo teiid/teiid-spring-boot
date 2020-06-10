@@ -52,12 +52,6 @@ public @interface ConnectionFactoryConfiguration {
     String translatorName();
 
     /**
-     * Thirdparty dependencies in GAV format that are needed with this connection
-     * @return
-     */
-    String[] dependencies() default {};
-
-    /**
      * Hibernate dialect if available
      * @return
      */
@@ -68,4 +62,28 @@ public @interface ConnectionFactoryConfiguration {
      * @return
      */
     String[] otherAliases() default {};
+
+    /**
+     * Driver names for this ConnectionFactory
+     * @return
+     */
+    String[] driverNames() default {};
+
+    /**
+     * Data Source names for this ConnectionFactory
+     * @return
+     */
+    String[] datasourceNames() default {};
+
+    /**
+     * Spring boot property prefix
+     * @return
+     */
+    String prefix() default "";
+
+    /**
+     * true when data source is JDBC type
+     * @return
+     */
+    boolean jdbc() default false;
 }

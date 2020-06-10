@@ -26,32 +26,24 @@ import org.teiid.translator.Translator;
 
 public class ExternalSource implements Serializable{
     private static final long serialVersionUID = -5069489555166011459L;
-    private static final String DEFAULT_PREFIX = "spring.teiid.data.";
 
     private String name;
     private String[] driverNames;
     private String[] datasourceNames;
     private String translatorName;
     private String dialect;
-    private String[] gav;
     private String springBootPropertyPrefix;
     private boolean jdbc;
 
     public ExternalSource(String name, String[] driverNames, String[] datasourceNames, String translatorName,
-            String dialect, String[] gav, String prefix, boolean jdbc) {
-        this(name, driverNames, datasourceNames, translatorName, dialect, gav, prefix);
-        this.jdbc = jdbc;
-    }
-
-    public ExternalSource(String name, String[] driverNames, String[] datasourceNames, String translatorName,
-            String dialect, String[] gav, String prefix) {
+            String dialect, String prefix, boolean jdbc) {
         this.name = name;
         this.driverNames = driverNames;
         this.datasourceNames = datasourceNames;
         this.translatorName = translatorName;
         this.dialect = dialect;
-        this.gav = gav;
         this.springBootPropertyPrefix = prefix;
+        this.jdbc = jdbc;
     }
 
     public String getName() {
@@ -70,14 +62,7 @@ public class ExternalSource implements Serializable{
         return dialect;
     }
 
-    public String[] getGav() {
-        return gav;
-    }
-
     public String getSpringBootPropertyPrefix() {
-        if (springBootPropertyPrefix == null) {
-            return DEFAULT_PREFIX + getName();
-        }
         return springBootPropertyPrefix;
     }
 

@@ -176,7 +176,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (this.generateDataSourceClasses) {
                 createDataSources(mf, javaSrcDir, database, parentMap, pluginClassloader, sources);
             }
-            verifyTranslatorDependencies(database, sources);
+            verifyTranslatorDependencies(database, sources, pluginClassloader);
 
             // also look for .yml equivalent
             if (!this.openApiFile.exists()) {
@@ -219,7 +219,8 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         out.close();
     }
 
-    private void verifyTranslatorDependencies(Database database, ExternalSources sources) throws Exception {
+    private void verifyTranslatorDependencies(Database database, ExternalSources sources, ClassLoader classloader)
+            throws Exception {
         for(Server server : database.getServers()) {
             String translator = getBaseDataWrapper(database, server.getDataWrapper());
             ExternalSource es = sources.find(translator);
@@ -228,42 +229,21 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             }
 
             boolean foundDependency = false;
-            if(es.getGav() != null) {
-                for (String g : es.getGav()) {
-                    foundDependency = false;
-                    List<Dependency> dependencies = project.getDependencies();
-                    for (Dependency d : dependencies) {
-                        String gav = d.getGroupId() + ":" + d.getArtifactId();
-                        if (g.equals(gav)) {
-                            getLog().info("Found dependency:" + gav);
-                            foundDependency = true;
-                        }
-                    }
-                    if (!foundDependency) {
+            if (es.isJdbc() && es.getDriverNames() != null && es.getDriverNames().length > 0) {
+                for (String driverName: es.getDriverNames()) {
+                    try {
+                        Class.forName(driverName, false, classloader);
+                        foundDependency = true;
                         break;
+                    } catch (ClassNotFoundException e) {
+                        continue;
                     }
                 }
-            }
-
-            if (!foundDependency) {
-                boolean throwError = false;
-                StringBuilder sb = new StringBuilder();
-                if (es.getGav() != null) {
-                    for (String g : es.getGav()) {
-                        sb.append("Drivers for translator \"" + server.getDataWrapper()
-                        + "\" are not found. Include following dependecy in pom.xml\n" + "<dependency>\n"
-                        + "    <groupId>" + g.substring(0, g.indexOf(':'))
-                        + "</groupId>\n" + "    <artifactId>"
-                        + g.substring(g.indexOf(':') + 1) + "</artifactId>\n"
-                        + "</dependency>\n\n");
-                        throwError = true;
-                    }
-                } else {
-                    getLog().error("Drivers for translator \"" + server.getDataWrapper()
-                    + "\" can not be verified. Make sure you have the required dependencies in the pom.xml");
-                }
-                if (throwError) {
-                    throw new MojoExecutionException(sb.toString());
+                if (!foundDependency) {
+                    String str = "Drivers for translator \"" + server.getDataWrapper()
+                    + "\" can not be verified. Make sure you have the required dependencies in the pom.xml";
+                    getLog().error(str);
+                    throw new MojoExecutionException(str);
                 }
             }
         }

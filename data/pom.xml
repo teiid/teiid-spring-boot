@@ -30,6 +30,37 @@
 
   <modules>
       <module>cassandra</module>
+        <module>actian</module>
+        <module>amazon-athena</module>
+        <module>db2</module>
+        <module>derby</module>
+        <module>exasol</module>
+        <module>h2</module>
+        <module>hana</module>
+        <module>hbase</module>
+        <module>hive</module>
+        <module>hsql</module>
+        <module>impala</module>
+        <module>informix</module>
+        <module>ingres</module>
+        <module>jdbc-ansi</module>
+        <module>jdbc-simple</module>
+        <module>jtds-sqlserver</module>
+        <module>mssql-server</module>
+        <module>mysql</module>
+        <module>netezza</module>
+        <module>oracle</module>
+        <module>osisoft-pi</module>
+        <module>phoenix</module>
+        <module>postgresql</module>
+        <module>prestodb</module>
+        <module>redshift</module>
+        <module>sap-iq</module>
+        <module>sybase</module>
+        <module>teiid</module>
+        <module>teradata</module>
+        <module>ucanaccess</module>
+        <module>vertica</module>
         <module>file</module>
         <module>rest</module>
         <module>excel</module>

@@ -7,7 +7,7 @@ CREATE DATABASE customer VERSION '1' OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer VERSION '1';
 
 --############ Translators ############
-CREATE FOREIGN DATA WRAPPER myorcale TYPE oracle OPTIONS (supportsOrderBy 'true');
+CREATE FOREIGN DATA WRAPPER mypostgresql TYPE postgresql OPTIONS (supportsOrderBy 'true');
 
 
 --############ Servers ############
@@ -20,8 +20,6 @@ CREATE SERVER oldsoapy FOREIGN DATA WRAPPER ws;
 CREATE SERVER s3 FOREIGN DATA WRAPPER "amazon-s3";
 
 CREATE SERVER sampleansi FOREIGN DATA WRAPPER "jdbc-ansi";
-
-CREATE SERVER sampleathena FOREIGN DATA WRAPPER "amazon-athena";
 
 CREATE SERVER samplecassandra FOREIGN DATA WRAPPER cassandra;
 
@@ -37,7 +35,7 @@ CREATE SERVER samplemango FOREIGN DATA WRAPPER mongodb;
 
 CREATE SERVER sampleodata FOREIGN DATA WRAPPER odata4;
 
-CREATE SERVER sampleoracle FOREIGN DATA WRAPPER myorcale;
+CREATE SERVER sampleoracle FOREIGN DATA WRAPPER mypostgresql;
 
 CREATE SERVER samplesf FOREIGN DATA WRAPPER salesforce;
 
