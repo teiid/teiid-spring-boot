@@ -17,17 +17,18 @@
  */
 package org.teiid.spring.data.google;
 
-import org.springframework.web.client.RestTemplate;
+import java.util.Map;
 
-public class SpreadSheetConfiguration {
+import org.teiid.google.SpreadsheetConfiguration;
+
+public class SpreadSheetConfiguration implements SpreadsheetConfiguration {
 
     private Integer batchSize = 4096;
-    private String spreadSheetName;
-    private String spreadSheetId;
+    private String spreadsheetId;
     private String refreshToken;
     private String clientId;
     private String clientSecret;
-    private RestTemplate restTemplate = new RestTemplate();
+    private Map<String, String> spreadsheets;
 
     public Integer getBatchSize() {
         return batchSize;
@@ -35,14 +36,6 @@ public class SpreadSheetConfiguration {
 
     public void setBatchSize(Integer batchSize) {
         this.batchSize = batchSize;
-    }
-
-    public String getSpreadSheetName() {
-        return spreadSheetName;
-    }
-
-    public void setSpreadSheetName(String spreadsheetName) {
-        this.spreadSheetName = spreadsheetName;
     }
 
     public String getRefreshToken() {
@@ -69,19 +62,27 @@ public class SpreadSheetConfiguration {
         this.clientSecret = clientSecret;
     }
 
-    public String getSpreadSheetId() {
-        return spreadSheetId;
+    @Override
+    public String getSpreadsheetId() {
+        return spreadsheetId;
     }
 
-    public void setSpreadSheetId(String spreadsheetId) {
-        this.spreadSheetId = spreadsheetId;
+    public void setSpreadsheetId(String spreadsheetId) {
+        this.spreadsheetId = spreadsheetId;
     }
 
-    public RestTemplate getRestTemplate() {
-        return restTemplate;
+    @Override
+    public String getSpreadsheetName() {
+        return null; // v3 not supported
     }
 
-    public void setRestTemplate(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    @Override
+    public Map<String, String> getSpreadsheets() {
+        return spreadsheets;
     }
+
+    public void setSpreadsheets(Map<String, String> spreadsheets) {
+        this.spreadsheets = spreadsheets;
+    }
+
 }
