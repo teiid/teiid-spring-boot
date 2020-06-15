@@ -91,7 +91,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.deploy.plugin>2.8.2</version.deploy.plugin>
-	<project.build.targetJdk>1.8</project.build.targetJdk>
+    <project.build.targetJdk>11</project.build.targetJdk>
     <basepom.check.skip-dependency>false</basepom.check.skip-dependency>
     <basepom.check.fail-dependency>false</basepom.check.fail-dependency>
     <basepom.check.skip-duplicate-finder>false</basepom.check.skip-duplicate-finder>
@@ -1024,7 +1024,12 @@
           <groupId>io.netty</groupId>
           <artifactId>netty-all</artifactId>
           <version>4.1.42.Final</version>
-      </dependency>            
+      </dependency>
+      <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
+          <version>3.10.6.Final</version>
+      </dependency>
       <dependency>
           <groupId>io.netty</groupId>
           <artifactId>netty-buffer</artifactId>
@@ -1231,6 +1236,10 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -1242,7 +1251,22 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
         </exclusions>
+      </dependency>
+      <!-- there's are old but still referenced in hbase/hdfs -->
+      <dependency>
+         <groupId>org.codehaus.jackson</groupId>
+         <artifactId>jackson-core-asl</artifactId>
+         <version>1.9.13</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.jackson</groupId>
+         <artifactId>jackson-mapper-asl</artifactId>
+         <version>1.9.13</version>
       </dependency>
 
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
@@ -1326,6 +1350,10 @@
           <exclusion>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>jdk.tools</groupId>
+            <artifactId>jdk.tools</artifactId>
           </exclusion>
         </exclusions>
     </dependency>

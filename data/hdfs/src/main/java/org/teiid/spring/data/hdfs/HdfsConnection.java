@@ -62,6 +62,10 @@ public class HdfsConnection implements VirtualFileConnection {
         Path path = new Path(location);
         Path parentPath = path.getParent();
         if(location.contains("*") && parentPath!=null){
+            location = location.replaceAll("\\\\", "\\\\\\\\"); //$NON-NLS-1$ //$NON-NLS-2$
+            location = location.replaceAll("\\?", "\\\\?"); //$NON-NLS-1$ //$NON-NLS-2$
+            location = location.replaceAll("\\[", "\\\\["); //$NON-NLS-1$ //$NON-NLS-2$
+            location = location.replaceAll("\\{", "\\\\{"); //$NON-NLS-1$ //$NON-NLS-2$
             try {
                 if(fileSystem.getFileStatus(parentPath) == null){
                     return null;
