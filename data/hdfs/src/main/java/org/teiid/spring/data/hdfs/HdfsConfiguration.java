@@ -17,20 +17,10 @@
  */
 package org.teiid.spring.data.hdfs;
 
-import java.util.List;
-import java.util.Map;
-
 public class HdfsConfiguration {
 
     private String fsUri;
-    private String resourceManagerAddress;
-    private String resourceManagerSchedulerAddress;
-    private String resourceManagerHost;
-    private Integer resourceManagerPort;
-    private Integer resourceManagerSchedulerPort;
-    private String jobHistoryAddress;
-    private List<String> resources;
-    private Map<String, Map<String, Map<String, String>>> config;
+    private String resourcePath = null;
 
     public String getFsUri() {
         return fsUri;
@@ -40,67 +30,11 @@ public class HdfsConfiguration {
         this.fsUri = fsUri;
     }
 
-    public String getResourceManagerAddress() {
-        return resourceManagerAddress;
+    public String getResourcePath() {
+        return resourcePath;
     }
 
-    public void setResourceManagerAddress(String resourceManagerAddress) {
-        this.resourceManagerAddress = resourceManagerAddress;
-    }
-
-    public String getResourceManagerSchedulerAddress() {
-        return resourceManagerSchedulerAddress;
-    }
-
-    public void setResourceManagerSchedulerAddress(String resourceManagerSchedulerAddress) {
-        this.resourceManagerSchedulerAddress = resourceManagerSchedulerAddress;
-    }
-
-    public String getResourceManagerHost() {
-        return resourceManagerHost;
-    }
-
-    public void setResourceManagerHost(String resourceManagerHost) {
-        this.resourceManagerHost = resourceManagerHost;
-    }
-
-    public Integer getResourceManagerPort() {
-        return resourceManagerPort;
-    }
-
-    public void setResourceManagerPort(Integer resourceManagerPort) {
-        this.resourceManagerPort = resourceManagerPort;
-    }
-
-    public Integer getResourceManagerSchedulerPort() {
-        return resourceManagerSchedulerPort;
-    }
-
-    public void setResourceManagerSchedulerPort(Integer resourceManagerSchedulerPort) {
-        this.resourceManagerSchedulerPort = resourceManagerSchedulerPort;
-    }
-
-    public String getJobHistoryAddress() {
-        return jobHistoryAddress;
-    }
-
-    public void setJobHistoryAddress(String jobHistoryAddress) {
-        this.jobHistoryAddress = jobHistoryAddress;
-    }
-
-    public List<String> getResources() {
-        return resources;
-    }
-
-    public void setResources(List<String> resources) {
-        this.resources = resources;
-    }
-
-    public Map<String, Map<String, Map<String, String>>> getConfig() {
-        return config;
-    }
-
-    public void setConfig(Map<String, Map<String, Map<String, String>>> config) {
-        this.config = config;
+    public void setResourcePath(String resourcePath) {
+        this.resourcePath = resourcePath;
     }
 }

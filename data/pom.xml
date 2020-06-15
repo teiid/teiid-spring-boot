@@ -30,6 +30,7 @@
 
   <modules>
       <module>cassandra</module>
+        <module>hdfs</module>
         <module>actian</module>
         <module>amazon-athena</module>
         <module>db2</module>
@@ -76,7 +77,6 @@
         <module>odata4</module>
         <module>sap-gateway</module>
         <module>util</module>
-        <module>hdfs</module>
   </modules>
 
 </project>

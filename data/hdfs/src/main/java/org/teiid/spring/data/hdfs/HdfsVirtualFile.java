@@ -25,12 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class HdfsVirtualFIle implements VirtualFile {
+public class HdfsVirtualFile implements VirtualFile {
 
     private final FileSystem fileSystem;
     private final FileStatus fileStatus;
 
-    public HdfsVirtualFIle(FileSystem fileSystem, FileStatus fileStatus) {
+    public HdfsVirtualFile(FileSystem fileSystem, FileStatus fileStatus) {
         this.fileSystem = fileSystem;
         this.fileStatus = fileStatus;
     }
