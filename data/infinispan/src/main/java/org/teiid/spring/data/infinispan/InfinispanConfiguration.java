@@ -26,7 +26,7 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
 
     // security
     private String saslMechanism;
-    private String userName;
+    private String username;
     private String password;
     private String authenticationRealm = "default";
     private String authenticationServerName = "infinispan";
@@ -69,12 +69,12 @@ public class InfinispanConfiguration implements org.teiid.infinispan.api.Infinis
     }
 
     @Override
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String userName) {
+        this.username = userName;
     }
 
     @Override
