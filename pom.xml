@@ -123,6 +123,7 @@
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
     <hibernate.version>5.3.10.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
     <hibernate.tools.version>5.3.7.Final</hibernate.tools.version>
+    <version.commons-beanutils>1.9.4</version.commons-beanutils>
     <version.commons-codec>1.12</version.commons-codec>
     <version.commons-lang3>3.9</version.commons-lang3>
     <version.httpclient>4.5.8</version.httpclient>
@@ -799,6 +800,11 @@
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging</artifactId>
         <version>3.4.1.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>${version.commons-beanutils}</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
