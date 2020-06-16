@@ -22,7 +22,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "hsql",
         driverNames={"org.hsqldb.jdbc.JDBCDriver"},
         datasourceNames={"org.hsqldb.jdbc.pool.JDBCXADataSource"},
-        prefix="spring.datasource",
+        url="jdbc:hsqldb:http://{host}[:port][/<alias>][<key-value-pairs>]",
         dialect="org.hibernate.dialect.HSQLDialect",
         jdbc=true
         )

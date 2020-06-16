@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "prestodb",
         translatorName = "prestodb",
         driverNames={"com.facebook.presto.jdbc.PrestoDriver"},
-        prefix="spring.datasource",
+        url="jdbc:presto://{host}:{port};",
         jdbc=true
         )
 public class PrestodbDataSourceConfiguration {

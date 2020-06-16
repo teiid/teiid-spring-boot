@@ -34,9 +34,10 @@ public class ExternalSource implements Serializable{
     private String dialect;
     private String springBootPropertyPrefix;
     private boolean jdbc;
+    private String url;
 
     public ExternalSource(String name, String[] driverNames, String[] datasourceNames, String translatorName,
-            String dialect, String prefix, boolean jdbc) {
+            String dialect, String prefix, boolean jdbc, String url) {
         this.name = name;
         this.driverNames = driverNames;
         this.datasourceNames = datasourceNames;
@@ -44,6 +45,7 @@ public class ExternalSource implements Serializable{
         this.dialect = dialect;
         this.springBootPropertyPrefix = prefix;
         this.jdbc = jdbc;
+        this.url = url;
     }
 
     public String getName() {
@@ -105,5 +107,9 @@ public class ExternalSource implements Serializable{
     }
     public boolean isJdbc() {
         return jdbc;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

@@ -22,7 +22,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "h2",
         driverNames={"org.h2.Driver"},
         datasourceNames={"org.h2.jdbcx.JdbcDataSource"},
-        prefix="spring.datasource",
+        url="jdbc:h2:tcp://{host}[:{port}]/{db-name}",
         dialect="org.hibernate.dialect.H2Dialect",
         jdbc=true
         )

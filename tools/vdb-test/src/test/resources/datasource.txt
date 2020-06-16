@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DataSourcessampledb {
 
-    @ConfigurationProperties(prefix = "spring.datasource.sampledb")
+    @ConfigurationProperties(prefix = "spring.teiid.data.mssql-server.sampledb")
     @Bean(name="sampledb")
     public DataSource sampledb() {
         return DataSourceBuilder.create().build();

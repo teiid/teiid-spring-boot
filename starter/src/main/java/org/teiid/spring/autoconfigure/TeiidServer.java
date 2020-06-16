@@ -401,7 +401,8 @@ public class TeiidServer extends EmbeddedServer {
         addTranslator(es, context);
 
         Properties overrideProperties = getTranslatorProperties(context, source.getTranslatorName(), dsBeanName,
-                TranlatorPropertyType.OVERRIDE, new String[] {"spring.datasource", "spring.xa.datasource"});
+                TranlatorPropertyType.OVERRIDE,
+                new String[] { es.getSpringBootPropertyPrefix(), "spring.datasource", "spring.xa.datasource" });
         if (!overrideProperties.isEmpty()) {
             source.setTranslatorName(dsBeanName);
             VDBTranslatorMetaData t = new VDBTranslatorMetaData();
@@ -414,7 +415,8 @@ public class TeiidServer extends EmbeddedServer {
         // add the importer properties from the configuration
         // note that above defaults can be overridden with this too.
         Properties importProperties = getTranslatorProperties(context, source.getTranslatorName(), dsBeanName,
-                TranlatorPropertyType.IMPORT, new String[] {"spring.datasource", "spring.xa.datasource"});
+                TranlatorPropertyType.IMPORT,
+                new String[] { es.getSpringBootPropertyPrefix(), "spring.datasource", "spring.xa.datasource" });
         for (String k : importProperties.stringPropertyNames()) {
             model.addProperty(k, importProperties.getProperty(k));
         }

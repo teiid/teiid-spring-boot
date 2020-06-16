@@ -21,11 +21,11 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "actian",
         translatorName = "actian-vector",
         driverNames={"com.ingres.jdbc.IngresDriver"},
-        prefix="spring.datasource",
+        url="jdbc:ingres://{host}:AH7/{db-name}",
         dialect="org.hibernate.dialect.Ingres10Dialect",
         otherAliases= {"actian-vector"},
         jdbc=true
- )
+        )
 public class ActianDataSourceConfiguration {
 
 }

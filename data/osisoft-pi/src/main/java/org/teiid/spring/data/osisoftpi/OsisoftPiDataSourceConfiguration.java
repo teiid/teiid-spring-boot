@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "osisoft-pi",
         translatorName = "osisoft-pi",
         driverNames={"com.osisoft.jdbc.Driver"},
-        prefix="spring.datasource",
+        url="jdbc:pioledbent://{das-name}/Data Source={af-name};Integrated Security=SSPI",
         jdbc=true
         )
 public class OsisoftPiDataSourceConfiguration {

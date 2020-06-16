@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "sybase",
         translatorName = "sybase",
         driverNames={"com.sybase.jdbc2.jdbc.SybDriver","com.sybase.jdbc4.jdbc.SybDriver"},
-        prefix="spring.datasource",
+        url="jdbc:sybase:Tds:{host}:{port}[?ServiceName= {db-name}]",
         dialect="org.hibernate.dialect.SybaseDialect",
         jdbc=true
         )

@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "jtds-sqlserver",
         translatorName = "sqlserver",
         driverNames={"net.sourceforge.jtds.jdbc.Driver"},
-        prefix="spring.datasource",
+        url="jdbc:jtds:sqlserver://{host}:1433/{db-name}",
         dialect="org.hibernate.dialect.SQLServer2012Dialect",
         otherAliases= {"jtds"},
         jdbc=true

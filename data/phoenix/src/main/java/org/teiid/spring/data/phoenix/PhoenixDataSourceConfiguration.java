@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "phoenix",
         translatorName = "phoenix",
         driverNames={"org.apache.phoenix.jdbc.PhoenixDriver"},
-        prefix="spring.datasource",
+        url="jdbc:phoenix:{host}:{port}:/{db-name}",
         jdbc=true
         )
 public class PhoenixDataSourceConfiguration {

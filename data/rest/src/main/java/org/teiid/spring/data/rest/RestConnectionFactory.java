@@ -55,7 +55,7 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
     private String securityType;
     private String clientId;
     private String clientSecret;
-    private String userName;
+    private String username;
     private String password;
     private String refreshToken;
     private String authorizeUrl;
@@ -90,12 +90,12 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
             return new RestConnection(template, beanFactory, this.endpoint, headers);
         }
         else if (this.securityType.contentEquals("http-basic")) {
-            if (this.userName == null || this.password == null) {
+            if (this.username == null || this.password == null) {
                 throw new IllegalStateException("http-basic authentication configured, "
                         + "however userid/password information not provided");
             }
             Map<String, List<String>> headers = new HashMap<>();
-            String str = this.userName+":"+this.password;
+            String str = this.username+":"+this.password;
             headers.put(AUTHORIZATION,Arrays.asList("Basic "+Base64.getEncoder().encodeToString(str.getBytes())));
             return new RestConnection(this.template, this.beanFactory, this.endpoint, headers);
         } else if (securityType.contentEquals("openid-connect")) {
@@ -114,8 +114,8 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
         RestOAuth2Template t = new RestOAuth2Template(this.clientId, this.clientSecret, this.authorizeUrl,
                 this.accessTokenUrl, this.template);
         if (this.refreshToken == null) {
-            if (this.userName != null && this.password != null) {
-                this.accessGrant = t.exchangeCredentialsForAccess(this.userName, this.password,
+            if (this.username != null && this.password != null) {
+                this.accessGrant = t.exchangeCredentialsForAccess(this.username, this.password,
                         new LinkedMultiValueMap<String, String>());
             } else {
                 throw new IllegalStateException("openid-connect authentication configured, "
@@ -171,6 +171,10 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
         }
     }
 
+    /**
+     * The security type.  Can be http-basic, openid-connect, or null for none.
+     * @return
+     */
     public String getSecurityType() {
         return securityType;
     }
@@ -195,12 +199,12 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
         this.clientSecret = clientSecret;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String userName) {
+        this.username = userName;
     }
 
     public String getPassword() {
@@ -285,8 +289,5 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
 
     @Override
     public void close() throws IOException {
-        if (this.template != null) {
-            this.template  = null;
-        }
     }
 }
