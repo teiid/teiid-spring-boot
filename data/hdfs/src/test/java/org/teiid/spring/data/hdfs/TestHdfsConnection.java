@@ -52,28 +52,28 @@ public class TestHdfsConnection {
 
     @Test
     public void testAdd() throws FileNotFoundException, TranslatorException {
-        File file = new File("sampleeg.txt");
+        File file = new File("src/main/resources/hello");
         InputStream inputStream = new FileInputStream(file);
-        hdfsConnection.add(inputStream, "main/sampleeg.txt");
-        VirtualFile[] virtualFiles = hdfsConnection.getFiles("main/sampleeg.txt");
-        Assert.assertEquals("The test fails", "sampleeg.txt", virtualFiles[0].getName());
+        hdfsConnection.add(inputStream, "folder1/hello");
+        VirtualFile[] virtualFiles = hdfsConnection.getFiles("folder1/hello");
+        Assert.assertEquals("The test fails", "hello", virtualFiles[0].getName());
     }
 
     @Test
     public void testDeleteFile() throws TranslatorException {
-        Assert.assertTrue(hdfsConnection.remove("main/sample.txt"));
+        Assert.assertTrue(hdfsConnection.remove("main/hello"));
     }
 
     @Test
     public void testgetAllFiles() throws TranslatorException {
-        VirtualFile[] virtualFiles = hdfsConnection.getFiles("/user/aditya/main/");
+        VirtualFile[] virtualFiles = hdfsConnection.getFiles("/user/aditya/");
         for(int i = 0; i < virtualFiles.length; i++)
             System.out.println(virtualFiles[i].getName());
     }
 
     @Test
     public void testBlobSearch() throws TranslatorException {
-        VirtualFile[] virtualFiles = hdfsConnection.getFiles("/user/aditya/main/sam?le");
+        VirtualFile[] virtualFiles = hdfsConnection.getFiles("/user/aditya/folder1/*");
         for(int i = 0; i < virtualFiles.length; i++)
             System.out.println(virtualFiles[i].getName());
     }

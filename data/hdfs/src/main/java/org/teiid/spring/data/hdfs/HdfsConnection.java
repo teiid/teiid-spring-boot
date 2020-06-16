@@ -17,6 +17,7 @@
  */
 package org.teiid.spring.data.hdfs;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -71,11 +72,19 @@ public class HdfsConnection implements VirtualFileConnection {
                     return null;
                 }
                 FileStatus[] fileStatuses = fileSystem.globStatus(new Path(location));
-                VirtualFile[] virtualFiles = new VirtualFile[fileStatuses.length];
+                Vector<HdfsVirtualFile> hdfsVirtualFiles = new Vector<>();
                 for(int i = 0; i < fileStatuses.length; i++){
-                    virtualFiles[i] = new HdfsVirtualFile(fileSystem, fileStatuses[i]);
+                    if(fileStatuses[i].isFile()){
+                        hdfsVirtualFiles.add(new HdfsVirtualFile(fileSystem, fileStatuses[i]));
+                    }
+                }
+                VirtualFile[] virtualFiles = new VirtualFile[hdfsVirtualFiles.size()];
+                for(int i = 0; i < hdfsVirtualFiles.size(); i++) {
+                    virtualFiles[i] = hdfsVirtualFiles.get(i);
                 }
                 return virtualFiles;
+            } catch (FileNotFoundException e){
+                return null;
             } catch (IOException e) {
                 throw new TranslatorException(e);
             }
