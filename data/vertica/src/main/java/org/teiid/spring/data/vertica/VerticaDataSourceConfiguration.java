@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "vertica",
         translatorName = "vertica",
         driverNames={"com.vertica.jdbc.Driver"},
-        prefix="spring.datasource",
+        url="jdbc:vertica:{host}:5433/{db-name}",
         jdbc=true
         )
 public class VerticaDataSourceConfiguration {

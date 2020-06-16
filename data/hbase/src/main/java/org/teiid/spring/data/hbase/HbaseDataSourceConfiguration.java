@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "hbase",
         translatorName = "hbase",
         driverNames={"org.apache.phoenix.jdbc.PhoenixDriver"},
-        prefix="spring.datasource",
+        url="jdbc:apachehbase:{host};{port}",
         jdbc=true
         )
 public class HbaseDataSourceConfiguration {

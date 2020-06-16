@@ -21,7 +21,6 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "jdbc-ansi",
         translatorName = "jdbc-ansi",
         driverNames={"java.sql.Driver"},
-        prefix="spring.datasource",
         jdbc=true
         )
 public class JdbcAnsiDataSourceConfiguration {

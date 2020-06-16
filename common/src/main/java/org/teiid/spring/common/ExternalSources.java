@@ -69,11 +69,14 @@ public class ExternalSources implements Serializable{
     private static ExternalSource build(ConnectionFactoryConfiguration annotation, String className) {
         String dialect = annotation.dialect();
         boolean jdbc = annotation.jdbc();
-        String prefix = annotation.prefix().isEmpty() ? "spring.teiid.data." + annotation.alias():annotation.prefix();
+        String prefix = "spring.teiid.data." + annotation.alias();
         String[] drivers = annotation.driverNames().length == 0 ? new String[] { className }: annotation.driverNames();
         String[] dataSources = annotation.datasourceNames().length == 0 ?new String[] {}: annotation.datasourceNames();
+        String url = annotation.url().isEmpty() ? null : annotation.url();
+
         ExternalSource source = new ExternalSource(annotation.alias(), drivers, dataSources,
-                annotation.translatorName(), dialect.isEmpty() ? null : dialect, prefix, jdbc);
+                annotation.translatorName(), dialect.isEmpty() ? null : dialect, prefix, jdbc, url);
+
         return source;
     }
 

@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "impala",
         translatorName = "impala",
         driverNames={"org.apache.hadoop.hive.jdbc.HiveDriver"},
-        prefix="spring.datasource",
+        url="jdbc:impala://{host}:{port}",
         jdbc=true
         )
 public class ImpalaDataSourceConfiguration {

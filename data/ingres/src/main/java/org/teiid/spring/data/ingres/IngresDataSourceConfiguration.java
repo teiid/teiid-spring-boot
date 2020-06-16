@@ -21,8 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "ingres",
         translatorName = "ingres",
         driverNames={"com.ingres.jdbc.IngresDriver"},
-
-        prefix="spring.datasource",
+        url="jdbc:ingres://{host}:{port:21071}/{db-name}",
         dialect="org.hibernate.dialect.Ingres10Dialect",
         jdbc=true
         )

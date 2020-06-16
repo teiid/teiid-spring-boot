@@ -21,7 +21,6 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "jdbc-simple",
         translatorName = "jdbc-simple",
         driverNames={"java.sql.Driver"},
-        prefix="spring.datasource",
         jdbc=true
         )
 public class JdbcSimpleDataSourceConfiguration {

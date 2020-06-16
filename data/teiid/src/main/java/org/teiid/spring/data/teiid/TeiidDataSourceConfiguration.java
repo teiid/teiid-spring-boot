@@ -21,8 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "teiid",
         translatorName = "teiid",
         driverNames={"org.teiid.jdbc.TeiidDriver"},
-
-        prefix="spring.datasource",
+        url="jdbc:teiid:{vdb}@mm://{host}:31000",
         dialect="org.teiid.dialect.TeiidDialect",
         jdbc=true
         )

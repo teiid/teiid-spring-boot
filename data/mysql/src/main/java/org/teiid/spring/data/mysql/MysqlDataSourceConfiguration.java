@@ -22,7 +22,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "mysql",
         driverNames={"com.mysql.jdbc.Driver"},
         datasourceNames={"com.mysql.jdbc.jdbc2.optional.MysqlXADataSource"},
-        prefix="spring.datasource",
+        url="jdbc:mysql://{host}:3306/{db-name}",
         dialect="org.hibernate.dialect.MySQL5InnoDBDialect",
         jdbc=true
         )

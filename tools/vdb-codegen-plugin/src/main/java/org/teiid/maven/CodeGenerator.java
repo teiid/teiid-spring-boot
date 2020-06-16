@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2001-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.teiid.spring.data.hive;
+package org.teiid.maven;
 
-import org.teiid.spring.data.ConnectionFactoryConfiguration;
+import java.util.Map;
 
-@ConnectionFactoryConfiguration(
-        alias = "hive",
-        translatorName = "hive",
-        driverNames={"org.apache.hive.jdbc.HiveDriver"},
-        url="jdbc:hive2://{host}:10000/{db-name}",
-        jdbc=true
-        )
-public class HiveDataSourceConfiguration {
+import org.apache.maven.plugin.MojoExecutionException;
+import org.teiid.metadata.Server;
+import org.teiid.spring.common.ExternalSource;
 
+public interface CodeGenerator {
+    void generate(ExternalSource source, Server server, Map<String, String> props) throws MojoExecutionException;
 }

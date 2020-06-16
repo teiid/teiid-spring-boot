@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "sap-iq",
         translatorName = "sap-iq",
         driverNames={"com.sybase.jdbc4.jdbc.SybDriver"},
-        prefix="spring.datasource",
+        url="jdbc:sybase:Tds:{host}:{port}?ServiceName=database",
         jdbc=true
         )
 public class SapIqDataSourceConfiguration {

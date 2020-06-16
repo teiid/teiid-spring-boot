@@ -76,10 +76,10 @@ public @interface ConnectionFactoryConfiguration {
     String[] datasourceNames() default {};
 
     /**
-     * Spring boot property prefix
+     * Spring boot property url
      * @return
      */
-    String prefix() default "";
+    String url() default "";
 
     /**
      * true when data source is JDBC type

@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "hana",
         translatorName = "hana",
         driverNames={"com.sap.db.jdbc.Driver"},
-        prefix="spring.datasource",
+        url="jdbc:sap://{host}>:{port}[/?<options>]",
         dialect="org.hibernate.dialect.HANARowStoreDialect",
         jdbc=true
         )

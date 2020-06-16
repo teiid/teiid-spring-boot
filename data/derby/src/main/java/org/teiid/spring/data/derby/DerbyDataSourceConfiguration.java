@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "derby",
         translatorName = "derby",
         driverNames={"org.apache.derby.jdbc.ClientDriver"},
-        prefix="spring.datasource",
+        url="jdbc:derby://{host}:1527/{db-name}",
         dialect="org.hibernate.dialect.DerbyTenSevenDialect",
         jdbc=true
         )

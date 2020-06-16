@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "netezza",
         translatorName = "netezza",
         driverNames={"org.netezza.Driver "},
-        prefix="spring.datasource",
+        url="jdbc:netezza://{host}:{port}/{db-name}",
         jdbc=true
         )
 public class NetezzaDataSourceConfiguration {

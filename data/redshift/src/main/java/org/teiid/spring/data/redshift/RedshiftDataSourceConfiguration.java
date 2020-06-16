@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "redshift",
         translatorName = "redshift",
         driverNames={"com.amazon.redshift.jdbc42.Driver"},
-        prefix="spring.datasource",
+        url="jdbc:redshift://{host}:{port}/{db-name}",
         jdbc=true
         )
 public class RedshiftDataSourceConfiguration {

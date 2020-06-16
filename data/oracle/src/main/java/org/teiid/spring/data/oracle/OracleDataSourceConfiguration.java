@@ -22,7 +22,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "oracle",
         driverNames={"oracle.jdbc.OracleDriver"},
         datasourceNames={"oracle.jdbc.xa.client.OracleXADataSource"},
-        prefix="spring.datasource",
+        url="jdbc:oracle:thin:{host}:1521:orcl",
         dialect="org.hibernate.dialect.Oracle12cDialect",
         jdbc=true
         )

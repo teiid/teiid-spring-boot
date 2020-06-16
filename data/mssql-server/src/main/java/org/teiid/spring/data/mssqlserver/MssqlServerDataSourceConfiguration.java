@@ -22,7 +22,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "sqlserver",
         driverNames={"com.microsoft.sqlserver.jdbc.SQLServerDriver"},
         datasourceNames={"com.microsoft.sqlserver.jdbc.SQLServerXADataSource"},
-        prefix="spring.datasource",
+        url="jdbc:microsoft:sqlserver://{host}:1433",
         dialect="org.hibernate.dialect.SQLServer2012Dialect",
         otherAliases= {"ms-sqlserver","sqlserver"},
         jdbc=true

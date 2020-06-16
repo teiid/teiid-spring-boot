@@ -21,7 +21,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         alias = "amazon-athena",
         translatorName = "jdbc-ansi",
         driverNames={"com.simba.athena.jdbc.Driver"},
-        prefix="spring.datasource",
+        url="jdbc:awsathena://User=[AccessKey];Password=[SecretKey];S3OutputLocation=[Output];[Property1]=[Value1];[Property2]=[Value2];",
         jdbc=true
         )
 public class AmazonAthenaDataSourceConfiguration {
