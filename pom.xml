@@ -91,7 +91,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.deploy.plugin>2.8.2</version.deploy.plugin>
-	<project.build.targetJdk>11</project.build.targetJdk>
+    <project.build.targetJdk>11</project.build.targetJdk>
     <basepom.check.skip-dependency>false</basepom.check.skip-dependency>
     <basepom.check.fail-dependency>false</basepom.check.fail-dependency>
     <basepom.check.skip-duplicate-finder>false</basepom.check.skip-duplicate-finder>
@@ -139,7 +139,7 @@
     <version.jackson-core>2.11.0.rc1</version.jackson-core>
     <version.jackson-databind>2.11.0.rc1</version.jackson-databind>
     <version.org.mongodb>3.9.1</version.org.mongodb>
-    
+
     <version.net.sf.ucanaccess>5.0.0</version.net.sf.ucanaccess>
     <version.com.facebook.presto>0.236</version.com.facebook.presto>
     <version.com.ibm.informix>4.50.3</version.com.ibm.informix>
@@ -359,6 +359,11 @@
       <dependency>
         <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-file</artifactId>
+        <version>${teiid.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
+        <artifactId>file-api</artifactId>
         <version>${teiid.version}</version>
       </dependency>
       <dependency>
@@ -818,6 +823,11 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>spring-data-hdfs</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>spring-data-actian</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -970,7 +980,7 @@
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-vertica</artifactId>
         <version>${project.version}</version>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>vdb-tools-common</artifactId>
@@ -1016,7 +1026,12 @@
           <groupId>io.netty</groupId>
           <artifactId>netty-all</artifactId>
           <version>4.1.42.Final</version>
-      </dependency>            
+      </dependency>
+      <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
+          <version>3.10.6.Final</version>
+      </dependency>
       <dependency>
           <groupId>io.netty</groupId>
           <artifactId>netty-buffer</artifactId>
@@ -1194,6 +1209,68 @@
         <artifactId>guava</artifactId>
         <version>20.0</version>
       </dependency>      
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>3.2.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>jdk.tools</groupId>
+            <artifactId>jdk.tools</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.activation</groupId>
+            <artifactId>javax.activation-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs</artifactId>
+        <version>2.9.2</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <!-- there's are old but still referenced in hbase/hdfs -->
+      <dependency>
+         <groupId>org.codehaus.jackson</groupId>
+         <artifactId>jackson-core-asl</artifactId>
+         <version>1.9.13</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.jackson</groupId>
+         <artifactId>jackson-mapper-asl</artifactId>
+         <version>1.9.13</version>
+      </dependency>
+
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
 
       <dependency>
@@ -1205,7 +1282,7 @@
           <groupId>com.syncron.amazonaws</groupId>
           <artifactId>simba-athena-jdbc-driver</artifactId>
           <version>${version.com.syncron.amazonaws}</version>
-      </dependency>      
+      </dependency>
       <dependency>
           <groupId>org.apache.derby</groupId>
           <artifactId>derbyclient</artifactId>
@@ -1215,7 +1292,7 @@
           <groupId>com.exasol</groupId>
           <artifactId>exasol-jdbc</artifactId>
           <version>${version.com.exasol}</version>
-      </dependency>    
+      </dependency>
       <dependency>
           <groupId>com.sap.cloud.db.jdbc</groupId>
           <artifactId>ngdbc</artifactId>
@@ -1235,7 +1312,7 @@
       <groupId>com.facebook.presto</groupId>
       <artifactId>presto-jdbc</artifactId>
       <version>${version.com.facebook.presto}</version>
-    </dependency>  
+    </dependency>
     <dependency>
         <groupId>net.sf.ucanaccess</groupId>
         <artifactId>ucanaccess</artifactId>
@@ -1298,7 +1375,7 @@
         <exclusion>
           <groupId>org.eclipse.jetty.aggregate</groupId>
           <artifactId>*</artifactId>
-        </exclusion>        
+        </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
@@ -1306,7 +1383,7 @@
       </exclusions>
     </dependency>
     </dependencies>
-    
+
   </dependencyManagement>
 
   <repositories>

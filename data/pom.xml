@@ -30,6 +30,7 @@
 
   <modules>
       <module>cassandra</module>
+        <module>hdfs</module>
         <module>actian</module>
         <module>amazon-athena</module>
         <module>db2</module>
