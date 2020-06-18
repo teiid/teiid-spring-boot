@@ -24,7 +24,7 @@ Refer to link:docs/UserGuide.adoc[User Guide] for more details.
 
 == Build
 
-* install JDK 1.8 or higher
+* install JDK 1.9 or higher
 * install maven 3.2+ - http://maven.apache.org/download.html
 * Create a github account fork the teiid-spring-boot
 

@@ -91,7 +91,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.deploy.plugin>2.8.2</version.deploy.plugin>
-    <project.build.targetJdk>11</project.build.targetJdk>
+    <project.build.systemJdk>9</project.build.systemJdk>
+    <project.build.targetJdk>1.8</project.build.targetJdk>
     <basepom.check.skip-dependency>false</basepom.check.skip-dependency>
     <basepom.check.fail-dependency>false</basepom.check.fail-dependency>
     <basepom.check.skip-duplicate-finder>false</basepom.check.skip-duplicate-finder>
