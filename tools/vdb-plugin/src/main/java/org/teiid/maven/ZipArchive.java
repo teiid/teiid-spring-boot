@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -29,10 +30,12 @@ import java.util.zip.ZipOutputStream;
 public class ZipArchive implements Closeable{
     private ZipOutputStream archive;
     private FileOutputStream fos;
+    private HashSet<String> names;
 
     public ZipArchive(File artifact) throws IOException {
         this.fos = new FileOutputStream(artifact);
         this.archive = new ZipOutputStream(fos);
+        this.names = new HashSet<String>();
     }
 
     @Override
@@ -56,6 +59,11 @@ public class ZipArchive implements Closeable{
         }
 
         fileName = fileName.trim();
+
+        // if this is a duplicate entry do not add it
+        if (!names.add(fileName)) {
+            return;
+        }
 
         if (fileToZip.isDirectory()) {
             if (!fileName.isEmpty()) {
