@@ -16,7 +16,11 @@
 package org.teiid.spring.common;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -25,6 +29,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.teiid.spring.data.ConfigurationProperty;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 public class ExternalSources implements Serializable{
@@ -54,7 +59,7 @@ public class ExternalSources implements Serializable{
                 Class<?> clazz = Class.forName(c.getBeanClassName(), false, classloader);
                 ConnectionFactoryConfiguration cfc = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
                 if(cfc != null) {
-                    ExternalSource source = build(cfc, c.getBeanClassName());
+                    ExternalSource source = build(cfc, clazz);
                     for (String name : cfc.otherAliases()) {
                         items.put(name, source);
                     }
@@ -66,17 +71,64 @@ public class ExternalSources implements Serializable{
         }
     }
 
-    private static ExternalSource build(ConnectionFactoryConfiguration annotation, String className) {
+    private static ExternalSource build(ConnectionFactoryConfiguration annotation, Class<?> clazz) {
         String dialect = annotation.dialect();
         boolean jdbc = annotation.jdbc();
         String prefix = "spring.teiid.data." + annotation.alias();
-        String[] drivers = annotation.driverNames().length == 0 ? new String[] { className }: annotation.driverNames();
+        String[] drivers = annotation.driverNames().length == 0 ? new String[] { clazz.getName() }: annotation.driverNames();
         String[] dataSources = annotation.datasourceNames().length == 0 ?new String[] {}: annotation.datasourceNames();
         String url = annotation.url().isEmpty() ? null : annotation.url();
 
-        ExternalSource source = new ExternalSource(annotation.alias(), drivers, dataSources,
-                annotation.translatorName(), dialect.isEmpty() ? null : dialect, prefix, jdbc, url);
+        List<PropertyDefinition> props = new ArrayList<PropertyDefinition>();
+        for (Method m : annotation.configuration().getMethods()) {
+            if (ReflectionUtil.isGetter(m)) {
+                String name = ReflectionUtil.getterName(m);
+                if (ReflectionUtil.hasSetter(name, annotation.configuration())) {
+                    Class<?> classType = ReflectionUtil.getterType(m);
+                    String type = "string";
+                    if (classType.isAssignableFrom(boolean.class) || classType.isAssignableFrom(Boolean.class)) {
+                        type = "boolean";
+                    } else if (classType.isAssignableFrom(int.class) || classType.isAssignableFrom(short.class)
+                            || classType.isAssignableFrom(double.class) || classType.isAssignableFrom(long.class)
+                            || classType.isAssignableFrom(Number.class)) {
+                        type = "number";
+                    }
 
+                    String defaultValue = null;
+                    String description = null;
+                    String displayName = null;
+                    Boolean advanced = null;
+                    Boolean masked = null;
+                    Boolean required = null;
+                    String[] allowedValues = null;
+                    try {
+                        Field f = annotation.configuration().getDeclaredField(name);
+                        ConfigurationProperty pd = f.getAnnotation(ConfigurationProperty.class);
+                        if (pd != null) {
+                            displayName = pd.displayName().isEmpty() ? null : pd.displayName();
+                            description = pd.description().isEmpty() ? null : pd.description();
+                            defaultValue = pd.defaultValue().isEmpty() ? null : pd.defaultValue();
+                            advanced = pd.advanced() ? true : null;
+                            required = pd.required() ? true : null;
+                            masked = pd.masked() ? true : null;
+                            allowedValues = pd.allowedValues().length == 0 ? null : pd.allowedValues();
+                        }
+                    } catch (NoSuchFieldException | SecurityException e) {
+                        // ignore and use defaults
+                    }
+                    props.add(new PropertyDefinition(name, displayName, description, type, required, masked, advanced,
+                            defaultValue, allowedValues));
+                }
+            }
+        }
+
+        if (jdbc) {
+            props.add(new PropertyDefinition("driverClassName", null, null, "string", false,
+                    null, null, annotation.driverNames()[0], annotation.driverNames()));
+        }
+
+        ExternalSource source = new ExternalSource(annotation.alias(), drivers, dataSources,
+                annotation.translatorName(), dialect.isEmpty() ? null : dialect, prefix, jdbc, url, props);
         return source;
     }
 
@@ -106,8 +158,8 @@ public class ExternalSources implements Serializable{
         }
     }
 
-    public void addSource(ConnectionFactoryConfiguration annotation, String className) {
-        ExternalSource source = build(annotation, className);
+    public void addSource(ConnectionFactoryConfiguration annotation, Class<?> clazz) {
+        ExternalSource source = build(annotation, clazz);
         if (find(source.getName()) == null) {
             this.items.put(source.getName(), source);
         }

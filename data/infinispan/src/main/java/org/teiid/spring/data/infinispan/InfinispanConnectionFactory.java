@@ -29,7 +29,8 @@ import org.teiid.translator.TranslatorException;
 
 @ConnectionFactoryConfiguration(
         alias = "infinispan-hotrod",
-        translatorName = "infinispan-hotrod"
+        translatorName = "infinispan-hotrod",
+        configuration = InfinispanConfiguration.class
         )
 public class InfinispanConnectionFactory implements BaseConnectionFactory<BaseInfinispanConnection> {
 

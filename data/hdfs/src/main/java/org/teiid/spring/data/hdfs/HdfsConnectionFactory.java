@@ -25,8 +25,9 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(
         alias = "hdfs",
-        translatorName = "file"
-)
+        translatorName = "file",
+        configuration = HdfsConfiguration.class
+        )
 public class HdfsConnectionFactory implements BaseConnectionFactory<HdfsConnection> {
 
     HdfsConfiguration hdfsConfiguration;

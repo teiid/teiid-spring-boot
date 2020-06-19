@@ -68,7 +68,7 @@ public class TextTableView extends ViewBuilder<TextTable> {
         }
         sb.append(") AS f, ").append("\n");
 
-        if (annotation.source().equals("file")) {
+        if (alias.equalsIgnoreCase("file")) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
         } else if (alias.equalsIgnoreCase("rest")) {
             sb.append("TEXTTABLE(f.result COLUMNS ").append(columndef.toString());

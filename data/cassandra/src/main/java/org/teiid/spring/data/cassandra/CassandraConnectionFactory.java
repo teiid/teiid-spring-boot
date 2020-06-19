@@ -17,15 +17,16 @@
  */
 package org.teiid.spring.data.cassandra;
 
+import java.io.IOException;
+
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
-import java.io.IOException;
-
 @ConnectionFactoryConfiguration(
         alias = "cassandra",
-        translatorName = "cassandra"
-)
+        translatorName = "cassandra",
+        configuration = CassandraConfiguration.class
+        )
 public class CassandraConnectionFactory implements BaseConnectionFactory<CassandraConnection> {
 
     private CassandraConfiguration cassandraConfiguration;

@@ -47,7 +47,8 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(
         alias = "rest",
-        translatorName = "rest"
+        translatorName = "rest",
+        configuration = RestConnectionFactory.class
         )
 public class RestConnectionFactory implements BaseConnectionFactory<RestConnection> {
     private static final String AUTHORIZATION = "Authorization"; //$NON-NLS-1$

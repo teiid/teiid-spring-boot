@@ -21,7 +21,8 @@ import org.teiid.spring.data.file.FileConnectionFactory;
 
 @ConnectionFactoryConfiguration(
         alias = "excel",
-        translatorName = "excel"
+        translatorName = "excel",
+        configuration = ExcelConnectionFactory.class
         )
 public class ExcelConnectionFactory extends FileConnectionFactory {
 }
