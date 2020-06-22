@@ -17,7 +17,7 @@
  */
 package org.teiid.spring.data.hdfs;
 
-public class HdfsConfiguration {
+public class HdfsConfiguration implements org.teiid.hdfs.HdfsConfiguration {
 
     private String fsUri;
     private String resourcePath = null;
