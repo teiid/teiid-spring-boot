@@ -983,6 +983,11 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>spring-data-s3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>vdb-tools-common</artifactId>
         <version>${project.version}</version>
       </dependency>       
@@ -1258,6 +1263,11 @@
             <artifactId>servlet-api</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk</artifactId>
+        <version>1.11.804</version>
       </dependency>
       <!-- there's are old but still referenced in hbase/hdfs -->
       <dependency>
