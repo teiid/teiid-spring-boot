@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.teiid.file.VirtualFile;
+import org.teiid.hdfs.HdfsConnection;
 import org.teiid.translator.TranslatorException;
 
 @Ignore
