@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>org.teiid.connectors</groupId>
-      <artifactId>translator-jdbc</artifactId>
+      <artifactId>translator-hive</artifactId>
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>

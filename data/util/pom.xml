@@ -137,7 +137,7 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>spring-data-hbase</artifactId>
+      <artifactId>spring-data-hdfs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
