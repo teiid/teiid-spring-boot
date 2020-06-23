@@ -117,12 +117,4 @@ public class ExternalSources implements Serializable{
         return items;
     }
 
-    public static void main(String[] args) {
-        ExternalSources sources = new ExternalSources();
-        for (ExternalSource source : sources.items.values()) {
-            if (!source.getTranslatorName().equals(source.getName())) {
-                System.out.println(source.getTranslatorName() + " " + source.getName());
-            }
-        }
-    }
 }
