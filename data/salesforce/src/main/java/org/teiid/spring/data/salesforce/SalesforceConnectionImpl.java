@@ -22,12 +22,10 @@ import org.apache.commons.logging.LogFactory;
 import org.teiid.salesforce.BaseSalesforceConnection;
 import org.teiid.translator.salesforce.SalesforceConnection;
 
-import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 
 public class SalesforceConnectionImpl extends BaseSalesforceConnection<SalesforceConfiguration> implements SalesforceConnection {
     private static final Log logger = LogFactory.getLog(SalesforceConnectionImpl.class);
-    private PartnerConnection partnerConnection;
 
     public SalesforceConnectionImpl(SalesforceConfiguration sfc) throws Exception {
         super(sfc);
