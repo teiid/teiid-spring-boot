@@ -22,21 +22,20 @@ import org.apache.commons.logging.LogFactory;
 import org.teiid.salesforce.BaseSalesforceConnection;
 import org.teiid.translator.salesforce.SalesforceConnection;
 
-import com.sforce.soap.partner.PartnerConnection;
+import com.sforce.async.AsyncApiException;
 import com.sforce.ws.ConnectionException;
 
-public class SalesforceConnectionImpl extends BaseSalesforceConnection<SalesforceConfiguration> implements SalesforceConnection {
+public class SalesforceConnectionImpl extends BaseSalesforceConnection<SalesforceConfiguration, SalesforceConnectorConfig, TeiidPartnerConnection> implements SalesforceConnection {
     private static final Log logger = LogFactory.getLog(SalesforceConnectionImpl.class);
-    private PartnerConnection partnerConnection;
 
     public SalesforceConnectionImpl(SalesforceConfiguration sfc) throws Exception {
         super(sfc);
     }
 
     @Override
-    protected void login(SalesforceConfiguration sfc) throws ConnectionException {
+    protected SalesforceConnectorConfig createConnectorConfig(SalesforceConfiguration sfc)
+            throws ConnectionException {
         SalesforceConnectorConfig config = new SalesforceConnectorConfig();
-        this.config = config;
         config.setCompression(true);
         config.setTraceMessage(false);
         config.setUsername(sfc.getUsername());
@@ -53,17 +52,21 @@ public class SalesforceConnectionImpl extends BaseSalesforceConnection<Salesforc
         if (sfc.getRequestTimeout() != null) {
             config.setReadTimeout((int)Math.min(Integer.MAX_VALUE, sfc.getRequestTimeout()));
         }
+        return config;
+    }
 
-        partnerConnection = new TeiidPartnerConnection(config);
+    @Override
+    protected TeiidPartnerConnection login(SalesforceConfiguration sfc,
+            SalesforceConnectorConfig connectorConfig) throws AsyncApiException, ConnectionException {
+        TeiidPartnerConnection partnerConnection = new TeiidPartnerConnection(connectorConfig);
 
         logger.trace("Login was successful"); //$NON-NLS-1$
+        return partnerConnection;
     }
 
     @Override
     public boolean isValid() {
-        //could make a TeiidPartner connection interface method for this
-        if (partnerConnection instanceof TeiidPartnerConnection
-                && !((TeiidPartnerConnection)partnerConnection).isAccessTokenValid()) {
+        if (getPartnerConnection().isAccessTokenValid()) {
             return false;
         }
         return super.isValid();
