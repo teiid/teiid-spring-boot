@@ -1010,6 +1010,11 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
+        <artifactId>spring-data-s3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
         <artifactId>vdb-tools-common</artifactId>
         <version>${project.version}</version>
       </dependency>       
@@ -1048,62 +1053,6 @@
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
         <version>2.8.0</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-          <version>3.10.6.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-buffer</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>      
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-codec</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-common</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-handler</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-resolver</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-epoll</artifactId>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-epoll</artifactId>
-          <classifier>linux-x86_64</classifier>
-          <version>4.1.42.Final</version>
-      </dependency>
-      <dependency>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-unix-common</artifactId>
-          <version>4.1.42.Final</version>
       </dependency>
       <dependency>
           <groupId>org.infinispan</groupId>
@@ -1201,30 +1150,9 @@
           <version>4.2</version>
       </dependency>
       <dependency>
-        <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging</artifactId>
-        <version>3.4.1.Final</version>
-      </dependency>
-      <dependency>
         <groupId>org.yaml</groupId>
         <artifactId>snakeyaml</artifactId>
         <version>1.26</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5.8</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>wsdl4j</groupId>
-        <artifactId>wsdl4j</artifactId>
-        <version>1.6.3</version>
       </dependency>
       <dependency>
         <groupId>io.opentracing.contrib</groupId>
@@ -1236,7 +1164,18 @@
         <artifactId>guava</artifactId>
         <version>20.0</version>
       </dependency>      
-
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk</artifactId>
+        <version>1.11.804</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>commons-logging</artifactId>
+            <groupId>commons-logging</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
 
       <dependency>
