@@ -49,7 +49,7 @@ public class S3VirtualFile implements VirtualFile {
 
     @Override
     public OutputStream openOutputStream(boolean b) throws IOException {
-        throw new IOException();
+        throw new IOException("Output stream is not supported for use in s3.");
     }
 
     @Override

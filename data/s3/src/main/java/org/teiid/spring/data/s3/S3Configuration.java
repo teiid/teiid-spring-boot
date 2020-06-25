@@ -22,10 +22,10 @@ public class S3Configuration {
     private String awsAccessKey;
     private String awsSecretKey;
     private String bucket;
-    private String region;
+    private String region = "US-EAST-1";
     private String encryption;
     private String encryptionKey;
-    private String endpoint;
+    private String endpoint = "https://s3.amazonaws.com";
 
     public String getAwsAccessKey() {
         return awsAccessKey;

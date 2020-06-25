@@ -31,7 +31,7 @@ import java.io.IOException;
 
 @ConnectionFactoryConfiguration(
         alias = "s3",
-        translatorName = "s3"
+        translatorName = "file"
 )
 public class S3ConnectionFactory implements BaseConnectionFactory<S3Connection> {
 
