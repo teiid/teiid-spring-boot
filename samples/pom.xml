@@ -73,6 +73,7 @@
     <module>soap</module>
     <module>ftp</module>
     <module>cassandra</module>
+    <module>hdfs</module>
   </modules>
 
 </project>
