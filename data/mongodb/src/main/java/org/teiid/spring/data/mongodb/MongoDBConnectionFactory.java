@@ -26,7 +26,8 @@ import com.mongodb.MongoClientURI;
 
 @ConnectionFactoryConfiguration(
         alias = "mongodb",
-        translatorName = "mongodb"
+        translatorName = "mongodb",
+        configuration = MongoDBConfiguration.class
         )
 public class MongoDBConnectionFactory implements BaseConnectionFactory<MongoDBConnection> {
 

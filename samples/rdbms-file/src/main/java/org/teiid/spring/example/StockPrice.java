@@ -25,7 +25,7 @@ import org.teiid.spring.annotations.TextTable;
  * annotation.
  */
 @Entity
-@TextTable(file = "marketdata-price.txt") /* Also see property: spring.teiid.file.parent-directory=src/main/resources */
+@TextTable(file = "marketdata-price.txt", source = "file") /* Also see property: spring.teiid.file.parent-directory=src/main/resources */
 public class StockPrice {
 
     @Id

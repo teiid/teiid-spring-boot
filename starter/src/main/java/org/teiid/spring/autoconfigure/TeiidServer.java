@@ -26,6 +26,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -203,13 +204,14 @@ public class TeiidServer extends EmbeddedServer {
         }
     }
 
-    String addOverrideTranslator(VDBTranslatorMetaData translator, ExternalSource es, ApplicationContext context) {
+    String addOverrideTranslator(String overrideName, Map<String, String> properties, ExternalSource base,
+            ApplicationContext context) {
         try {
-            addTranslator(es, context);
-            addTranslator(translator.getName(), es.getTranslatorName(), translator.getPropertiesMap());
-            return translator.getName();
+            addTranslator(base, context);
+            addTranslator(overrideName, base.getTranslatorName(), properties);
+            return overrideName;
         } catch (TranslatorException e) {
-            throw new IllegalStateException("Failed to load translator " + translator.getName(), e);
+            throw new IllegalStateException("Failed to load translator " + overrideName, e);
         }
     }
 
@@ -281,6 +283,15 @@ public class TeiidServer extends EmbeddedServer {
         return driverName;
     }
 
+    String buildNewTranslatorName(VDBMetaData vdb, String proposedName) {
+        ExternalSource es = this.externalSources.find(proposedName);
+        if (es != null) {
+            throw new IllegalStateException("The Source name " + proposedName
+                    + " is same as one of the existing translators, choose a different name");
+        }
+        return proposedName;
+    }
+
     void deployVDB(VDBMetaData vdb, boolean last, ApplicationContext context) {
         try {
             if (Boolean.valueOf(vdb.getPropertyValue(TeiidAutoConfiguration.IMPLICIT_VDB))) {
@@ -296,58 +307,63 @@ public class TeiidServer extends EmbeddedServer {
                         }
                     }
                 }
+            } else {
+                // add any missing translators
+                for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
+                    for (SourceMappingMetadata smm : model.getSourceMappings()) {
+                        VDBTranslatorMetaData translator = vdb.getTranslator(smm.getTranslatorName());
+                        String addedTraslatorName = null;
+                        ExternalSource originSource = null;
+                        if (translator != null) {
+                            String type = translator.getType();
+                            originSource = this.externalSources.find(type);
+                            addedTraslatorName = addOverrideTranslator(translator.getName(), translator.getPropertiesMap(),
+                                    originSource, context);
+                        } else {
+                            originSource = this.externalSources.find(smm.getTranslatorName());
+                            String newName = buildNewTranslatorName(vdb, smm.getName());
+                            smm.setTranslatorName(newName);
+                            addedTraslatorName = addOverrideTranslator(newName, new HashMap<String, String>(),
+                                    originSource, context);
+                        }
+
+                        // set override properties
+                        Properties overrideProperties = getTranslatorProperties(context, originSource.getTranslatorName(),
+                                smm.getName(), TranlatorPropertyType.OVERRIDE,
+                                new String[] { originSource.getSpringBootPropertyPrefix() });
+
+                        VDBTranslatorMetaData translatorMetadata = getTranslatorRepository()
+                                .getTranslatorMetaData(addedTraslatorName);
+                        if (!overrideProperties.isEmpty() && translatorMetadata != null) {
+                            translatorMetadata.setProperties(overrideProperties);
+                        }
+
+                        // set model import properties
+                        Properties importProperties = getTranslatorProperties(context, originSource.getTranslatorName(),
+                                smm.getName(), TranlatorPropertyType.IMPORT,
+                                new String[] { originSource.getSpringBootPropertyPrefix() });
+                        for (String k : importProperties.stringPropertyNames()) {
+                            model.addProperty(k, importProperties.getProperty(k));
+                        }
+
+                        if (smm.getConnectionJndiName() != null) {
+                            if (this.connectionFactoryProviders.get(smm.getConnectionJndiName()) == null){
+                                throw new IllegalStateException("A Data source with JNDI name "
+                                        + smm.getConnectionJndiName()
+                                        + " is used but not configured, check your DataSources.java "
+                                        + "file and configure it.");
+                            }
+                        }
+                    }
+                }
             }
+
             if (last && logger.isDebugEnabled()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 VDBMetadataParser.marshall(vdb, out);
                 logger.debug("XML Form of VDB:\n" + prettyFormat(new String(out.toByteArray())));
             }
 
-            // add any missing translators
-            for (ModelMetaData model : vdb.getModelMetaDatas().values()) {
-                for (SourceMappingMetadata smm : model.getSourceMappings()) {
-                    VDBTranslatorMetaData translator = vdb.getTranslator(smm.getTranslatorName());
-                    String addedTraslatorName = null;
-                    ExternalSource originSource = null;
-                    if (translator != null) {
-                        String type = translator.getType();
-                        originSource = this.externalSources.find(type);
-                        addedTraslatorName = addOverrideTranslator(translator, originSource, context);
-                    } else {
-                        originSource = this.externalSources.find(smm.getTranslatorName());
-                        smm.setTranslatorName(originSource.getTranslatorName());
-                        addedTraslatorName = addTranslator(originSource, context);
-                    }
-
-                    // set override properties
-                    Properties overrideProperties = getTranslatorProperties(context, originSource.getTranslatorName(),
-                            smm.getName(), TranlatorPropertyType.OVERRIDE,
-                            new String[] { originSource.getSpringBootPropertyPrefix() });
-
-                    VDBTranslatorMetaData translatorMetadata = getTranslatorRepository()
-                            .getTranslatorMetaData(addedTraslatorName);
-                    if (!overrideProperties.isEmpty() && translatorMetadata != null) {
-                        translatorMetadata.setProperties(overrideProperties);
-                    }
-
-                    // set model import properties
-                    Properties importProperties = getTranslatorProperties(context, originSource.getTranslatorName(),
-                            smm.getName(), TranlatorPropertyType.IMPORT,
-                            new String[] { originSource.getSpringBootPropertyPrefix() });
-                    for (String k : importProperties.stringPropertyNames()) {
-                        model.addProperty(k, importProperties.getProperty(k));
-                    }
-
-                    if (smm.getConnectionJndiName() != null) {
-                        if (this.connectionFactoryProviders.get(smm.getConnectionJndiName()) == null){
-                            throw new IllegalStateException("A Data source with JNDI name "
-                                    + smm.getConnectionJndiName()
-                                    + " is used but not configured, check your DataSources.java "
-                                    + "file and configure it.");
-                        }
-                    }
-                }
-            }
             deployVDB(vdb, vdb.getAttachment(VDBResources.class));
         } catch (VirtualDatabaseException | ConnectorManagerException | TranslatorException | XMLStreamException
                 |AdminException | IOException e) {
@@ -512,7 +528,7 @@ public class TeiidServer extends EmbeddedServer {
                 Class<?> clazz = Class.forName(c.getBeanClassName());
                 ConnectionFactoryConfiguration cfc = clazz.getAnnotation(ConnectionFactoryConfiguration.class);
                 if(cfc != null) {
-                    this.externalSources.addSource(cfc, c.getBeanClassName());
+                    this.externalSources.addSource(cfc, clazz);
                 }
             } catch (ClassNotFoundException e) {
                 logger.warn("Error loading entity classes");
@@ -831,7 +847,7 @@ public class TeiidServer extends EmbeddedServer {
         if (bean.getClass().isAnnotationPresent(ConnectionFactoryConfiguration.class)) {
             ConnectionFactoryConfiguration annotation = bean.getClass()
                     .getAnnotation(ConnectionFactoryConfiguration.class);
-            this.externalSources.addSource(annotation, bean.getClass().getName());
+            this.externalSources.addSource(annotation, bean.getClass());
         }
     }
 }

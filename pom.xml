@@ -1227,11 +1227,6 @@
         <version>1.6.3</version>
       </dependency>
       <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
-        <version>1.0.1</version>
-      </dependency>
-      <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>20.0</version>

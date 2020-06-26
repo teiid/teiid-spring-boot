@@ -16,6 +16,7 @@
 package org.teiid.spring.common;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -35,9 +36,10 @@ public class ExternalSource implements Serializable{
     private String springBootPropertyPrefix;
     private boolean jdbc;
     private String url;
+    private List<PropertyDefinition> configuration;
 
     public ExternalSource(String name, String[] driverNames, String[] datasourceNames, String translatorName,
-            String dialect, String prefix, boolean jdbc, String url) {
+            String dialect, String prefix, boolean jdbc, String url, List<PropertyDefinition> configuration) {
         this.name = name;
         this.driverNames = driverNames;
         this.datasourceNames = datasourceNames;
@@ -46,6 +48,7 @@ public class ExternalSource implements Serializable{
         this.springBootPropertyPrefix = prefix;
         this.jdbc = jdbc;
         this.url = url;
+        this.configuration = configuration;
     }
 
     public String getName() {
@@ -111,5 +114,9 @@ public class ExternalSource implements Serializable{
 
     public String getUrl() {
         return url;
+    }
+
+    public List<PropertyDefinition> getConfiguration() {
+        return configuration;
     }
 }

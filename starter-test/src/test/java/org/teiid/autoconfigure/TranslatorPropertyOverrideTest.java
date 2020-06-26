@@ -17,6 +17,7 @@
 package org.teiid.autoconfigure;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -58,7 +59,18 @@ public class TranslatorPropertyOverrideTest {
         assertEquals("one", rs.getString(1));
         assertTrue(rs.next());
         assertEquals("overridden", rs.getString(1));
+    }
 
+    @Test
+    public void testCustomTranslators() throws SQLException {
+        Connection conn = datasource.getConnection();
+        Statement stmt = conn.createStatement();
+        assertNotNull(stmt);
+        ResultSet rs = stmt.executeQuery("SELECT * FROM accounts1.mytable");
+        assertNotNull(rs);
+        assertTrue(rs.next());
+        assertEquals("one", rs.getString(1));
+        assertFalse(rs.next());
     }
 
 }

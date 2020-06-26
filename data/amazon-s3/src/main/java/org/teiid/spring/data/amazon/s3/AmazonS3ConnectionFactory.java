@@ -20,7 +20,8 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
 
 @ConnectionFactoryConfiguration(
         alias = "amazon-s3",
-        translatorName = "amazon-s3"
+        translatorName = "amazon-s3",
+        configuration = AmazonS3ConnectionFactory.class
         )
 public class AmazonS3ConnectionFactory extends RestConnectionFactory {
 

@@ -21,6 +21,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.teiid.spring.common.JDBCConfiguration;
+
 /**
  * The Bean that has this annotation represents a Custom Source in Teiid Spring
  * Boot framework. <br>
@@ -86,4 +88,11 @@ public @interface ConnectionFactoryConfiguration {
      * @return
      */
     boolean jdbc() default false;
+
+
+    /**
+     * Define the configuration class that defines the configuration properties
+     * @return
+     */
+    Class<?> configuration() default JDBCConfiguration.class;
 }

@@ -25,7 +25,8 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
 @ConnectionFactoryConfiguration(
         alias = "ftp",
-        translatorName = "file"
+        translatorName = "file",
+        configuration = FtpConfiguration.class
         )
 public class FtpConnectionFactory implements BaseConnectionFactory<FtpConnection> {
     private FtpConfiguration config;

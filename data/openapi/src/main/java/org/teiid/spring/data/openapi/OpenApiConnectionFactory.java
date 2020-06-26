@@ -21,7 +21,8 @@ import org.teiid.spring.data.rest.RestConnectionFactory;
 
 @ConnectionFactoryConfiguration(
         alias = "openapi",
-        translatorName = "openapi"
+        translatorName = "openapi",
+        configuration = OpenApiConnectionFactory.class
         )
 public class OpenApiConnectionFactory extends RestConnectionFactory {
 }
