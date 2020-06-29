@@ -35,6 +35,7 @@
     <module>vdb-test</module>
     <module>vdb-openapi-test</module>
     <module>vdb-cr-yaml-test</module>
+    <module>vdb-base-builder</module>
   </modules>
 
 </project>
