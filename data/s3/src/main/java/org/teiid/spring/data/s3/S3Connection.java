@@ -23,13 +23,14 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.SSECustomerKey;
 import org.teiid.file.VirtualFile;
 import org.teiid.file.VirtualFileConnection;
 import org.teiid.translator.TranslatorException;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Vector;
 
 public class S3Connection implements VirtualFileConnection {
 
@@ -49,7 +50,7 @@ public class S3Connection implements VirtualFileConnection {
                     .withBucketName(s3Config.getBucket())
                     .withPrefix(s);
             ObjectListing objectListing = s3Client.listObjects(listObjectsRequest);
-            return new VirtualFile[] {new S3VirtualFile(s3Client, objectListing.getObjectSummaries().get(0))};
+            return new VirtualFile[] {new S3VirtualFile(s3Client, objectListing.getObjectSummaries().get(0), s3Config)};
         }
         if(isDirectory(s)){
             if(s == "") {
@@ -89,7 +90,7 @@ public class S3Connection implements VirtualFileConnection {
             for(S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
                 if(!s3ObjectSummary.getKey().endsWith("/")) {
                     if(matchString(s3ObjectSummary.getKey(), s)) {
-                        s3VirtualFiles.add(new S3VirtualFile(s3Client, s3ObjectSummary));
+                        s3VirtualFiles.add(new S3VirtualFile(s3Client, s3ObjectSummary, s3Config));
                     }
                 }
             }
@@ -149,7 +150,7 @@ public class S3Connection implements VirtualFileConnection {
         while(objectListing != null) {
             for(S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
                 if(!s3ObjectSummary.getKey().endsWith("/")) {
-                    s3VirtualFiles.add(new S3VirtualFile(s3Client,s3ObjectSummary));
+                    s3VirtualFiles.add(new S3VirtualFile(s3Client,s3ObjectSummary, s3Config));
                 }
             }
             if(!objectListing.isTruncated()) {
@@ -175,7 +176,11 @@ public class S3Connection implements VirtualFileConnection {
     public void add(InputStream inputStream, String s) throws TranslatorException {
         ObjectMetadata metadata = new ObjectMetadata();
         try{
-            s3Client.putObject(s3Config.getBucket(), s, inputStream, metadata);
+            PutObjectRequest request = new PutObjectRequest(s3Config.getBucket(), s, inputStream, metadata);
+            if(s3Config.getSseKey() != null) {
+                request.withSSECustomerKey(new SSECustomerKey(s3Config.getSseKey()).withAlgorithm(s3Config.getSseAlgorithm()));
+            }
+            s3Client.putObject(request);
         } catch (SdkClientException e){
             throw new TranslatorException(e);
         }

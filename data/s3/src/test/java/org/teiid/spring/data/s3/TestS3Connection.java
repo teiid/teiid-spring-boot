@@ -17,62 +17,67 @@
  */
 package org.teiid.spring.data.s3;
 
+import com.amazonaws.SdkClientException;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.junit.*;
+import org.mockito.Mockito;
 import org.teiid.file.VirtualFile;
 import org.teiid.translator.TranslatorException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-@Ignore
 public class TestS3Connection {
 
-    private static S3Connection s3Connection;
-    private static S3ConnectionFactory s3ConnectionFactory;
-    private static S3Configuration s3Configuration;
+    private  S3Connection s3Connection;
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        s3Configuration = new S3Configuration();
-        s3Configuration.setAwsAccessKey("minioadmin");
-        s3Configuration.setAwsSecretKey("minioadmin");
-        s3Configuration.setBucket("test");
-        s3Configuration.setEndpoint("http://192.168.1.9:9000");
-        s3ConnectionFactory = new S3ConnectionFactory(s3Configuration);
-        s3Connection = s3ConnectionFactory.getConnection();
+    private  S3Configuration s3Configuration = Mockito.mock(S3Configuration.class);
+
+    private AmazonS3Client amazonS3Client = Mockito.mock(AmazonS3Client.class);
+
+    @Before
+    public  void setUp() {
+        s3Connection = new S3Connection(s3Configuration, amazonS3Client);
+
     }
 
     @Test
-    public void testAdd() throws FileNotFoundException, TranslatorException {
-        File file = new File("src/main/resources/sample2.txt");
-        InputStream inputStream = new FileInputStream(file);
-        s3Connection.add(inputStream, "folder1/folder2/sample2.txt");
-        VirtualFile[] virtualFiles = s3Connection.getFiles("folder1/folder2/sample2.txt");
-        Assert.assertEquals("The test fails", "folder1/folder2/sample2.txt", virtualFiles[0].getName());
+    public void testAdd() throws SdkClientException, TranslatorException {
+          InputStream inputStream = Mockito.mock(InputStream.class);
+          s3Connection.add(inputStream, "");
+          Assert.assertTrue(true);
     }
 
     @Test
     public void testDeleteFile() throws TranslatorException {
-        Assert.assertTrue(s3Connection.remove("hello.txt"));
+        Assert.assertTrue(s3Connection.remove("sl"));
     }
 
     @Test
     public void testgetAllFiles() throws TranslatorException {
+        ListObjectsRequest request = Mockito.mock(ListObjectsRequest.class);
+        ObjectListing objectListing = Mockito.mock(ObjectListing.class);
+        Mockito.when(amazonS3Client.listObjects(request)).thenReturn(objectListing);
+        List<S3ObjectSummary> objectSummaryList = new ArrayList<>();
+        S3ObjectSummary summary1 = Mockito.mock(S3ObjectSummary.class);
+        objectSummaryList.add(summary1);
+        Mockito.when(objectListing.getObjectSummaries()).thenReturn(objectSummaryList);
+        Mockito.when(objectSummaryList.size()).thenReturn(3);
         VirtualFile[] virtualFiles = s3Connection.getFiles("folder1/folder2");
-        Assert.assertEquals(1, virtualFiles.length);
+        Assert.assertEquals(3, virtualFiles.length);
     }
 
     @Test
-    public void testBlobSearch() throws TranslatorException {
-        VirtualFile[] virtualFiles = s3Connection.getFiles("folder1/folder2/*.txt");
-        System.out.println(virtualFiles[0].getName());
-        Assert.assertEquals(2, virtualFiles.length);
+    public void testConvert() throws TranslatorException {
+
     }
 
-    @AfterClass
-    public static void teardown() throws Exception{
-        s3Connection.close();
+    @Test
+    public void testMatchString() throws TranslatorException {
+
     }
 }

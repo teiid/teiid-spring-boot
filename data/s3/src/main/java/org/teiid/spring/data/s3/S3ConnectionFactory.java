@@ -26,6 +26,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
+import org.teiid.translator.TranslatorException;
 
 import java.io.IOException;
 
@@ -44,7 +45,16 @@ public class S3ConnectionFactory implements BaseConnectionFactory<S3Connection> 
 
     @Override
     public S3Connection getConnection() throws Exception {
-        AWSCredentials credentials = new BasicAWSCredentials(s3Config.getAwsAccessKey(), s3Config.getAwsSecretKey());
+        if(s3Config.getBucket() == null) {
+            throw new TranslatorException("Bucket can't be null.");
+        }
+        if(s3Config.getAccessKey() == null) {
+            throw new TranslatorException("Access key can't be null.");
+        }
+        if(s3Config.getSecretKey() == null) {
+            throw new TranslatorException("Secret key can't be null.");
+        }
+        AWSCredentials credentials = new BasicAWSCredentials(s3Config.getAccessKey(), s3Config.getSecretKey());
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.setSignerOverride("AWSS3V4SignerType");
         s3Client = AmazonS3ClientBuilder

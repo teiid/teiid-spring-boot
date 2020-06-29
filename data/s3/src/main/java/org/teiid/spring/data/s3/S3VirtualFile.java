@@ -18,8 +18,10 @@
 package org.teiid.spring.data.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.SSECustomerKey;
 import org.teiid.file.VirtualFile;
 
 import java.io.IOException;
@@ -30,10 +32,12 @@ public class S3VirtualFile implements VirtualFile {
 
     AmazonS3 s3Client;
     S3ObjectSummary summary;
+    S3Configuration s3Config;
 
-    public S3VirtualFile(AmazonS3 s3Client, S3ObjectSummary s3ObjectSummary) {
+    public S3VirtualFile(AmazonS3 s3Client, S3ObjectSummary s3ObjectSummary, S3Configuration s3Config) {
         this.s3Client = s3Client;
         this.summary = s3ObjectSummary;
+        this.s3Config = s3Config;
     }
 
     @Override
@@ -43,7 +47,11 @@ public class S3VirtualFile implements VirtualFile {
 
     @Override
     public InputStream openInputStream(boolean b) throws IOException {
-        S3Object object = s3Client.getObject(summary.getBucketName(), summary.getKey());
+        GetObjectRequest request = new GetObjectRequest(summary.getBucketName(), summary.getKey());
+        if(s3Config.getSseKey() != null) {
+            request.withSSECustomerKey(new SSECustomerKey(s3Config.getSseKey()).withAlgorithm(s3Config.getSseAlgorithm()));
+        }
+        S3Object object = s3Client.getObject(request);
         return object.getObjectContent();
     }
 

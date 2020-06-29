@@ -19,28 +19,28 @@ package org.teiid.spring.data.s3;
 
 public class S3Configuration {
 
-    private String awsAccessKey;
-    private String awsSecretKey;
+    private String accessKey;
+    private String secretKey;
     private String bucket;
     private String region = "US-EAST-1";
-    private String encryption;
-    private String encryptionKey;
+    private String sseAlgorithm = "AES256";
+    private String sseKey = null;   // base64-encoded key
     private String endpoint = "https://s3.amazonaws.com";
 
-    public String getAwsAccessKey() {
-        return awsAccessKey;
+    public String getAccessKey() {
+        return accessKey;
     }
 
-    public void setAwsAccessKey(String awsAccessKey) {
-        this.awsAccessKey = awsAccessKey;
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
     }
 
-    public String getAwsSecretKey() {
-        return awsSecretKey;
+    public String getSecretKey() {
+        return secretKey;
     }
 
-    public void setAwsSecretKey(String awsSecretKey) {
-        this.awsSecretKey = awsSecretKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public String getBucket() {
@@ -59,20 +59,20 @@ public class S3Configuration {
         this.region = region;
     }
 
-    public String getEncryption() {
-        return encryption;
+    public String getSseAlgorithm() {
+        return sseAlgorithm;
     }
 
-    public void setEncryption(String encryption) {
-        this.encryption = encryption;
+    public void setSseAlgorithm(String sseAlgorithm) {
+        this.sseAlgorithm = sseAlgorithm;
     }
 
-    public String getEncryptionKey() {
-        return encryptionKey;
+    public String getSseKey() {
+        return sseKey;
     }
 
-    public void setEncryptionKey(String encryptionKey) {
-        this.encryptionKey = encryptionKey;
+    public void setSseKey(String sseKey) {
+        this.sseKey = sseKey;
     }
 
     public String getEndpoint() {
