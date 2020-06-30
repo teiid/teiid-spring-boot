@@ -22,7 +22,11 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import org.junit.*;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.teiid.file.VirtualFile;
 import org.teiid.translator.TranslatorException;
@@ -42,7 +46,6 @@ public class TestS3Connection {
     @Before
     public  void setUp() {
         s3Connection = new S3Connection(s3Configuration, amazonS3Client);
-
     }
 
     @Test
@@ -58,26 +61,32 @@ public class TestS3Connection {
     }
 
     @Test
-    public void testgetAllFiles() throws TranslatorException {
-        ListObjectsRequest request = Mockito.mock(ListObjectsRequest.class);
+    public void testgetFilesAndConvert() throws TranslatorException {
         ObjectListing objectListing = Mockito.mock(ObjectListing.class);
-        Mockito.when(amazonS3Client.listObjects(request)).thenReturn(objectListing);
+        Mockito.when(amazonS3Client.listObjects(Mockito.any(ListObjectsRequest.class))).thenReturn(objectListing);
         List<S3ObjectSummary> objectSummaryList = new ArrayList<>();
         S3ObjectSummary summary1 = Mockito.mock(S3ObjectSummary.class);
+        S3ObjectSummary summary2 = Mockito.mock(S3ObjectSummary.class);
+        Mockito.when(summary1.getKey()).thenReturn("");
+        Mockito.when(summary2.getKey()).thenReturn("");
         objectSummaryList.add(summary1);
+        objectSummaryList.add(summary2);
         Mockito.when(objectListing.getObjectSummaries()).thenReturn(objectSummaryList);
-        Mockito.when(objectSummaryList.size()).thenReturn(3);
         VirtualFile[] virtualFiles = s3Connection.getFiles("folder1/folder2");
-        Assert.assertEquals(3, virtualFiles.length);
+        Assert.assertEquals(2, virtualFiles.length);
     }
 
     @Test
-    public void testConvert() throws TranslatorException {
-
+    public void testMatchString() {
+        Assert.assertTrue(s3Connection.matchString("dddd", "dd*d"));
+        Assert.assertTrue(s3Connection.matchString("folder1/sample", "folder1/samp*"));
+        Assert.assertTrue(s3Connection.matchString("folder1/sample", "folder1/*le"));
+        Assert.assertFalse(s3Connection.matchString("folder1/sample", "folder1/san*"));
     }
 
-    @Test
-    public void testMatchString() throws TranslatorException {
-
+    @After
+    public void close() throws Exception {
+        s3Connection.close();
     }
+
 }

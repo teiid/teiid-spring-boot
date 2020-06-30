@@ -102,7 +102,7 @@ public class S3Connection implements VirtualFileConnection {
         return s3VirtualFiles.toArray(new VirtualFile[s3VirtualFiles.size()]);
     }
 
-    private boolean matchString(String key, String pattern) {
+    protected boolean matchString(String key, String pattern) {
         String slicedKey, slicedPattern;
         if(key.contains("/")) {
             slicedKey = key.substring(key.lastIndexOf("/") + 1);
@@ -133,7 +133,7 @@ public class S3Connection implements VirtualFileConnection {
             int index0fAsterisk = slicedPattern.indexOf("*");
             begin = slicedPattern.substring(0, index0fAsterisk);
             end = slicedPattern.substring(index0fAsterisk+1);
-            if(slicedKey.startsWith(begin) && slicedKey.endsWith(end) && (slicedPattern.indexOf(end) > slicedPattern.indexOf(begin)+begin.length() - 1)) {
+            if(slicedKey.startsWith(begin) && slicedKey.endsWith(end) && (slicedPattern.lastIndexOf(end) > slicedPattern.indexOf(begin)+begin.length() - 1)) {
                 return true;
             }
             return false;
