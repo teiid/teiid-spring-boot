@@ -39,12 +39,17 @@ public class TestS3Connection {
 
     private  S3Connection s3Connection;
 
-    private  S3Configuration s3Configuration = Mockito.mock(S3Configuration.class);
+    private  S3Configuration s3Configuration;
 
     private AmazonS3Client amazonS3Client = Mockito.mock(AmazonS3Client.class);
 
     @Before
     public  void setUp() {
+        s3Configuration = new S3Configuration();
+        s3Configuration.setAccessKey("minioadmin");
+        s3Configuration.setSecretKey("minioadmin");
+        s3Configuration.setBucket("test");
+        s3Configuration.setEndpoint("http://192.168.1.9:9000");
         s3Connection = new S3Connection(s3Configuration, amazonS3Client);
     }
 
@@ -52,7 +57,6 @@ public class TestS3Connection {
     public void testAdd() throws SdkClientException, TranslatorException {
           InputStream inputStream = Mockito.mock(InputStream.class);
           s3Connection.add(inputStream, "");
-          Assert.assertTrue(true);
     }
 
     @Test
