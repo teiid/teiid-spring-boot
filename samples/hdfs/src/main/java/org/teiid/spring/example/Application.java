@@ -20,12 +20,16 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
     @Autowired
-    private StockRepository stocksRepository;
+    private JdbcTemplate jdbcTemplate;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args).close();
@@ -33,6 +37,7 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        stocksRepository.findAll().forEach(c -> System.out.println(c));
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT *  FROM stock_price");
+        System.out.println(list);
     }
 }

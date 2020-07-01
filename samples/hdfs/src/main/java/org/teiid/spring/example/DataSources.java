@@ -15,26 +15,18 @@
  */
 package org.teiid.spring.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.hdfs.HdfsConfiguration;
-import org.teiid.spring.data.hdfs.HdfsConnectionFactory;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class DataSources {
-
-    @Bean(name="mysite")
-    @Autowired
-    public HdfsConnectionFactory mysite(@Qualifier("mysite-config") HdfsConfiguration config) {
-        return new HdfsConnectionFactory(config);
-    }
-
-    @Bean(name="mysite-config")
-    @ConfigurationProperties("spring.teiid.data.hdfs.mysite")
-    public HdfsConfiguration mysiteConfig() {
-        return new HdfsConfiguration();
+    @ConfigurationProperties(prefix = "spring.datasource.mydb")
+    @Bean
+    public DataSource mydb() {
+        return DataSourceBuilder.create().build();
     }
 }
