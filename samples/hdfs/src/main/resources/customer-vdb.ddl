@@ -17,7 +17,6 @@
 CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer;
 CREATE SERVER mydb FOREIGN DATA WRAPPER file;
-CREATE VIRTUAL SCHEMA virt;
 CREATE SCHEMA accounts SERVER mydb;
 
 IMPORT FOREIGN SCHEMA MYSCHEMA FROM SERVER mydb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
@@ -32,6 +31,6 @@ CREATE VIEW stock_price (
 AS
 SELECT
 tt.symbol, tt.price
-FROM (EXEC file.getTextFiles('/user/aditya/stock.txt')) AS f,
+FROM (EXEC accounts.getTextFiles('/user/aditya/stock.txt')) AS f,
 TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;
 
