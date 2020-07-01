@@ -140,7 +140,7 @@
     <version.jackson-core>2.11.0.rc1</version.jackson-core>
     <version.jackson-databind>2.11.0.rc1</version.jackson-databind>
     <version.org.mongodb>3.9.1</version.org.mongodb>
-
+    <version.io.opentracing.contrib>1.0.1</version.io.opentracing.contrib>
     <version.net.sf.ucanaccess>5.0.0</version.net.sf.ucanaccess>
     <version.com.facebook.presto>0.236</version.com.facebook.presto>
     <version.com.ibm.informix>4.50.3</version.com.ibm.informix>
@@ -1017,7 +1017,12 @@
         <groupId>org.teiid</groupId>
         <artifactId>vdb-tools-common</artifactId>
         <version>${project.version}</version>
-      </dependency>       
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-util</artifactId>
+        <version>${project.version}</version>
+      </dependency>             
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
@@ -1287,6 +1292,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-spring-jaeger-web-starter</artifactId>
+      <version>${version.io.opentracing.contrib}</version>
+    </dependency>
+    
     </dependencies>
 
   </dependencyManagement>
