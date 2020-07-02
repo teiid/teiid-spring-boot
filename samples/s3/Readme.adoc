@@ -1,0 +1,158 @@
+=== S3 Example using existing VDB
+
+This guide walks you through the process of building an application that uses Teiid Spring Boot Starter and existing VDB that you may have defined previously to build application and would like query based on it for a S3 source.
+
+=== What you’ll build
+
+You’ll build an application that loads the VDB supplied which would use a text file from the s3 source and provides a JDBC interface on it using Teiid.
+
+=== What you’ll need
+
+* About 10 minutes
+* A favorite text editor or IDE
+* JDK 1.8 or later
+* Maven 3.0+
+
+=== Build With Maven
+First you set up a basic build script. You can use any build system you like when building apps with Spring, but the code you need to work with Maven is included here. If you’re not familiar with Maven, refer to link:https://spring.io/guides/gs/maven[Building Java Projects with Maven].
+
+Go to link:http://start.spring.io/[Spring Initializer] and type in "JPA" in dependencies and generate a project. Then open the generated code in your favorite IDE, and edit the pom.xml to add the below dependencies.
+
+Otherwise, in a project directory of your choosing, create the following sub-directory structure; for example, with
+----
+mkdir -p src/main/java/example on *nix systems:
+----
+and create pom.xml file of your choosing and add following maven dependencies
+
+
+[source,xml]
+.*spring-boot-starter-data-jpa*
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+----
+
+The following are the Teiid related dependencies
+[source,xml]
+.*teiid-spring-boot-starter,spring-data-s3*
+----
+<dependency>
+   <groupId>org.teiid</groupId>
+   <artifactId>teiid-spring-boot-starter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.teiid</groupId>
+    <artifactId>spring-data-s3</artifactId>
+</dependency>
+----
+
+in this example, we will read a text file with CSV data from a s3 source, that has following structure
+
+----
+SYMBOL,PRICE
+RHT,30.00
+BA,42.75
+MON,78.75
+PNRA,84.97
+SY,24.30
+BTU,41.25
+IBM,80.89
+DELL,10.75
+HPQ,31.52
+GE,16.45
+----
+
+=== Define the Data Sources
+In this example, first we need to define all the data sources that are in the play. To capture data source information, create the following Java class representing a connection to a S3 source.
+
+[source,java]
+.*src/main/java/org/example/DataSources.java*
+----
+package org.example;
+
+@Configuration
+public class DataSources {
+
+    @Bean(name="mysite")
+    @Autowired
+    public S3ConnectionFactory mysite(@Qualifier("mysite-config") S3Configuration config) {
+        return new S3ConnectionFactory(config);
+    }
+
+    @Bean(name="mysite-config")
+    @ConfigurationProperties("spring.teiid.data.s3.mysite")
+    public S3Configuration mysiteConfig() {
+        return new S3Configuration();
+    }
+}
+----
+
+We need to provide the corresponding configuration for this data source. In "application.properties" file, define *your* configuration similar to
+
+[source,text]
+.*src/main/resources/application.properties*
+----
+spring.teiid.data.s3.mysite.accessKey = minioadmin
+spring.teiid.data.s3.mysite.secretKey =minioadmin
+spring.teiid.data.s3.mysite.bucket = test
+spring.teiid.data.s3.mysite.endpoint = http://192.168.1.9:9000
+
+----
+
+Repeat above steps for all the data sources you are going to use in the vdb. Note the bean name, as you need to use that name as the SERVER name in the VDB source definitions. For example, see the line
+
+---
+CREATE SERVER mydb FOREIGN DATA WRAPPER file;
+---
+
+"file" is the name of the translator used.
+
+=== Copy the VDB file
+Copy your -vdb.ddl file into "src/main/resources" directory, and add below property in `application.properties` this tells the application which VDB file to load. You can have a look at the example's -vdb.ddl file for reference.
+
+----
+teiid.vdb-file=customer-vdb.ddl
+----
+
+NOTE: you can omit the above `teiid.vdb-file` property, however the vdb file needs have a explit name as `teiid.ddl` and must be available in the classpath. If you need reference to the DDL based VDB syntax see link:http://teiid.github.io/teiid-documents/master/content/reference/r_ddl-deployment-mode.html
+
+NOTE: If you have a .vdb or -vdb.xml based VDB files, you can use vdb migration utility to convert into a .DDL file to use. But currently we support .vdb, -vdb.xml or .ddl formats. But .vdb and -vdb.xml formats will be deprecated.
+
+Let’s wire this up and see what it looks like!
+
+=== Create an Application class
+
+Here you create an Application class with all the components.
+
+[source,java]
+.src/main/java/org/example/Application.java
+----
+package org.example;
+
+@SpringBootApplication
+public class Application implements CommandLineRunner {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args).close();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT *  FROM stock_price");
+        System.out.println(list);
+    }
+}
+----
+
+Now when you execute this application, you should see results of your query in jdbc template
+
+----
+[{symbol=RHT, price=30.0}, {symbol=BA, price=42.75}, {symbol=MON, price=78.75}, {symbol=PNRA, price=84.97}, {symbol=SY, price=24.3}, {symbol=BTU, price=41.25}, {symbol=IBM, price=80.89}, {symbol=DELL, price=10.75}, {symbol=HPQ, price=31.52}, {symbol=GE, price=16.45}]
+----
+
+Note: You can always integrate data from multiple different types of data sources using Teiid.
