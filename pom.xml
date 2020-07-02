@@ -600,6 +600,17 @@
       </dependency>
       <dependency>
         <groupId>org.teiid.connectors</groupId>
+        <artifactId>translator-simpledb</artifactId>
+        <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-cassandra</artifactId>
         <version>${teiid.version}</version>
         <exclusions>
@@ -842,6 +853,11 @@
       <dependency>
         <groupId>org.teiid</groupId>
         <artifactId>spring-data-openapi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid</groupId>
+        <artifactId>spring-data-amazon-simpleDB</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
