@@ -30,6 +30,7 @@ import org.teiid.ws.cxf.WSConnectionFactory;
 @ConnectionFactoryConfiguration(
         alias = "soap",
         translatorName = "ws",
+        otherAliases = {"ws"},
         configuration = SoapConfiguration.class
         )
 public class SoapConnectionFactory implements BaseConnectionFactory<WSConnection> {
