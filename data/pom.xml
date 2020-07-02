@@ -71,6 +71,7 @@
         <module>infinispan</module>
         <module>amazon-s3</module>
         <module>openapi</module>
+        <module>swagger</module>
         <module>soap</module>
         <module>ftp</module>
         <module>odata</module>
