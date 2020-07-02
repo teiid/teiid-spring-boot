@@ -138,6 +138,7 @@
     <version.jackson-core>2.11.0.rc1</version.jackson-core>
     <version.jackson-databind>2.11.0.rc1</version.jackson-databind>
     <version.org.mongodb>3.9.1</version.org.mongodb>
+    <version.org.dom4j.dom4j>2.1.3</version.org.dom4j.dom4j>
   </properties>
 
   <build>
@@ -213,6 +214,11 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+          <groupId>org.dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+          <version>${version.org.dom4j.dom4j}</version>
+      </dependency>           
       <dependency>
           <groupId>commons-codec</groupId>
           <artifactId>commons-codec</artifactId>
