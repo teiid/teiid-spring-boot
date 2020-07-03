@@ -53,11 +53,11 @@ public class TestHdfsConnection {
 
     @Test
     public void testAdd() throws FileNotFoundException, TranslatorException {
-        File file = new File("src/main/resources/stock.txt");
+        File file = new File("src/main/resources/hello");
         InputStream inputStream = new FileInputStream(file);
-        hdfsConnection.add(inputStream, "stock.txt");
-        VirtualFile[] virtualFiles = hdfsConnection.getFiles("stock.txt");
-        Assert.assertEquals("The test fails", "stock.txt", virtualFiles[0].getName());
+        hdfsConnection.add(inputStream, "folder1/hello");
+        VirtualFile[] virtualFiles = hdfsConnection.getFiles("folder1/hello");
+        Assert.assertEquals("The test fails", "hello", virtualFiles[0].getName());
     }
 
     @Test

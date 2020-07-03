@@ -26,14 +26,14 @@ import org.teiid.spring.data.hdfs.HdfsConnectionFactory;
 @Configuration
 public class DataSources {
 
-    @Bean(name="mydb")
+    @Bean(name="mysite")
     @Autowired
     public HdfsConnectionFactory mysite(@Qualifier("mysite-config") HdfsConfiguration config) {
         return new HdfsConnectionFactory(config);
     }
 
     @Bean(name="mysite-config")
-    @ConfigurationProperties("spring.teiid.data.hdfs.mydb")
+    @ConfigurationProperties("spring.teiid.data.hdfs.mysite")
     public HdfsConfiguration mysiteConfig() {
         return new HdfsConfiguration();
     }

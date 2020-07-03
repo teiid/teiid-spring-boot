@@ -16,10 +16,10 @@
 
 CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 USE DATABASE customer;
-CREATE SERVER mydb FOREIGN DATA WRAPPER file;
-CREATE SCHEMA accounts SERVER mydb;
+CREATE SERVER mysite FOREIGN DATA WRAPPER file;
+CREATE SCHEMA accounts SERVER mysite;
 
-IMPORT FOREIGN SCHEMA MYSCHEMA FROM SERVER mydb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
+IMPORT FOREIGN SCHEMA MYSCHEMA FROM SERVER mysite INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
 
 SET SCHEMA accounts;
 
