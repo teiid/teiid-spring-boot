@@ -1178,6 +1178,10 @@
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
           </exclusion>
+          <exclusion>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-swf-libraries</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
 
