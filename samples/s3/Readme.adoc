@@ -25,14 +25,6 @@ mkdir -p src/main/java/example on *nix systems:
 and create pom.xml file of your choosing and add following maven dependencies
 
 
-[source,xml]
-.*spring-boot-starter-data-jpa*
-----
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-jpa</artifactId>
-</dependency>
-----
 
 The following are the Teiid related dependencies
 [source,xml]
