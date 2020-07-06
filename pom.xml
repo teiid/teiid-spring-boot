@@ -395,6 +395,17 @@
       </dependency>
       <dependency>
         <groupId>org.teiid.connectors</groupId>
+        <artifactId>file-s3</artifactId>
+        <version>${teiid.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.teiid.connectors</groupId>
         <artifactId>translator-ws</artifactId>
         <version>${teiid.version}</version>
       </dependency>
@@ -1168,17 +1179,6 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>20.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.amazonaws</groupId>
-        <artifactId>aws-java-sdk</artifactId>
-        <version>1.11.804</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>commons-logging</artifactId>
-            <groupId>commons-logging</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <!-- DEPENDENCY RESOLUTION SUGGESTED OVERRIDES, OVERRIDES SPRING BOOT'S, ONLY EDIT WHEN SB UPGRADES -->
