@@ -17,8 +17,6 @@
  */
 package org.teiid.spring.data.hdfs;
 
-import java.io.IOException;
-
 import org.teiid.hdfs.HdfsConnection;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
@@ -28,21 +26,15 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "file",
         configuration = HdfsConfiguration.class
         )
-public class HdfsConnectionFactory implements BaseConnectionFactory<HdfsConnection> {
-
-    HdfsConfiguration hdfsConfiguration;
+public class HdfsConnectionFactory extends org.teiid.hdfs.HdfsConnectionFactory implements BaseConnectionFactory<HdfsConnection> {
 
     public HdfsConnectionFactory(HdfsConfiguration hdfsConfiguration) {
-        this.hdfsConfiguration = hdfsConfiguration;
+        super(hdfsConfiguration);
     }
 
     @Override
     public HdfsConnection getConnection() throws Exception {
-        return new HdfsConnection(hdfsConfiguration);
+        return new HdfsConnection(this);
     }
 
-    @Override
-    public void close() throws IOException {
-
-    }
 }

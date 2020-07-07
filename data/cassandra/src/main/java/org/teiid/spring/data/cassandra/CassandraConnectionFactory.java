@@ -17,8 +17,7 @@
  */
 package org.teiid.spring.data.cassandra;
 
-import java.io.IOException;
-
+import org.teiid.cassandra.BaseCassandraConnection;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
 
@@ -27,21 +26,15 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "cassandra",
         configuration = CassandraConfiguration.class
         )
-public class CassandraConnectionFactory implements BaseConnectionFactory<CassandraConnection> {
-
-    private CassandraConfiguration cassandraConfiguration;
+public class CassandraConnectionFactory extends org.teiid.cassandra.CassandraConnectionFactory implements BaseConnectionFactory<BaseCassandraConnection> {
 
     public CassandraConnectionFactory(CassandraConfiguration cassandraConfiguration) {
-        this.cassandraConfiguration = cassandraConfiguration;
+        super(cassandraConfiguration);
     }
 
     @Override
-    public CassandraConnection getConnection() throws Exception {
-        return new CassandraConnection(cassandraConfiguration);
+    public BaseCassandraConnection getConnection() throws Exception {
+        return new BaseCassandraConnection(this);
     }
 
-    @Override
-    public void close() throws IOException {
-
-    }
 }
