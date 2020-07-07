@@ -137,7 +137,7 @@
     </dependency>         
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>spring-data-amazon-s3</artifactId>
+      <artifactId>spring-data-s3</artifactId>
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>

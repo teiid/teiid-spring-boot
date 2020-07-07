@@ -42,10 +42,10 @@ public class TextTableView extends ViewBuilder<TextTable> {
         String source = annotation.source();
         String file = annotation.file();
 
-        String alias = "file";
+        String translator = "file";
         BaseConnectionFactory<?> bean = (BaseConnectionFactory<?>)context.getBean(source);
         if (bean != null) {
-            alias = bean.getAlias();
+            translator = bean.getTranslatorName();
         }
 
         view.setSupportsUpdate(false);
@@ -54,28 +54,20 @@ public class TextTableView extends ViewBuilder<TextTable> {
         sb.append("SELECT \n");
         sb.append(columns.toString()).append("\n");
         sb.append("FROM (");
-        if (alias.equalsIgnoreCase("file")) {
+        if (translator.equalsIgnoreCase("file")) {
             sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
-        } else if (alias.equalsIgnoreCase("rest")) {
+        } else if (translator.equalsIgnoreCase("rest")) {
             JsonTableView.generateRestProcedure(entityClazz, source, file, sb);
-        } else if (alias.equalsIgnoreCase("amazon-s3")) {
-            sb.append("EXEC ").append(source).append(".getTextFile('").append(file).append("')");
-        } else if (alias.equalsIgnoreCase("ftp")) {
-            sb.append("EXEC ").append(source).append(".getTextFiles('").append(file).append("')");
         } else {
             throw new IllegalStateException("Source type '" + annotation.source() + "' not supported on TextTable "
                     + view.getName() + ". Only \"file\",\"rest\",\"amazon-s3\" and \"ftp\" are supported");
         }
         sb.append(") AS f, ").append("\n");
 
-        if (alias.equalsIgnoreCase("file")) {
+        if (translator.equalsIgnoreCase("file")) {
             sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
-        } else if (alias.equalsIgnoreCase("rest")) {
+        } else if (translator.equalsIgnoreCase("rest")) {
             sb.append("TEXTTABLE(f.result COLUMNS ").append(columndef.toString());
-        } else if (alias.equalsIgnoreCase("amazon-s3")) {
-            sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
-        } else if (alias.equalsIgnoreCase("ftp")) {
-            sb.append("TEXTTABLE(f.file COLUMNS ").append(columndef.toString());
         }
 
         if (!annotation.delimiter().equals(",")) {
