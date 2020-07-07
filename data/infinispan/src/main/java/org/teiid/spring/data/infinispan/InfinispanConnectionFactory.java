@@ -55,7 +55,7 @@ public class InfinispanConnectionFactory implements BaseConnectionFactory<BaseIn
 
     @Override
     public BaseInfinispanConnection getConnection() throws Exception {
-        return icf.getConnection();
+        return new BaseInfinispanConnection(icf);
     }
 
     @Override

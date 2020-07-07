@@ -31,16 +31,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.teiid</groupId>
             <artifactId>teiid-spring-boot-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.teiid.connectors</groupId>
             <artifactId>file-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.teiid.connectors</groupId>
+            <artifactId>file-s3</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

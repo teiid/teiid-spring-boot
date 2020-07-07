@@ -28,7 +28,7 @@ import org.teiid.spring.data.ConnectionFactoryConfiguration;
         translatorName = "file",
         configuration = FtpConfiguration.class
         )
-public class FtpConnectionFactory implements BaseConnectionFactory<FtpConnection> {
+public class FtpConnectionFactory implements BaseConnectionFactory<FtpFileConnection> {
     private FtpConfiguration config;
 
     public FtpConnectionFactory(FtpConfiguration config) {
@@ -36,8 +36,8 @@ public class FtpConnectionFactory implements BaseConnectionFactory<FtpConnection
     }
 
     @Override
-    public FtpConnection getConnection() throws Exception {
-        return new FtpConnection(new FtpFileConnection(this.config));
+    public FtpFileConnection getConnection() throws Exception {
+        return new FtpFileConnection(this.config);
     }
 
     @Override

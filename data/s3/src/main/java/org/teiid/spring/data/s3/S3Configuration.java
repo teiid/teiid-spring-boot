@@ -17,7 +17,7 @@
  */
 package org.teiid.spring.data.s3;
 
-public class S3Configuration {
+public class S3Configuration implements org.teiid.s3.S3Configuration {
 
     private String accessKey;
     private String secretKey;
