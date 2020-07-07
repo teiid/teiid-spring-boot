@@ -13,23 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /*
  * GENERATED CODE - DO NOT EDIT
  */
+
 package org.teiid.spring.example;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory;
+import org.teiid.spring.data.s3.S3Configuration;
+import org.teiid.spring.data.s3.S3ConnectionFactory;
+import org.teiid.translator.TranslatorException;
 
 @Configuration
 public class DataSourcess3 {
 
-    @ConfigurationProperties(prefix = "spring.teiid.data.amazon-s3.s3")
     @Bean(name="s3")
-    public AmazonS3ConnectionFactory s3() {
-        return new AmazonS3ConnectionFactory();
-    }    
+    @Autowired
+    public S3ConnectionFactory s3(@Qualifier("s3-config") S3Configuration config) throws TranslatorException {
+        return new S3ConnectionFactory(config);
+    }
+
+    @Bean(name="s3-config")
+    @ConfigurationProperties("spring.teiid.data.s3.s3")
+    public S3Configuration s3Config() {
+        return new S3Configuration();
+    }
 }
