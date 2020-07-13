@@ -15,7 +15,9 @@
  */
 package com.teiid.spring.data.amazon.simpleDB;
 
-public class SimpleDBConfiguration {
+import org.teiid.translator.simpledb.api.BaseSimpleDBConfiguration;
+
+public class SimpleDBConfiguration implements BaseSimpleDBConfiguration {
     private String accessKey;
     private String secretAccessKey;
 
@@ -24,11 +26,21 @@ public class SimpleDBConfiguration {
         this.secretAccessKey = secretAccessKey;
     }
 
+    @Override
     public String getAccessKey() {
         return accessKey;
     }
 
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    @Override
     public String getSecretAccessKey() {
         return secretAccessKey;
+    }
+
+    public void setSecretAccessKey(String secretAccessKey) {
+        this.secretAccessKey = secretAccessKey;
     }
 }

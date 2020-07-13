@@ -15,12 +15,32 @@
  */
 package com.teiid.spring.data.amazon.simpleDB;
 
+import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
+import org.teiid.translator.TranslatorException;
+import org.teiid.translator.simpledb.api.BaseSimpleDBConfiguration;
+import org.teiid.translator.simpledb.api.SimpleDBConnection;
+import org.teiid.translator.simpledb.api.SimpleDBConnectionImpl;
+
+import java.io.IOException;
 
 @ConnectionFactoryConfiguration(
         alias = "simpledb",
         translatorName = "simpledb",
         configuration = SimpleDBConfiguration.class
 )
-public class SimpleDBConnectionFactory {
+public class SimpleDBConnectionFactory extends org.teiid.translator.simpledb.api.SimpleDBConnectionFactory implements BaseConnectionFactory<SimpleDBConnection> {
+    public SimpleDBConnectionFactory(BaseSimpleDBConfiguration simpleDBConfig) throws TranslatorException {
+        super(simpleDBConfig);
+    }
+
+    @Override
+    public SimpleDBConnection getConnection() throws Exception {
+        return new SimpleDBConnectionImpl(getSimpleDBClient());
+    }
+
+    @Override
+    public void close() {
+
+    }
 }
