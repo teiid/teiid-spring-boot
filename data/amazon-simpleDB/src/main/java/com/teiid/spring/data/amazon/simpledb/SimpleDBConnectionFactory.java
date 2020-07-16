@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.teiid.spring.data.amazon.simpleDB;
+package com.teiid.spring.data.amazon.simpledb;
 
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
@@ -21,8 +21,6 @@ import org.teiid.translator.TranslatorException;
 import org.teiid.translator.simpledb.api.BaseSimpleDBConfiguration;
 import org.teiid.translator.simpledb.api.SimpleDBConnection;
 import org.teiid.translator.simpledb.api.SimpleDBConnectionImpl;
-
-import java.io.IOException;
 
 @ConnectionFactoryConfiguration(
         alias = "simpledb",

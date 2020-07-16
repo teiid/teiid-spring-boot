@@ -857,8 +857,8 @@
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>
-        <artifactId>spring-data-amazon-simpleDB</artifactId>
-        <version>${project.version}</version>
+        <artifactId>spring-data-amazon-simpledb</artifactId>
+        <version>1.6.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.teiid</groupId>

@@ -34,7 +34,7 @@
         <module>hdfs</module>
         <module>actian</module>
         <module>amazon-athena</module>
-        <module>amazon-simpleDB</module>
+        <module>amazon-simpledb</module>
         <module>db2</module>
         <module>derby</module>
         <module>exasol</module>

@@ -27,8 +27,8 @@
         <version>1.6.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>spring-data-amazon-simpleDB</artifactId>
-    <name>spring-data-amazon-simpleDB</name>
+    <artifactId>spring-data-amazon-simpledb</artifactId>
+    <name>spring-data-amazon-simpledb</name>
     <description>Teiid Source for Amazon SimpleDB</description>
     <packaging>jar</packaging>
 
