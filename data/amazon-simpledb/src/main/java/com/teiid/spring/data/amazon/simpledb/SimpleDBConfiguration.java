@@ -19,7 +19,7 @@ import org.teiid.translator.simpledb.api.BaseSimpleDBConfiguration;
 
 public class SimpleDBConfiguration implements BaseSimpleDBConfiguration {
     private String accessKey;
-    private String secretAccessKey;
+    private String secretKey;
 
     @Override
     public String getAccessKey() {
@@ -32,10 +32,10 @@ public class SimpleDBConfiguration implements BaseSimpleDBConfiguration {
 
     @Override
     public String getSecretAccessKey() {
-        return secretAccessKey;
+        return secretKey;
     }
 
-    public void setSecretAccessKey(String secretAccessKey) {
-        this.secretAccessKey = secretAccessKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 }
