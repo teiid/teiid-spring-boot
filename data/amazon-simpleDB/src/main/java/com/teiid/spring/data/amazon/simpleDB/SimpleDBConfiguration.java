@@ -21,11 +21,6 @@ public class SimpleDBConfiguration implements BaseSimpleDBConfiguration {
     private String accessKey;
     private String secretAccessKey;
 
-    public SimpleDBConfiguration(String accessKey, String secretAccessKey) {
-        this.accessKey = accessKey;
-        this.secretAccessKey = secretAccessKey;
-    }
-
     @Override
     public String getAccessKey() {
         return accessKey;
