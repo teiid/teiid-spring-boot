@@ -31,7 +31,7 @@ public class SimpleDBConfiguration implements BaseSimpleDBConfiguration {
     }
 
     @Override
-    public String getSecretAccessKey() {
+    public String getSecretKey() {
         return secretKey;
     }
 
