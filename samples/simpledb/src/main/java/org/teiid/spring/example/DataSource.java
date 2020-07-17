@@ -15,5 +15,28 @@
  */
 package org.teiid.spring.example;
 
+import com.teiid.spring.data.amazon.simpledb.SimpleDBConfiguration;
+import com.teiid.spring.data.amazon.simpledb.SimpleDBConnectionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.teiid.translator.TranslatorException;
+
+@Configuration
 public class DataSource {
+    @Bean(name="mysite")
+    @Autowired
+    public SimpleDBConnectionFactory mysite(@Qualifier("mysite-config") SimpleDBConfiguration config) throws TranslatorException {
+        System.out.println("Hey");
+        return new SimpleDBConnectionFactory(config);
+    }
+
+    @Bean(name="mysite-config")
+    @ConfigurationProperties("spring.teiid.data.amazon.simpledb.mysite")
+    public SimpleDBConfiguration mysiteConfig() {
+        System.out.println("Hi");
+        return new SimpleDBConfiguration();
+    }
 }
