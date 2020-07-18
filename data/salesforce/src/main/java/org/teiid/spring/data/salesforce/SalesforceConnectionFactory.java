@@ -63,7 +63,7 @@ public class SalesforceConnectionFactory implements BaseConnectionFactory<Salesf
 
         }
     }
-    
+
     @Override
     public SalesforceConnectionImpl getConnection() throws Exception {
         SalesforceConnectionImpl localInstance = connection;
