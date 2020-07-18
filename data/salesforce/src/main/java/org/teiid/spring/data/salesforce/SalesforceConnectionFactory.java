@@ -37,6 +37,7 @@ public class SalesforceConnectionFactory implements BaseConnectionFactory<Salesf
     private static final Log logger = LogFactory.getLog(SalesforceConnectionFactory.class);
 
     private SalesforceConfiguration config;
+    private volatile SalesforceConnectionImpl connection;
 
     public SalesforceConnectionFactory(SalesforceConfiguration config) {
         this.config = config;
@@ -62,10 +63,19 @@ public class SalesforceConnectionFactory implements BaseConnectionFactory<Salesf
 
         }
     }
-
+    
     @Override
     public SalesforceConnectionImpl getConnection() throws Exception {
-        return new SalesforceConnectionImpl(config);
+        SalesforceConnectionImpl localInstance = connection;
+        if (localInstance == null || !localInstance.isValid()) {
+            synchronized (SalesforceConnectionImpl.class) {
+                localInstance = connection;
+                if (localInstance == null || !localInstance.isValid()) {
+                    connection = localInstance = new SalesforceConnectionImpl(config);
+                }
+            }
+        }
+        return localInstance;
     }
 
     @Override

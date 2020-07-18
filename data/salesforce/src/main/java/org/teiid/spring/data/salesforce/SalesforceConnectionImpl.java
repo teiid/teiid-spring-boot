@@ -66,7 +66,7 @@ public class SalesforceConnectionImpl extends BaseSalesforceConnection<Salesforc
 
     @Override
     public boolean isValid() {
-        if (getPartnerConnection().isAccessTokenValid()) {
+        if (!getPartnerConnection().isAccessTokenValid()) {
             return false;
         }
         return super.isValid();
