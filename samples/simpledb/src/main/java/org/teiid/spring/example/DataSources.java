@@ -25,15 +25,14 @@ import org.springframework.context.annotation.Configuration;
 import org.teiid.translator.TranslatorException;
 
 @Configuration
-public class DataSource {
+public class DataSources {
     @Bean(name = "simpledb")
-    @Autowired
     public SimpleDBConnectionFactory simpledb(@Qualifier("simpledb-config") SimpleDBConfiguration config) throws TranslatorException {
         return new SimpleDBConnectionFactory(config);
     }
 
     @Bean(name = "simpledb-config")
-    @ConfigurationProperties("spring.teiid.data.amazon.simpledb")
+    @ConfigurationProperties(prefix = "spring.teiid.data.amazon.simpledb")
     public SimpleDBConfiguration simpledbConfig() {
         return new SimpleDBConfiguration();
     }
