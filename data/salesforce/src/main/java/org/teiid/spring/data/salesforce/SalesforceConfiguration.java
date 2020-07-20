@@ -21,6 +21,8 @@ import org.springframework.web.client.RestTemplate;
 
 public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceConfiguration {
     private String url = "https://login.salesforce.com/services/Soap/u/45.0";
+    private String authorizeUrl = "https://login.salesforce.com/services/oauth2/authorize";
+    private String tokenUrl = "https://login.salesforce.com/services/oauth2/token";
     private Long requestTimeout = Long.MAX_VALUE;
     private Long connectTimeout = Long.MAX_VALUE;
     private Integer pollingInterval = 500;
@@ -40,9 +42,7 @@ public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceC
     }
 
     public SalesforceOAuth2Template getOAuth2Template() {
-        SalesforceOAuth2Template template = new SalesforceOAuth2Template(clientId, clientSecret,
-                "https://login.salesforce.com/services/oauth2/authorize",
-                "https://login.salesforce.com/services/oauth2/token");
+        SalesforceOAuth2Template template = new SalesforceOAuth2Template(clientId, clientSecret, authorizeUrl, tokenUrl);
         template.setUseParametersForClientAuthentication(true);
         return template;
     }
@@ -126,5 +126,21 @@ public class SalesforceConfiguration implements org.teiid.salesforce.SalesforceC
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public String getAuthorizeUrl() {
+        return authorizeUrl;
+    }
+
+    public void setAuthorizeUrl(String authorizeUrl) {
+        this.authorizeUrl = authorizeUrl;
+    }
+
+    public String getTokenUrl() {
+        return tokenUrl;
+    }
+
+    public void setTokenUrl(String tokenUrl) {
+        this.tokenUrl = tokenUrl;
     }
 }
