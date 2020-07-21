@@ -54,6 +54,8 @@ spring.teiid.model.package=org.example
 |clientId          |OAuth2 clientId |N/A
 |clientSecret      |OAuth2 client Secret |N/A
 |refreshToken      |OAuth2 Refresh Token |N/A
+|authorizeUrl      |OAuth2 Authorization URL |https://login.salesforce.com/services/oauth2/authorize
+|tokenUrl          |OAuth2 Access Token URL |https://login.salesforce.com/services/oauth2/token
 |userName          |User name |N/A
 |password          |Password |N/A
 |==========================================================    
