@@ -19,12 +19,14 @@ import java.io.FileWriter;
 
 import org.teiid.spring.common.ExternalSources;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         ExternalSources sources = new ExternalSources();
         ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(sources);
         if (args.length >= 1) {
             FileWriter fw = new FileWriter(args[0]);
