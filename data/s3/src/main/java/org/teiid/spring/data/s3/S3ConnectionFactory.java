@@ -24,7 +24,8 @@ import org.teiid.translator.TranslatorException;
 
 @ConnectionFactoryConfiguration(
         alias = "s3",
-        translatorName = "file"
+        translatorName = "file",
+        configuration = S3Configuration.class
 )
 public class S3ConnectionFactory extends org.teiid.s3.S3ConnectionFactory implements BaseConnectionFactory<S3Connection> {
 
