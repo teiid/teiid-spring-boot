@@ -73,7 +73,7 @@ public class SpringSecurityHelper implements SecurityHelper {
             if (authentication == null) {
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(baseUserName,
                         credentials == null ? null
-                                : new String(credentials.getCredentialsAsCharArray()));
+                                : credentials.getCredentials());
                 try {
                     authentication = authenticationManager.authenticate(token);
                 } catch (AuthenticationException e) {
