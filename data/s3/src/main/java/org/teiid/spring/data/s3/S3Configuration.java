@@ -22,11 +22,12 @@ public class S3Configuration implements org.teiid.s3.S3Configuration {
     private String accessKey;
     private String secretKey;
     private String bucket;
-    private String region = "US-EAST-1";
+    private String region;
     private String sseAlgorithm = "AES256";
-    private String sseKey = null;   // base64-encoded key
-    private String endpoint = "https://s3.amazonaws.com";
+    private String sseKey;   // base64-encoded key
+    private String endpoint;
 
+    @Override
     public String getAccessKey() {
         return accessKey;
     }
@@ -35,6 +36,7 @@ public class S3Configuration implements org.teiid.s3.S3Configuration {
         this.accessKey = accessKey;
     }
 
+    @Override
     public String getSecretKey() {
         return secretKey;
     }
@@ -43,6 +45,7 @@ public class S3Configuration implements org.teiid.s3.S3Configuration {
         this.secretKey = secretKey;
     }
 
+    @Override
     public String getBucket() {
         return bucket;
     }
@@ -51,6 +54,7 @@ public class S3Configuration implements org.teiid.s3.S3Configuration {
         this.bucket = bucket;
     }
 
+    @Override
     public String getRegion() {
         return region;
     }
@@ -59,6 +63,7 @@ public class S3Configuration implements org.teiid.s3.S3Configuration {
         this.region = region;
     }
 
+    @Override
     public String getSseAlgorithm() {
         return sseAlgorithm;
     }
@@ -67,6 +72,7 @@ public class S3Configuration implements org.teiid.s3.S3Configuration {
         this.sseAlgorithm = sseAlgorithm;
     }
 
+    @Override
     public String getSseKey() {
         return sseKey;
     }
@@ -75,6 +81,7 @@ public class S3Configuration implements org.teiid.s3.S3Configuration {
         this.sseKey = sseKey;
     }
 
+    @Override
     public String getEndpoint() {
         return endpoint;
     }
