@@ -1263,22 +1263,11 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
       <version>${version.org.apache.hive}</version>
+      <classifier>standalone</classifier>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jdk.tools</groupId>
-          <artifactId>jdk.tools</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty.aggregate</groupId>
+          <groupId>*</groupId>
           <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
