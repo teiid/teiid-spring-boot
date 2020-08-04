@@ -62,6 +62,8 @@ CREATE SERVER s3 FOREIGN DATA WRAPPER "s3";
 CREATE FOREIGN DATA WRAPPER "cassandra";
 CREATE SERVER samplecassandra FOREIGN DATA WRAPPER "cassandra";
 
+CREATE SERVER samplehive FOREIGN DATA WRAPPER hive;
+
 -- create schema, then import the metadata from the PostgreSQL database
 CREATE SCHEMA accounts SERVER sampledb;
 CREATE VIRTUAL SCHEMA portfolio;

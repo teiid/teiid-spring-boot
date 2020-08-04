@@ -116,6 +116,10 @@
       <artifactId>spring-data-mongodb</artifactId>
     </dependency>    
     <dependency>
+      <groupId>org.teiid</groupId>
+      <artifactId>spring-data-hive</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
     </dependency>
