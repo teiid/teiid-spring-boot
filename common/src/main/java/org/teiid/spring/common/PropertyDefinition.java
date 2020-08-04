@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class PropertyDefinition  {
+public class PropertyDefinition  implements Comparable<PropertyDefinition>{
     private String name;
     private String defaultValue;
     private String description;
@@ -148,6 +148,14 @@ public class PropertyDefinition  {
         result.append(" Expert:").append(isAdvanced()); //$NON-NLS-1$
         result.append(" Masked:").append(isMasked()); //$NON-NLS-1$
         return result.toString();
+    }
+
+    @Override
+    public int compareTo(PropertyDefinition arg0) {
+        if (arg0 == null) {
+            return -1;
+        }
+        return this.name.compareToIgnoreCase(arg0.name);
     }
 }
 
