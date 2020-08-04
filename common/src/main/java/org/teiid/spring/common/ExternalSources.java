@@ -126,7 +126,7 @@ public class ExternalSources implements Serializable{
             props.add(new PropertyDefinition("driverClassName", null, null, "string", false,
                     null, null, annotation.driverNames()[0], annotation.driverNames()));
         }
-
+        Collections.sort(props);
         ExternalSource source = new ExternalSource(annotation.alias(), drivers, dataSources,
                 annotation.translatorName(), dialect.isEmpty() ? null : dialect, prefix, jdbc, url, props);
         return source;
