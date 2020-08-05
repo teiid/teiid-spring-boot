@@ -134,10 +134,6 @@
     <dependency>
       <groupId>org.teiid</groupId>
       <artifactId>spring-data-hdfs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
-      <artifactId>spring-data-hdfs</artifactId>
     </dependency>    
     <dependency>
       <groupId>org.teiid</groupId>
@@ -241,4 +237,51 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <classpathScope>test</classpathScope>
+                <mainClass>org.teiid.spring.data.util.Main</mainClass>
+                <arguments>
+                    <argument>${project.build.directory}/connection_factories.json</argument>
+                </arguments>
+                <cleanupDaemonThreads>false</cleanupDaemonThreads>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-artifacts</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${project.build.directory}/connection_factories.json</file>
+                      <type>json</type>
+                      <classifier>connection_factories</classifier>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+    </plugins>
+  </build>
 </project>
