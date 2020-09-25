@@ -25,8 +25,11 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.sql.Driver;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -72,6 +75,7 @@ import org.teiid.deployers.VirtualDatabaseException;
 import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
 import org.teiid.metadatastore.DeploymentBasedDatabaseStore;
 import org.teiid.net.socket.SocketUtil;
+import org.teiid.query.metadata.NioVirtualFile;
 import org.teiid.query.metadata.NioZipFileSystem;
 import org.teiid.query.metadata.VDBResources;
 import org.teiid.query.metadata.VirtualFile;
@@ -178,6 +182,8 @@ public class TeiidAutoConfiguration {
                     DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
                     String db = ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
                     vdb = store.getVDBMetadata(db);
+                    VDBResources vdbResources = buildVdbResources(resource.getFile().getParent());
+                    vdb.addAttachment(VDBResources.class, vdbResources);
                     logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to parse the VDB defined");
@@ -185,6 +191,8 @@ public class TeiidAutoConfiguration {
             } else if (resource.getFilename().endsWith("-vdb.xml")) {
                 try {
                     vdb =  VDBMetadataParser.unmarshall(resource.getInputStream());
+                    VDBResources vdbResources = buildVdbResources(resource.getFile().getParent());
+                    vdb.addAttachment(VDBResources.class, vdbResources);
                     logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (XMLStreamException | IOException e) {
                     throw new IllegalStateException("Failed to load the VDB defined", e);
@@ -209,8 +217,25 @@ public class TeiidAutoConfiguration {
         return vdb;
     }
 
-    private VDBMetaData loadVDB(Resource resource) throws VirtualDatabaseException, ConnectorManagerException, TranslatorException,
-    IOException, URISyntaxException {
+    private VDBResources buildVdbResources(String curdir) throws IOException {
+        List<Resource> resources = TeiidInitializer.getClasspathResources(this.context, "*.ddl", "*.sql", "*/*.ddl",
+                "*/*.sql");
+        LinkedHashMap<String, VDBResources.Resource> files = new LinkedHashMap<>();
+        for (Resource r : resources) {
+            Path p = r.getFile().toPath();
+            String path = p.toString().replace(curdir, "");
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            files.put(path, new VDBResources.Resource(new NioVirtualFile(p)));
+        }
+        VDBResources vdbResources = new VDBResources(new NioVirtualFile(Paths.get("application.properties")));
+        vdbResources.getEntriesPlusVisibilities().putAll(files);
+        return vdbResources;
+    }
+
+    private VDBMetaData loadVDB(Resource resource) throws VirtualDatabaseException, ConnectorManagerException,
+    TranslatorException, IOException, URISyntaxException {
 
         File f = File.createTempFile("temp", null);
         ObjectConverterUtil.write(resource.getInputStream(), f);

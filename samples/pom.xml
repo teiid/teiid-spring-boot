@@ -74,6 +74,7 @@
     <module>ftp</module>
     <module>cassandra</module>
     <module>hdfs</module>
+    <module>vdb-split</module>
   </modules>
 
 </project>
