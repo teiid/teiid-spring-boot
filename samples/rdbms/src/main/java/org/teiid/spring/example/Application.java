@@ -16,45 +16,13 @@
 
 package org.teiid.spring.example;
 
-import java.util.Arrays;
-
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application implements CommandLineRunner {
-
-    @Autowired
-    private CustomerRepository customerRepository;
+public class Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args).close();
-    }
-
-    @Transactional
-    @Override
-    public void run(String... args) throws Exception {
-
-        System.out.println("\n\nFrom JDBC Template");
-        customerRepository.findAll().forEach(x -> System.out.println(x));
-
-        Customer c = new Customer();
-        c.setName("John Doe");
-        c.setSsn("111-11-1111");
-
-        Address a = new Address();
-        a.setStreet("230 Market St.");
-        a.setZip("12345");
-        c.setAddress(Arrays.asList(a));
-
-        customerRepository.save(c);
-
-        System.out.println("\n\nFrom JDBC Template");
-        customerRepository.findAll().forEach(x -> System.out.println(x));
-
     }
 }

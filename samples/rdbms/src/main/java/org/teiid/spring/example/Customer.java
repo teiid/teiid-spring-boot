@@ -29,13 +29,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 
+import org.locationtech.jts.geom.Point;
 import org.teiid.spring.annotations.DeleteQuery;
 import org.teiid.spring.annotations.InsertQuery;
 import org.teiid.spring.annotations.SelectQuery;
 import org.teiid.spring.annotations.UpdateQuery;
 
 @Entity
-@SelectQuery("SELECT id, name, ssn FROM mydb.customer")
+@SelectQuery("SELECT id, ST_GeomFromWKB(point) as location, name, ssn FROM mydb.CUSTOMER")
 
 @InsertQuery("FOR EACH ROW \n" + "BEGIN ATOMIC \n"
         + "INSERT INTO mydb.customer(id, name, ssn) values (NEW.id, NEW.name, NEW.ssn);\n" + "END")
@@ -54,9 +55,12 @@ public class Customer {
     // allocationSize = 1)
     // @GeneratedValue(strategy = GenerationType.TABLE, generator = "customer")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customer_generator")
-    @SequenceGenerator(name = "customer_generator", sequenceName = "mydb.customer_seq")
+    @SequenceGenerator(name = "customer_generator", sequenceName = "mydb_customer_seq")
     @Id
     Long id;
+
+    @Column
+    Point location;
 
     @Column
     String name;
@@ -109,6 +113,13 @@ public class Customer {
         this.address = address;
     }
 
+    public Point getLocation() {
+        return location;
+    }
+
+    public void setLocation(Point location) {
+        this.location = location;
+    }
     @Override
     public String toString() {
         return "Customer [id=" + id + ", name=" + name + ", ssn=" + ssn + ", address=" + address + "]";

@@ -133,11 +133,15 @@ public class UDFProcessor {
                 SequenceGenerator sg = f.getAnnotation(SequenceGenerator.class);
                 if (sg != null && sg.sequenceName() != null) {
 
-                    String[] seqNames = sg.sequenceName().split("\\.");
-                    if (seqNames.length != 2) {
+                    int index = sg.sequenceName().indexOf('_');
+                    if (index == -1) {
                         throw new IllegalArgumentException("The sequence name on " + clazz.getName()
-                                + " must in the format \"datasourceName.sequenceName\" where sequence is defined.");
+                        + " must in the format \"datasourceName.sequenceName\" where sequence is defined.");
                     }
+                    String[] seqNames = new String[2];
+                    seqNames[0] = sg.sequenceName().substring(0, index);
+                    seqNames[1] = sg.sequenceName().substring(index+1);
+
                     ModelMetaData model = vdb.getModelMetaDatas().get(seqNames[0]);
                     if (model == null) {
                         throw new IllegalArgumentException(
@@ -167,7 +171,7 @@ public class UDFProcessor {
                     register(seqNames[0], p);
 
                     String returnType = DataTypeManager.getDataTypeName(DataTypeManager.getRuntimeType(f.getType()));
-                    Procedure viewP = viewMF.addProcedure(seqNames[1] + "_nextval");
+                    Procedure viewP = viewMF.addProcedure(sg.sequenceName() + "_nextval");
                     viewP.setVirtual(true);
                     viewP.setFunction(true);
                     viewMF.addProcedureParameter("return", returnType, ProcedureParameter.Type.ReturnValue, viewP);
@@ -175,8 +179,8 @@ public class UDFProcessor {
                             + "." + seqNames[1] + "();\n" + "RETURN X;\n" + "END");
                 } else {
                     throw new IllegalArgumentException("The sequence generation on " + clazz.getName()
-                            + " does not have sequence defined. Define @SequenceGenerator "
-                            + "annotation with sequence name");
+                    + " does not have sequence defined. Define @SequenceGenerator "
+                    + "annotation with sequence name");
                 }
             }
         }

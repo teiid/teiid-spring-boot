@@ -30,7 +30,9 @@ import org.hibernate.mapping.Index;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.UniqueKey;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.context.ApplicationContext;
+import org.teiid.core.types.DataTypeManager;
 import org.teiid.core.types.JDBCSQLTypeInfo;
 import org.teiid.dialect.TeiidDialect;
 import org.teiid.hibernate.types.BigDecimalArrayType;
@@ -213,6 +215,14 @@ public class ViewBuilder<T> {
         if (type.equals("ARRAY")) {
             type = getArrayType(ormColumn);
         }
+
+        if (attributeField != null && Geometry.class.isAssignableFrom(attributeField.getType())) {
+            type = DataTypeManager.DefaultDataTypes.GEOMETRY;
+            if (attributeField.getType().isArray()) {
+                type = DataTypeManager.DefaultDataTypes.GEOMETRY+"[]";
+            }
+        }
+
         Column column = mf.addColumn(columnName, type, view);
         column.setUpdatable(true);
         column.setLength(ormColumn.getLength());
