@@ -35,7 +35,7 @@ public class Address {
     // allocationSize = 1)
     // @GeneratedValue(strategy = GenerationType.TABLE, generator = "address")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "address_generator")
-    @SequenceGenerator(name = "address_generator", sequenceName = "mydb.addr_seq")
+    @SequenceGenerator(name = "address_generator", sequenceName = "mydb_addr_seq")
     @Id
     private Long id;
 

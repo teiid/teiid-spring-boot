@@ -20,6 +20,7 @@ CREATE TABLE CUSTOMER
    ID bigint,
    SSN char(25),
    NAME varchar(64),
+   point blob,
    CONSTRAINT CUSTOMER_PK PRIMARY KEY(ID)
 );
 
