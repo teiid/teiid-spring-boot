@@ -11,7 +11,7 @@ embedded database are also included in this example. When you finished, you shou
 
 * About 10 minutes
 * A favorite text editor or IDE
-* JDK 1.8 or later
+* JDK 1.11 or later
 * Maven 3.0+
 
 === Build With Maven
