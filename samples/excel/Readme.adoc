@@ -6,7 +6,7 @@ This article shows an example to read Excel Sheet based data from file. There ma
 
 * About 15 minutes
 * A favorite text editor or IDE
-* JDK 1.8 or later
+* JDK 1.11 or later
 * Maven 3.0+
 
 === Build With Maven

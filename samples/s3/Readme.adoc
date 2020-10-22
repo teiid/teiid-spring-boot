@@ -10,7 +10,7 @@ You’ll build an application that loads the VDB supplied which would use a text
 
 * About 10 minutes
 * A favorite text editor or IDE
-* JDK 1.8 or later
+* JDK 1.11 or later
 * Maven 3.0+
 
 === Build With Maven

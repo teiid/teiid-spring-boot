@@ -19,7 +19,7 @@ http://localhost:8080/swagger-ui.html and see the Swagger UI for the implemented
 
 * About 10 minutes
 * A favorite text editor or IDE
-* JDK 1.8 or later
+* JDK 1.11 or later
 * Maven 3.0+
 * OpenAPI Document (link:https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v3.0/petstore.yaml[Pet Store])
 
