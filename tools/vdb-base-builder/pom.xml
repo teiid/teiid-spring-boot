@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.teiid</groupId>
     <artifactId>tools</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.7.0</version>
   </parent>
 
   <artifactId>vdb-base-builder</artifactId>
@@ -80,11 +80,11 @@
               <goal>repackage</goal>
             </goals>
             <configuration>
-              <artifactItems></artifactItems>
+              <artifactItems />
             </configuration>
           </execution>
         </executions>
-        <dependencies></dependencies>
+        <dependencies />
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -110,7 +110,7 @@
             </configuration>
           </execution>
         </executions>
-        <dependencies></dependencies>
+        <dependencies />
       </plugin>
       <plugin>
         <groupId>org.teiid</groupId>
@@ -123,14 +123,14 @@
               <goal>vdb-codegen</goal>
             </goals>
             <configuration>
-              <artifactItems></artifactItems>
+              <artifactItems />
               <vdbFile>src/main/resources/teiid.ddl</vdbFile>
               <vdbVersion>0</vdbVersion>
               <materializationType>infinispan-hotrod</materializationType>
             </configuration>
           </execution>
         </executions>
-        <dependencies></dependencies>
+        <dependencies />
       </plugin>
     </plugins>
     <pluginManagement>
@@ -153,7 +153,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
                 <pluginExecution>
@@ -166,7 +166,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>
