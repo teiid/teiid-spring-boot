@@ -59,10 +59,6 @@
     </dependency>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>spring-openapi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
       <artifactId>spring-odata</artifactId>
     </dependency>
     <dependency>
