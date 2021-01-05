@@ -118,27 +118,23 @@
     <basepom.check.skip-dependency-versions-check>false</basepom.check.skip-dependency-versions-check>
 
     <!-- Project Dependencies -->
-    <spring-boot.version>2.2.6.RELEASE</spring-boot.version>
-    <spring.version>5.2.5.RELEASE</spring.version>
+    <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
+    <spring.version>5.2.9.RELEASE</spring.version>
     <spring-social.version>1.1.6.RELEASE</spring-social.version>
-    <teiid.version>16.0.0-SNAPSHOT</teiid.version>
+    <teiid.version>16.0.0</teiid.version>
     <version.xml-apis>1.4.01</version.xml-apis>
     <ObjectStoreEnvironmentBean.objectStoreDir>${build.dir}</ObjectStoreEnvironmentBean.objectStoreDir>
-    <hibernate.version>5.4.12.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
+    <hibernate.version>5.4.21.Final</hibernate.version> <!-- Matching with OpenShift SB as it updates it -->
     <version.javax.jws-api>1.1</version.javax.jws-api>
     <version.org.mockito>1.10.19</version.org.mockito>
     <version.org.keycloak>4.8.3.Final</version.org.keycloak>
     <olingo.version>4.7.1</olingo.version>
     <narayana.version>2.1.0</narayana.version> <!-- me.snowdrop version, not narayana -->
-    <version.springfox>2.9.2</version.springfox>
+    
     <google-sheets.version>v4-rev612-1.25.0</google-sheets.version>
-    <version.swagger-parser>1.0.44</version.swagger-parser>
-    <version.io.swagger>1.5.22</version.io.swagger>
-    <version.org.openapitools>4.0.0</version.org.openapitools>
-    <version.mustache>0.9.6</version.mustache>
-    <version.jackson-databind-nullable>0.1.0</version.jackson-databind-nullable>
-    <version.jackson-core>2.11.0.rc1</version.jackson-core>
-    <version.jackson-databind>2.11.0.rc1</version.jackson-databind>
+    <version.mustache>0.9.6</version.mustache>    
+    <version.jackson-core>2.11.3</version.jackson-core>
+    <version.jackson-databind>2.11.3</version.jackson-databind>
     <version.org.mongodb>3.9.1</version.org.mongodb>
     <version.io.opentracing.contrib>1.0.1</version.io.opentracing.contrib>
     <version.net.sf.ucanaccess>5.0.0</version.net.sf.ucanaccess>
@@ -272,7 +268,7 @@
           <exclusions>
             <exclusion>
               <groupId>org.jboss.spec.javax.annotation</groupId>
-              <artifactId>jboss-annotations-api_1.2_spec</artifactId>            
+              <artifactId>jboss-annotations-api_1.3_spec</artifactId>            
             </exclusion>
           </exclusions>
       </dependency>
@@ -629,6 +625,10 @@
             <artifactId>javax.activation-api</artifactId>
           </exclusion>
           <exclusion>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+          </exclusion>          
+          <exclusion>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
           </exclusion>
@@ -698,45 +698,10 @@
         <version>${spring-social.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.springfox</groupId>
-        <artifactId>springfox-swagger2</artifactId>
-        <version>${version.springfox}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.springfox</groupId>
-        <artifactId>springfox-swagger-ui</artifactId>
-        <version>${version.springfox}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.swagger</groupId>
-        <artifactId>swagger-parser</artifactId>
-        <version>${version.swagger-parser}</version>
-      </dependency> 
-      <dependency>
-          <groupId>io.swagger</groupId>
-          <artifactId>swagger-models</artifactId>
-          <version>${version.io.swagger}</version>
-      </dependency> 
-      <dependency>
-          <groupId>org.openapitools</groupId>
-          <artifactId>openapi-generator</artifactId>
-          <version>${version.org.openapitools}</version>
-      </dependency>
-      <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
         <version>${version.mustache}</version>
       </dependency>
-      <dependency>
-          <groupId>org.openapitools</groupId>
-          <artifactId>jackson-databind-nullable</artifactId>
-          <version>${version.jackson-databind-nullable}</version>
-      </dependency>
-      <dependency>
-          <groupId>io.swagger</groupId>
-          <artifactId>swagger-annotations</artifactId>
-          <version>1.5.22</version>
-      </dependency>                                              
       <!--Project dependencies -->
       <dependency>
         <groupId>org.teiid</groupId>
@@ -1148,12 +1113,12 @@
       <dependency>
         <groupId>com.fasterxml.woodstox</groupId>
         <artifactId>woodstox-core</artifactId>
-        <version>6.1.1</version>
+        <version>6.2.1</version>
       </dependency>
       <dependency>
           <groupId>org.codehaus.woodstox</groupId>
           <artifactId>stax2-api</artifactId>
-          <version>4.2</version>
+          <version>4.2.1</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.logging</groupId>
@@ -1352,7 +1317,6 @@
         <module>data</module>
         <module>tools</module>
         <module>odata</module>
-        <module>openapi</module>
         <module>keycloak</module>
         <module>samples</module>
       </modules>
@@ -1368,7 +1332,6 @@
         <module>data</module>
         <module>tools</module>
         <module>odata</module>
-        <module>openapi</module>
         <module>keycloak</module>
       </modules>
       <build>

@@ -31,9 +31,7 @@
   <modules>
     <module>vdb-common</module>
     <module>vdb-codegen-plugin</module>
-    <module>vdb-plugin</module>
-    <module>vdb-test</module>
-    <module>vdb-openapi-test</module>
+    <module>vdb-codegen-test</module>
     <module>vdb-cr-yaml-test</module>
     <module>vdb-base-builder</module>
   </modules>

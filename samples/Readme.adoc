@@ -5,47 +5,72 @@ There are many more examples, that show different capabilities of Data Virtualiz
 |===
 |*Name* |*Features Demonstrated* |*Description* |*Prerequisites*
 
-|link:excel/Readme.md[Excel]
+|link:excel/Readme.adoc[Excel]
 |@ExcelTable
 |Shows how to virtualize an excel spreadsheet
 |None
 
-|link:google/Readme.md[Google Spreadsheet]
+|link:google/Readme.adoc[Google Spreadsheet]
 |Google spreadsheet connectivity
 |Shows how to virtualize a Google spreadsheet
 |None
 
-|link:mongodb/Readme.md[MongoDB]
+|link:mongodb/Readme.adoc[MongoDB]
 |MongoDB connectivity
 |Shows how to virtualize a MongoDB instance
 |None
 
-|link:rdbms/Readme.md[Database]
+|link:s3/Readme.adoc[S3]
+|S3 connectivity
+|Shows how to virtualize a S3 instance
+|None
+
+|link:json/Readme.adoc[JSON]
+|JSon connectivity
+|Shows how to virtualize a JSON instance
+|None
+
+|link:infinispan/Readme.adoc[infinispan]
+|Infinispan connectivity
+|Shows how to virtualize a Infinispan instance
+|None
+
+|link:hdfs/Readme.adoc[HDFS]
+|HDFS connectivity
+|Shows how to virtualize a HDFS instance
+|None
+
+|link:cassandra/Readme.adoc[Cassandra]
+|Cassandra connectivity
+|Shows how to virtualize a Cassandra instance
+|None
+
+|link:rdbms/Readme.adoc[Database]
 |Data Federation
 |Shows how to expose multiple data sources for data federation
 |None
 
-|link:redirection/Readme.md[Redirection]
+|link:redirection/Readme.adoc[Redirection]
 |Redirection of Updates
 |Shows how to use Teiid to automatically redirect updates to a different source, but still federate the updates.
 |None
 
-|link:rest/Readme.md[REST]
+|link:rest/Readme.adoc[REST]
 |REST
 |Shows how to enable a REST interface on top of any Entity model defined using Teiid
 |None
 
-|link:salesforce/Readme.md[Salesforce]
+|link:salesforce/Readme.adoc[Salesforce]
 |Salesforce
 |Shows how to virtualize a Salesforce instance
 |None
 
-|link:udf/Readme.md[UDF]
+|link:udf/Readme.adoc[UDF]
 |User Defined Function
 |Shows how to use a Java function in Teiid
 |None
 
-|link:vdb/Readme.md[VDB]
+|link:vdb/Readme.adoc[VDB]
 |Virtual Database
 |Shows how to use a Teiid DDL VDB to define the virtualization
 |None
