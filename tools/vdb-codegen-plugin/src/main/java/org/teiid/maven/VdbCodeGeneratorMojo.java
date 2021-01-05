@@ -30,10 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -53,7 +53,6 @@ import org.teiid.spring.common.ExternalSource;
 import org.teiid.spring.common.ExternalSources;
 import org.yaml.snakeyaml.Yaml;
 
-import com.github.jknack.handlebars.internal.text.StringTokenizer;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
@@ -87,9 +86,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
     @Parameter
     private Boolean generateApplicationProperties = false;
-
-    @Parameter(defaultValue = "${basedir}/src/main/resources/openapi.json")
-    private File openApiFile;
 
     @Parameter( defaultValue = "${plugin}", readonly = true )
     private PluginDescriptor pluginDescriptor;
@@ -149,8 +145,8 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             // find connection factories
             ExternalSources sources = new ExternalSources();
             StringTokenizer st = new StringTokenizer(componentScanPackageNames, ",");
-            while (st.hasNext()) {
-                sources.loadConnctionFactories(pluginClassloader, st.next());
+            while (st.hasMoreTokens()) {
+                sources.loadConnctionFactories(pluginClassloader, st.nextToken());
             }
 
             // check if YAML file exists, then build VDB from it
@@ -188,9 +184,7 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             parentMap.put("packageName", this.packageName);
             parentMap.put("vdbName", database.getName());
             parentMap.put("vdbDescription", database.getAnnotation());
-            if (generateOpenApiScoffolding()) {
-                parentMap.put("openapi", generateOpenApiScoffolding()?"true":"false");
-            }
+
             if (this.generateApplicationClass) {
                 createApplication(mf, database, parentMap);
             }
@@ -211,22 +205,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
 
             if (this.generateApplicationProperties) {
                 createApplicationProperties(database, yamlContents, mf, parentMap, sources);
-            }
-
-            // also look for .yml equivalent
-            if (!this.openApiFile.exists()) {
-                String ymlFile = this.openApiFile.getAbsolutePath().replace("openapi.json", "openapi.yml");
-                if (!ymlFile.contentEquals(this.openApiFile.getAbsolutePath())) {
-                    this.openApiFile = new File(ymlFile);
-                }
-            }
-
-            if (generateOpenApiScoffolding() && this.openApiFile.exists()) {
-                getLog().info("Found the OpenAPI document at " + this.openApiFile.getAbsolutePath());
-                ApiGenerator generator = new ApiGenerator(openApiFile, outputDirectory, getLog());
-                generator.generate(mf, getJavaSrcDirectory(), database, parentMap);
-            } else {
-                getLog().info("No OpenAPI document found, no classes for the OpenAPI will be generated ");
             }
             this.project.addCompileSourceRoot(getJavaSrcDirectory().getAbsolutePath());
         } catch (Exception e) {
@@ -471,10 +449,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (this.vdbFile.getName().endsWith(".vdb")) {
                 File vdbDir = unzipContents(this.vdbFile);
                 this.vdbFile = new File(vdbDir, "/META-INF/vdb.ddl");
-                File openapi = new File(vdbDir, "openapi.json");
-                if (openapi.exists()) {
-                    this.openApiFile = openapi;
-                }
             }
             return this.vdbFile;
         }
@@ -486,10 +460,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             if (this.vdbFile.exists()) {
                 File vdbDir = unzipContents(this.vdbFile);
                 this.vdbFile = new File(vdbDir, "/META-INF/vdb.ddl");
-                File openapi = new File(vdbDir, "openapi.json");
-                if (openapi.exists()) {
-                    this.openApiFile = openapi;
-                }
                 return this.vdbFile;
             }
         }
@@ -503,10 +473,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
             }
             File vdbDir = unzipContents(d);
             this.vdbFile = new File(vdbDir, "/META-INF/vdb.ddl");
-            File openapi = new File(vdbDir, "openapi.json");
-            if (openapi.exists()) {
-                this.openApiFile = openapi;
-            }
             return this.vdbFile;
         }
 
@@ -529,19 +495,6 @@ public class VdbCodeGeneratorMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new MojoExecutionException("Couldn't create a classloader.", e);
         }
-    }
-
-    private boolean generateOpenApiScoffolding() {
-        List<Dependency> dependencies = project.getDependencies();
-        for (Dependency d : dependencies) {
-            String gav = d.getGroupId() + ":" + d.getArtifactId();
-            if (gav.equals("org.teiid:spring-openapi")) {
-                getLog().info("OpenAPI dependency is found in the pom.xml");
-                return true;
-            }
-        }
-        getLog().info("No OpenAPI dependency is found in the pom.xml, skipping the generation of the OpenAPI classes");
-        return false;
     }
 
     private File unzipContents(Artifact d) throws IOException {

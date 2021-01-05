@@ -89,10 +89,6 @@
   <dependencies>
     <dependency>
       <groupId>org.teiid</groupId>
-      <artifactId>spring-openapi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.teiid</groupId>
       <artifactId>spring-data-salesforce</artifactId>
     </dependency>
     <dependency>
