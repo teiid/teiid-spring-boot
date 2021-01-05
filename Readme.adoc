@@ -1,4 +1,4 @@
-image:https://travis-ci.org/teiid/teiid-spring-boot.svg?branch=master["Build Status", link="https://travis-ci.org/teiid/teiid-spring-boot"]
+image:https://www.travis-ci.com/teiid/teiid-spring-boot.svg?branch=master["Build Status", link="https://www.travis-ci.com/teiid/teiid-spring-boot"]
 
 = Teiid Spring Boot Starter
 
