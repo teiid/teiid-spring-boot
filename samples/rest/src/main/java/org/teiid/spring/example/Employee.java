@@ -20,40 +20,40 @@ import javax.persistence.Id;
 
 import org.teiid.spring.annotations.JsonTable;
 
-@JsonTable(endpoint = "webCallBean", source = "rest", root = "/value")
+@JsonTable(endpoint = "webCallBean", source = "rest", root = "/data")
 @Entity
-public class Quote {
+public class Employee {
 
     @Id
     private Integer id;
-    private String quote;
+    private String employee_name;
 
-    public Quote() {
+    public Employee() {
     }
 
-    public Quote(int id, String quote) {
+    public Employee(int id, String name) {
         this.id = id;
-        this.quote = quote;
+        this.employee_name = name;
     }
 
     public Integer getId() {
         return this.id;
     }
 
-    public String getQuote() {
-        return this.quote;
+    public String getName() {
+        return this.employee_name;
     }
 
     public void setId(Integer id) {
         this.id = id;
     }
 
-    public void setQuote(String quote) {
-        this.quote = quote;
+    public void setName(String quote) {
+        this.employee_name = quote;
     }
 
     @Override
     public String toString() {
-        return "Value{" + "id=" + id + ", quote='" + quote + '\'' + '}';
+        return "Value{" + "id=" + id + ", Name='" + employee_name + '\'' + '}';
     }
 }

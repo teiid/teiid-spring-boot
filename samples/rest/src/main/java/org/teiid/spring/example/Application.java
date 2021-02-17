@@ -31,7 +31,7 @@ import org.teiid.translator.ExecutionContext;
 public class Application implements CommandLineRunner {
 
     @Autowired
-    private QuoteRepository quoteRepository;
+    private EmployeeRepository employeeRepository;
 
     @Autowired
     RestTemplate restTemplate;
@@ -42,13 +42,13 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        quoteRepository.findAll().forEach(c -> System.out.println("***" + c));
+        employeeRepository.findAll().forEach(c -> System.out.println("***" + c));
     }
 
     @Bean(name = "webCallBean")
     public Function<ExecutionContext, String> webCallBean() {
         return (c) -> {
-            String url = "http://gturnquist-quoters.cfapps.io/api/random";
+            String url = "http://dummy.restapiexample.com/api/v1/employees";
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             return response.getBody();
         };
