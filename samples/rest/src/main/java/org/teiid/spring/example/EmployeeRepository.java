@@ -23,15 +23,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class QuoteRepository {
+public class EmployeeRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<Quote> findAll() {
+    public List<Employee> findAll() {
 
-        List<Quote> result = jdbcTemplate.query("SELECT id, quote FROM Quote",
-                (rs, rowNum) -> new Quote(rs.getInt("id"), rs.getString("quote")));
+        List<Employee> result = jdbcTemplate.query("SELECT id, employee_name FROM Employee",
+                (rs, rowNum) -> new Employee(rs.getInt("id"), rs.getString("employee_name")));
         return result;
     }
 }
