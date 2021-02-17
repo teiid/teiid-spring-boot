@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.teiid</groupId>
     <artifactId>teiid-spring-boot-starter-parent</artifactId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.7.1</version>
   </parent>
 
   <artifactId>teiid-spring-boot-common</artifactId>

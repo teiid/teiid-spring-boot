@@ -19,7 +19,7 @@
     <parent>
         <artifactId>data</artifactId>
         <groupId>org.teiid</groupId>
-        <version>1.7.1-SNAPSHOT</version>
+        <version>1.7.1</version>
     </parent>
 
     <artifactId>spring-data-hdfs</artifactId>
