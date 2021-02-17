@@ -68,7 +68,7 @@
                   <pluginExecutionFilter>
                     <groupId>org.teiid</groupId>
                     <artifactId>vdb-codegen-plugin</artifactId>
-                    <versionRange>[1.7.0-SNAPSHOT,)</versionRange>
+                    <versionRange>[1.7.1-SNAPSHOT,)</versionRange>
                     <goals>
                       <goal>vdb-codegen</goal>
                     </goals>
