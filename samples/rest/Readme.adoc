@@ -49,94 +49,79 @@ The following are the Teiid related dependencies
 ----
 
 in this example, we will create Entity class that can read JSON data from web service from
-`http://gturnquist-quoters.cfapps.io/api/random` which returns JSON data like below. Note that JSON can be complex, for example sake a simple format has been selected.
+`http://dummy.restapiexample.com/api/v1/employees` which returns JSON data like below. Note that JSON can be complex, for example sake a simple format has been selected.
 
 ----
 {
-   "type":"success",
-   "value":{
-      "id":1,
-      "quote":"Working with Spring Boot is like pair-programming with the Spring developers."
-   }
+	"status":"success",
+	"data":[
+		{
+			"id":"1",
+			"employee_name":"Tiger Nixon",
+			"employee_salary":"320800",
+			"employee_age":"61",
+			"profile_image":""
+		},
+		{
+			"id":"2",
+			"employee_name":"Garrett Winters",
+			"employee_salary":"170750",
+			"employee_age":"63",
+			"profile_image":""
+		}]
 }
 ----
 
 === Define View/Entity Class
-Now it is time to define the main Entity or View class. Since we are reading a `quote` let's call it Quote class
+Now it is time to define the main Entity or View class. Since we are reading a `Employee` let's call it Employee class
 
 [source,java]
-.src/main/java/com/example/Quote.java
+.src/main/java/com/example/Employee.java
 ----
-/*
- * Copyright 2012-2017 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package org.teiid.spring.example;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-import org.teiid.spring.annotations.JsonTable;
-import org.teiid.spring.annotations.RestConfiguration;
-
-@JsonTable(endpoint="http://gturnquist-quoters.cfapps.io/api/random", source="rest", root="/value")
+@JsonTable(endpoint = "webCallBean", source = "rest", root = "/data")
 @Entity
-public class Quote {
+public class Employee {
 
     @Id
     private Integer id;
-    private String quote;
+    private String employee_name;
 
-    public Quote() {
+    public Employee() {
     }
 
-    public Quote(int id, String quote) {
+    public Employee(int id, String name) {
         this.id = id;
-        this.quote = quote;
+        this.employee_name = name;
     }
-    
+
     public Integer getId() {
         return this.id;
     }
 
-    public String getQuote() {
-        return this.quote;
+    public String getName() {
+        return this.employee_name;
     }
 
     public void setId(Integer id) {
         this.id = id;
     }
 
-    public void setQuote(String quote) {
-        this.quote = quote;
+    public void setName(String quote) {
+        this.employee_name = quote;
     }
 
     @Override
     public String toString() {
-        return "Value{" +
-                "id=" + id +
-                ", quote='" + quote + '\'' +
-                '}';
+        return "Value{" + "id=" + id + ", Name='" + employee_name + '\'' + '}';
     }
 }
 ----
 
-Here you have a Quote class with two attributes, the id, quote. You also have two constructors. The default constructor only exists for the sake of JPA. You won’t use it directly. The other constructor is the one you’ll use to create instances of Quote.
+Here you have a Employee class with two attributes, the id, employee_name. You also have two constructors. The default constructor only exists for the sake of JPA. You won’t use it directly. The other constructor is the one you’ll use to create instances of Quote.
 
-The Quote class is annotated with `@Entity`, indicating that it is a JPA entity. For `@Table` annotation, is optional, but use it to give a different name. Sometimes @Table also need to be used to avoid the naming conflicts.
+The Employee class is annotated with `@Entity`, indicating that it is a JPA entity. For `@Table` annotation, is optional, but use it to give a different name. Sometimes @Table also need to be used to avoid the naming conflicts.
 
-The Quote’s id property is annotated with `@Id` so that JPA will recognize it as the object’s identity. The id property.
+The Employee’s id property is annotated with `@Id` so that JPA will recognize it as the object’s identity. The id property.
 
 The other property, quote is left with out any annotation. It is assumed that they’ll be mapped to columns that share the same name as the properties themselves.
 
@@ -163,27 +148,26 @@ Spring Data JPA focuses on using JPA to store data in a relational database. Its
 To see how this works, create a repository interface that works with Quote entities:
 
 [source,java]
-.src/main/java/org/example/QuoteRepository.java
+.src/main/java/org/example/EmployeeRepository.java
 ----
 @Repository
-public class QuoteRepository {
+public class EmployeeRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<Quote> findAll() {
+    public List<Employee> findAll() {
 
-        List<Quote> result = jdbcTemplate.query(
-                "SELECT id, quote FROM Quote",
-                (rs, rowNum) -> new Quote(rs.getInt("id"),rs.getString("quote")));
+        List<Employee> result = jdbcTemplate.query("SELECT id, employee_name FROM Employee",
+                (rs, rowNum) -> new Employee(rs.getInt("id"), rs.getString("employee_name")));
         return result;
     }
-}  
+} 
 ----
 
-QuoteRepository uses JDBCTemplate interface to work with JPA entities.
+EmployeeRepository uses JDBCTemplate interface to work with JPA entities.
 
-Spring Data JPA also allows you to define other query methods by simply declaring their method signature. In a typical Java application, you’d expect to write a class that implements QuoteRepository. But that’s what makes Spring Data JPA so powerful: You don’t have to write an implementation of the repository interface. Spring Data JPA creates an implementation on the fly when you run the application.
+Spring Data JPA also allows you to define other query methods by simply declaring their method signature. In a typical Java application, you’d expect to write a class that implements EmployeeRepository. But that’s what makes Spring Data JPA so powerful: You don’t have to write an implementation of the repository interface. Spring Data JPA creates an implementation on the fly when you run the application.
 
 Let’s wire this up and see what it looks like!
 
@@ -200,15 +184,18 @@ package org.example;
 public class Application implements CommandLineRunner {
 
     @Autowired
-    private QuoteRepository quoteRepository;
-    
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    RestTemplate restTemplate;
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args).close();
     }
-    
+
     @Override
     public void run(String... args) throws Exception {
-        quoteRepository.findAll().forEach(c -> System.out.println(c));
+        employeeRepository.findAll().forEach(c -> System.out.println("***" + c));
     }
 }
 ----
@@ -216,6 +203,8 @@ public class Application implements CommandLineRunner {
 Now when you execute this application, you should see results like below.
 
 ----
-Value{id=6, quote='It embraces convention over configuration, providing an experience on par with frameworks that excel at early stage development, such as Ruby on Rails.'}
+***Value{id=1, Name='Tiger Nixon'}
+***Value{id=2, Name='Garrett Winters'}
+***Value{id=3, Name='Ashton Cox'}
 ----
 
