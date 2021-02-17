@@ -30,11 +30,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class TestExample {
 
     @Autowired
-    QuoteRepository quoteRepository;
+    EmployeeRepository employeeRepository;
 
     @Test
     public void test() {
-        assertNotNull(quoteRepository.findAll().iterator().next());
-        assertTrue(quoteRepository.findAll().iterator().next().getId() > 0);
+        assertNotNull(employeeRepository.findAll().iterator().next());
+        assertTrue(employeeRepository.findAll().iterator().next().getId() > 0);
     }
 }
