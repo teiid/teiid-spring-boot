@@ -15,57 +15,31 @@
  */
 package org.teiid.spring.odata;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
 import org.springframework.transaction.TransactionStatus;
-import org.teiid.core.TeiidProcessingException;
-import org.teiid.jdbc.ConnectionImpl;
-import org.teiid.odbc.ODBCServerRemoteImpl;
+import org.teiid.jdbc.TeiidDriver;
 import org.teiid.olingo.service.LocalClient;
 import org.teiid.spring.autoconfigure.TeiidServer;
 
 public class SpringClient extends LocalClient {
-    private String vdbName;
-    private String vdbVersion;
-    private ConnectionImpl connection;
-    private Properties properties;
     private TeiidServer server;
     private TransactionStatus status;
 
     public SpringClient(String vdbName, String vdbVersion, Properties properties, TeiidServer server,
             Map<Object, Future<Boolean>> loading) {
         super(vdbName, vdbVersion, properties, loading);
-        this.properties = properties;
-        this.vdbName = vdbName;
-        this.vdbVersion = vdbVersion;
         this.server = server;
     }
 
     @Override
-    public Connection open() throws SQLException, TeiidProcessingException {
-        this.connection = buildConnection(server.getDriver(), this.vdbName, this.vdbVersion, this.properties);
-        ODBCServerRemoteImpl.setConnectionProperties(connection);
-        ODBCServerRemoteImpl.setConnectionProperties(connection, this.properties);
-        getVDB();
-        return this.connection;
+    protected TeiidDriver getDriver() {
+        return this.server.getDriver();
     }
 
-    @Override
-    public void close() throws SQLException {
-	super.close();
-        if (this.connection != null) {
-            this.connection.close();
-        }
-    }
-
-    @Override
-    public ConnectionImpl getConnection() {
-        return this.connection;
-    }
 
     @Override
     public String startTransaction() throws SQLException {
