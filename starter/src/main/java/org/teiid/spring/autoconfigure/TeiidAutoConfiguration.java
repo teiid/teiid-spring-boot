@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,13 +25,13 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.sql.Driver;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManager;
@@ -182,7 +182,7 @@ public class TeiidAutoConfiguration {
                     DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
                     String db = ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
                     vdb = store.getVDBMetadata(db);
-                    VDBResources vdbResources = buildVdbResources(resource.getFile().getParent());
+                    VDBResources vdbResources = buildVdbResources(getParent(resource.getURI().toString()));
                     vdb.addAttachment(VDBResources.class, vdbResources);
                     logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (IOException e) {
@@ -190,8 +190,8 @@ public class TeiidAutoConfiguration {
                 }
             } else if (resource.getFilename().endsWith("-vdb.xml")) {
                 try {
-                    vdb =  VDBMetadataParser.unmarshall(resource.getInputStream());
-                    VDBResources vdbResources = buildVdbResources(resource.getFile().getParent());
+                    vdb = VDBMetadataParser.unmarshall(resource.getInputStream());
+                    VDBResources vdbResources = buildVdbResources(getParent(resource.getURI().toString()));
                     vdb.addAttachment(VDBResources.class, vdbResources);
                     logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (XMLStreamException | IOException e) {
@@ -209,7 +209,7 @@ public class TeiidAutoConfiguration {
         }
 
         if (vdb == null) {
-            vdb =  new VDBMetaData();
+            vdb = new VDBMetaData();
             vdb.addProperty(IMPLICIT_VDB, "true");
             vdb.setName(VDBNAME);
             vdb.setVersion(VDBVERSION);
@@ -217,17 +217,23 @@ public class TeiidAutoConfiguration {
         return vdb;
     }
 
+    private String getParent(String resourcePath) {
+        int index = resourcePath.lastIndexOf('/');
+        return index > 0 ? resourcePath.substring(0, index + 1) : "/";
+    }
+
     private VDBResources buildVdbResources(String curdir) throws IOException {
         List<Resource> resources = TeiidInitializer.getClasspathResources(this.context, "*.ddl", "*.sql", "*/*.ddl",
                 "*/*.sql");
         LinkedHashMap<String, VDBResources.Resource> files = new LinkedHashMap<>();
         for (Resource r : resources) {
-            Path p = r.getFile().toPath();
-            String path = p.toString().replace(curdir, "");
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            files.put(path, new VDBResources.Resource(new NioVirtualFile(p)));
+            final String resourcePath = r.getURI().toString();
+            // remove shared parents
+            final String shortenedPath = Stream.of(resourcePath.split("/"))
+                    .reduce((s1, s2) -> curdir.contains(s1 + "/" + s2) ? s1 + "/" + s2 : s1)
+                    .map(s -> resourcePath.replace(s + "/", ""))
+                    .orElse(resourcePath);
+            files.put(shortenedPath, new VDBResources.Resource(new NioVirtualFile(Paths.get(shortenedPath))));
         }
         VDBResources vdbResources = new VDBResources(new NioVirtualFile(Paths.get("application.properties")));
         vdbResources.getEntriesPlusVisibilities().putAll(files);
@@ -235,7 +241,7 @@ public class TeiidAutoConfiguration {
     }
 
     private VDBMetaData loadVDB(Resource resource) throws VirtualDatabaseException, ConnectorManagerException,
-    TranslatorException, IOException, URISyntaxException {
+            TranslatorException, IOException, URISyntaxException {
 
         File f = File.createTempFile("temp", null);
         ObjectConverterUtil.write(resource.getInputStream(), f);
@@ -282,7 +288,7 @@ public class TeiidAutoConfiguration {
     @ConditionalOnMissingBean
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
     public TeiidServer teiidServer(SpringSecurityHelper securityHelper, TransactionManager transactionManager,
-            ExternalSources sources) {
+                                   ExternalSources sources) {
         logger.info("Starting Teiid Server.");
 
         // turning off PostgreSQL support
@@ -358,7 +364,7 @@ public class TeiidAutoConfiguration {
                 logger.info("Transaction Manager found and being registed into Teiid.");
             }
         } else if (transactionManager != null && transactionManager != embeddedConfiguration.getTransactionManager()) {
-            throw new IllegalStateException("TransactionManager defined in both Spring and on the EmbeddedConfiguration.  Only one is expected.");
+            throw new IllegalStateException("TransactionManager defined in both Spring and on the EmbeddedConfiguration. Only one is expected.");
         }
 
         if (embeddedConfiguration.getSecurityHelper() == null) {
@@ -369,7 +375,7 @@ public class TeiidAutoConfiguration {
         server.start(embeddedConfiguration);
 
         // this is dummy vdb to satisfy the boot process to create the connections
-        VDBMetaData vdb =  new VDBMetaData();
+        VDBMetaData vdb = new VDBMetaData();
         vdb.setName(VDBNAME);
         vdb.setVersion(VDBVERSION);
         server.deployVDB(vdb, false, this.context);
