@@ -134,7 +134,7 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
             return false;
         }
         if (this.accessGrant.getExpireTime() != null) {
-            return this.accessGrant.getExpireTime() < System.currentTimeMillis();
+            return this.accessGrant.getExpireTime() > System.currentTimeMillis();
         }
         return this.accessGrant.getAccessToken() != null;
     }
