@@ -17,14 +17,6 @@
 package org.teiid.spring.data.rest;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
@@ -44,6 +36,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.teiid.spring.data.BaseConnectionFactory;
 import org.teiid.spring.data.ConnectionFactoryConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @ConnectionFactoryConfiguration(
         alias = "rest",
@@ -134,7 +134,7 @@ public class RestConnectionFactory implements BaseConnectionFactory<RestConnecti
             return false;
         }
         if (this.accessGrant.getExpireTime() != null) {
-            return this.accessGrant.getExpireTime() < System.currentTimeMillis();
+            return this.accessGrant.getExpireTime() > System.currentTimeMillis();
         }
         return this.accessGrant.getAccessToken() != null;
     }
