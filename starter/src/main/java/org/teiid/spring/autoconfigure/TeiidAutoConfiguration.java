@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.sql.Driver;
@@ -61,7 +62,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.embedded.ConnectionProperties;
 import org.springframework.jdbc.datasource.embedded.DataSourceFactory;
@@ -182,7 +185,7 @@ public class TeiidAutoConfiguration {
                     DeploymentBasedDatabaseStore store = new DeploymentBasedDatabaseStore(new VDBRepository());
                     String db = ObjectConverterUtil.convertToString(resources.get(0).getInputStream());
                     vdb = store.getVDBMetadata(db);
-                    VDBResources vdbResources = buildVdbResources(getParent(resource.getURI().toString()));
+                    VDBResources vdbResources = buildVdbResources(getParent(resource));
                     vdb.addAttachment(VDBResources.class, vdbResources);
                     logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (IOException e) {
@@ -191,7 +194,7 @@ public class TeiidAutoConfiguration {
             } else if (resource.getFilename().endsWith("-vdb.xml")) {
                 try {
                     vdb = VDBMetadataParser.unmarshall(resource.getInputStream());
-                    VDBResources vdbResources = buildVdbResources(getParent(resource.getURI().toString()));
+                    VDBResources vdbResources = buildVdbResources(getParent(resource));
                     vdb.addAttachment(VDBResources.class, vdbResources);
                     logger.info("Predefined VDB found = " + resource.getFilename());
                 } catch (XMLStreamException | IOException e) {
@@ -217,7 +220,16 @@ public class TeiidAutoConfiguration {
         return vdb;
     }
 
-    private String getParent(String resourcePath) {
+    private String getParent(Resource resource) throws IOException {
+        String resourcePath = resource.getURI().toString();
+        if (resource instanceof FileSystemResource) {
+            resourcePath = ((FileSystemResource)resource).getFile().getPath().toString();
+        }
+        int indexColon = resourcePath.lastIndexOf(':');
+        if (indexColon != -1) {
+            // this is a url based resource
+            resourcePath = resourcePath.substring(indexColon+1);
+        }
         int index = resourcePath.lastIndexOf('/');
         return index > 0 ? resourcePath.substring(0, index + 1) : "/";
     }
@@ -227,13 +239,22 @@ public class TeiidAutoConfiguration {
                 "*/*.sql");
         LinkedHashMap<String, VDBResources.Resource> files = new LinkedHashMap<>();
         for (Resource r : resources) {
-            final String resourcePath = r.getURI().toString();
-            // remove shared parents
-            final String shortenedPath = Stream.of(resourcePath.split("/"))
-                    .reduce((s1, s2) -> curdir.contains(s1 + "/" + s2) ? s1 + "/" + s2 : s1)
-                    .map(s -> resourcePath.replace(s + "/", ""))
-                    .orElse(resourcePath);
-            files.put(shortenedPath, new VDBResources.Resource(new NioVirtualFile(Paths.get(shortenedPath))));
+            if (r instanceof FileSystemResource) {
+                Path p = r.getFile().toPath();
+                String path = p.toString().replace(curdir, "");
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+                files.put(path, new VDBResources.Resource(new NioVirtualFile(p)));
+            } else if (r instanceof UrlResource) {
+                String resourcePath = r.getURI().toString();
+                int indexColon = resourcePath.lastIndexOf(':');
+                if (indexColon != -1) {
+                    resourcePath = resourcePath.substring(indexColon+1);
+                }
+                String shortenedPath = resourcePath.replace(curdir, "");
+                files.put(shortenedPath, new VDBResources.Resource(new UrlResourceVirtualFile(shortenedPath, (UrlResource)r)));
+            }
         }
         VDBResources vdbResources = new VDBResources(new NioVirtualFile(Paths.get("application.properties")));
         vdbResources.getEntriesPlusVisibilities().putAll(files);
