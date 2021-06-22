@@ -56,7 +56,7 @@ public class SpringClient extends LocalClient {
 
     @Override
     public void close() throws SQLException {
-	super.close();
+        super.close();
         if (this.connection != null) {
             this.connection.close();
         }
