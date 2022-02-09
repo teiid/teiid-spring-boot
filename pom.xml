@@ -1065,7 +1065,7 @@
                 <artifactId>jboss-transaction-api_1.2_spec</artifactId>
             </exclusion>
           </exclusions>          
-          <version>10.0.1.Final</version>
+          <version>11.0.6.Final</version>
       </dependency>
       <dependency>
           <groupId>org.infinispan</groupId>
