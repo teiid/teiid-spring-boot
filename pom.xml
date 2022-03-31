@@ -118,7 +118,7 @@
     <basepom.check.skip-dependency-versions-check>false</basepom.check.skip-dependency-versions-check>
 
     <!-- Project Dependencies -->
-    <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
+    <spring-boot.version>2.5.12</spring-boot.version>
     <spring.version>5.2.9.RELEASE</spring.version>
     <spring-social.version>1.1.6.RELEASE</spring-social.version>
     <teiid.version>17.0.0-SNAPSHOT</teiid.version>
