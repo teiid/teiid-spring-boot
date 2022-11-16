@@ -134,7 +134,7 @@
     <google-sheets.version>v4-rev612-1.25.0</google-sheets.version>
     <version.mustache>0.9.6</version.mustache>    
     <version.jackson-core>2.11.3</version.jackson-core>
-    <version.jackson-databind>2.11.3</version.jackson-databind>
+    <version.jackson-databind>2.12.7.1</version.jackson-databind>
     <version.org.mongodb>3.9.1</version.org.mongodb>
     <version.io.opentracing.contrib>1.0.1</version.io.opentracing.contrib>
     <version.net.sf.ucanaccess>5.0.0</version.net.sf.ucanaccess>
