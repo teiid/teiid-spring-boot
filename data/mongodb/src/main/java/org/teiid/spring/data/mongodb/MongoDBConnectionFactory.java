@@ -50,8 +50,7 @@ public class MongoDBConnectionFactory implements BaseConnectionFactory<MongoDBCo
                     if (this.config.getUri() != null) {
                         MongoClientURI uri = new MongoClientURI(this.config.getUri());
                         mongoClient = new MongoClient(uri);
-                    }
-                    if (this.config.getCredential() == null) {
+                    } else if (this.config.getCredential() == null) {
                         mongoClient = new MongoClient(this.config.getServers(), this.config.getOptions());
                     } else {
                         mongoClient = new MongoClient(this.config.getServers(), this.config.getCredential(),this.config.getOptions());
